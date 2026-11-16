@@ -18,7 +18,7 @@
     loops: [],
     fits: [],
     fit: true,
-    construct: false,
+    construct: true,
     gridN: 12,
     unify: true,
     standard: true,
@@ -366,6 +366,7 @@
   function trace() {
     if (!state.img) return;
     const built = buildMask(state.img);
+    if (state.construct) buildDisks(built.mask, built.w, built.h);
     let loops = contours(built.mask, built.w, built.h);
     const minArea = Math.max(4, built.w * built.h * 0.00002);
     loops = loops
@@ -794,6 +795,99 @@
     return { cx: cx, cy: cy, r: r, maxErr: 0 };
   }
 
+  // ============================================================
+  // 布尔构造模型：图案 = 一组切割圆（最大内切圆族）的并集 − 背景圆
+  // 内切圆由距离变换求得，天然与图形边界相切 —— 圆不是"画上去"的，
+  // 边界就是这些圆的包的轮廓（切点处相切）。
+  // ============================================================
+  function distanceTransform(mask, w, h) {
+    const INF = 1e9;
+    const d = new Float32Array(w * h);
+    for (let i = 0; i < d.length; i++) d[i] = mask[i] ? INF : 0;
+    // 两遍 chamfer 3-4 近似欧氏距离
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (d[i] === 0) continue;
+        let v = d[i];
+        if (x > 0) v = Math.min(v, d[i - 1] + 1);
+        if (y > 0) v = Math.min(v, d[i - w] + 1);
+        if (x > 0 && y > 0) v = Math.min(v, d[i - w - 1] + 1.414);
+        if (x < w - 1 && y > 0) v = Math.min(v, d[i - w + 1] + 1.414);
+        d[i] = v;
+      }
+    }
+    for (let y = h - 1; y >= 0; y--) {
+      for (let x = w - 1; x >= 0; x--) {
+        const i = y * w + x;
+        if (d[i] === 0) continue;
+        let v = d[i];
+        if (x < w - 1) v = Math.min(v, d[i + 1] + 1);
+        if (y < h - 1) v = Math.min(v, d[i + w] + 1);
+        if (x < w - 1 && y < h - 1) v = Math.min(v, d[i + w + 1] + 1.414);
+        if (x > 0 && y < h - 1) v = Math.min(v, d[i + w - 1] + 1.414);
+        d[i] = v;
+      }
+    }
+    return d;
+  }
+
+  // 最大内切圆族：贪心覆盖，追求"少数几个圆就能包出图形"
+  function buildDisks(mask, w, h) {
+    const dt = distanceTransform(mask, w, h);
+    let total = 0;
+    for (let i = 0; i < mask.length; i++) total += mask[i];
+    if (!total) return { disks: [], iou: 0 };
+
+    // 候选：局部极大值
+    const cand = [];
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const i = y * w + x;
+        const r = dt[i];
+        if (!mask[i] || r < 2) continue;
+        let isMax = true;
+        for (let dy = -1; dy <= 1 && isMax; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dt[(y + dy) * w + (x + dx)] > r) { isMax = false; break; }
+          }
+        }
+        if (isMax) cand.push({ x: x, y: y, r: r });
+      }
+    }
+    cand.sort(function (a, b) { return b.r - a.r; });
+
+    const cover = new Uint8Array(w * h);
+    let covered = 0;
+    const disks = [];
+    for (let ci = 0; ci < cand.length && disks.length < 24; ci++) {
+      const c = cand[ci];
+      let gain = 0;
+      const r2 = c.r * c.r;
+      const x0 = Math.max(0, Math.floor(c.x - c.r)), x1 = Math.min(w - 1, Math.ceil(c.x + c.r));
+      const y0 = Math.max(0, Math.floor(c.y - c.r)), y1 = Math.min(h - 1, Math.ceil(c.y + c.r));
+      for (let y = y0; y <= y1; y += 2) {
+        for (let x = x0; x <= x1; x += 2) {
+          const dx = x - c.x, dy = y - c.y;
+          if (dx * dx + dy * dy > r2) continue;
+          if (!cover[y * w + x]) gain++;
+        }
+      }
+      if (gain < 6) continue;
+      disks.push({ cx: c.x, cy: c.y, r: c.r, gain: gain });
+      for (let y = y0; y <= y1; y++) {
+        for (let x = x0; x <= x1; x++) {
+          const dx = x - c.x, dy = y - c.y;
+          if (dx * dx + dy * dy <= r2 && !cover[y * w + x]) { cover[y * w + x] = 1; covered++; }
+        }
+      }
+      if (covered / total > 0.985) break;
+    }
+    state.disks = disks;
+    state.cover = Math.round((covered / total) * 1000) / 10;
+    return { disks: disks, iou: covered / total };
+  }
+
   function buildFits() {
     if (!state.fit) {
       return state.loops.map(function (l) {
@@ -1048,6 +1142,10 @@
 
     // ---- construction circles: dashed full circle clipped to artboard, used arc solid
     s.push('<g clip-path="url(#' + clipId + ')" fill="none">');
+    (state.disks || []).forEach(function (d) {
+      s.push('<circle cx="' + X(d.cx) + '" cy="' + Y(d.cy) + '" r="' + (d.r * scale).toFixed(2) +
+        '" stroke="#2F6BFF" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.9"/>');
+    });
     (state.groups || []).forEach(function (g) {
       g.items.forEach(function (p) {
         const r = (p.r * scale).toFixed(2);
@@ -1421,12 +1519,13 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260214f",
+      version: "20260215b",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
       fits: function () { return state.fits; },
       stats: function () { return fitStats(); },
+      disks: function () { return { disks: state.disks || [], cover: state.cover }; },
       tangencyError: tangencyError,
       canonicalize: function () { return canonicalize(); },
       debugFit: function (i) { return fitLoop(state.loops[i], 1.1); },
