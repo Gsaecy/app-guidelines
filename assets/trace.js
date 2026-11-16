@@ -939,13 +939,25 @@
     });
 
     let best = null;
+    cands.forEach(function (c) { c.iou = rasterIoU(w, h, c.inside); });
+    let top = 0;
+    cands.forEach(function (c) { if (c.iou > top) top = c.iou; });
+    // 最少图案原则：IoU 只要不比最优差 0.8 个百分点，就优先参数更少的基本形
+    const simple = { circle: 3, rect: 4, ellipse: 4, rrect: 5 };
     cands.forEach(function (c) {
-      c.iou = rasterIoU(w, h, c.inside);
-      if (!best || c.iou > best.iou) best = c;
+      if (c.iou < top - 0.008) return;
+      if (!best) { best = c; return; }
+      const sc = simple[c.kind] || 9, sb = simple[best.kind] || 9;
+      if (sc < sb || (sc === sb && c.iou > best.iou)) best = c;
     });
+    if (!best) cands.forEach(function (c) { if (!best || c.iou > best.iou) best = c; });
     state._mask = null;
     if (best) {
       best.iou = Math.round(best.iou * 1000) / 10;
+      best.count = 1;
+      best.expr = "1 × " + best.label +
+        (best.kind === "rrect" ? "（R = " + Math.round(best.r * 10) / 10 + "）" : "")
+        + " = 最终图形";
       best.x0 = x0; best.y0 = y0; best.x1 = x1; best.y1 = y1;
       // 圆角矩形的四角圆 —— 这是真正的构造圆（圆心 + 半径由基本形决定）
       if (best.kind === "rrect") {
@@ -1286,8 +1298,7 @@
       std.corners.forEach(function (c, i) {
         const ccx = c.cx, ccy = c.cy;
         // 整圆虚线（构造），只把真正用到的 90° 弧画实线
-        s.push('<circle cx="' + X(ccx) + '" cy="' + Y(ccy) + '" r="' + (r * scale).toFixed(2) +
-          '" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.55"/>');
+
         const a0 = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5][i];
         const a1 = a0 + Math.PI / 2;
         s.push('<path d="M' + X(ccx + r * Math.cos(a0)) + " " + Y(ccy + r * Math.sin(a0)) +
@@ -1749,7 +1760,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260219c",
+      version: "20260220a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
