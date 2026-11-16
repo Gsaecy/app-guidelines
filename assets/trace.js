@@ -1242,28 +1242,36 @@
         horiz: Math.abs(Math.cos(s.th)) > 0.97, vert: Math.abs(Math.sin(s.th)) > 0.97 };
     });
 
-    // 法向重估（ICP 一步）：用该段真实的轮廓支撑点求平均有符号距离，替代端点中点估计
+    // 法向重估（ICP）：近轴直线先吸附方向（消除角弧点造成的伪倾斜），再用支撑点坐标中位数定偏移
     if (bpts && bpts.length) {
       lines.forEach(function (l) {
+        if (l.horiz && !l.vert) l.th = 0;
+        else if (l.vert && !l.horiz) l.th = Math.PI / 2;
         let nx = -Math.sin(l.th), ny = Math.cos(l.th);
         if (Math.abs(ny) >= Math.abs(nx)) { if (ny < 0) { nx = -nx; ny = -ny; } }
         else if (nx < 0) { nx = -nx; ny = -ny; }
+        const mx = (l.p0[0] + l.p1[0]) / 2, my = (l.p0[1] + l.p1[1]) / 2;
+        const off0 = nx * mx + ny * my;
         const a0 = -ny * l.p0[0] + nx * l.p0[1], a1 = -ny * l.p1[0] + nx * l.p1[1];
         const mid = (a0 + a1) / 2, half = Math.abs(a1 - a0) / 2 * 0.7;
         const lo = mid - half, hi = mid + half;
-        let sum = 0, cnt = 0;
+        const vals = [];
         for (let i = 0; i < bpts.length; i++) {
           const p = bpts[i];
-          const d = nx * p[0] + ny * p[1] - l.off;
-          if (Math.abs(d) > 1.5) continue;
-          const a = -ny * p[0] + nx * p[1];
-          if (a < lo || a > hi) continue;
-          sum += d; cnt++;
+          const al = -ny * p[0] + nx * p[1];
+          if (al < lo || al > hi) continue;
+          const c = nx * p[0] + ny * p[1];
+          if (Math.abs(c - off0) > 2) continue;
+          vals.push(c);
         }
-        if (cnt >= 6) l.off += sum / cnt;
+        if (vals.length >= 8) {
+          vals.sort(function (x, y) { return x - y; });
+          l.off = vals[Math.floor(vals.length / 2)];
+        } else {
+          l.off = off0;
+        }
       });
     }
-
     const cluster = function (vals, tol) {
       const out = [];
       vals.forEach(function (v) {
@@ -2834,7 +2842,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260304b",
+      version: "20260305b",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
