@@ -1150,7 +1150,7 @@
         const m = mkModel("arc", c);
         const run = bestRun(m, i);
         if (run < MINRUN) continue;
-        const chord = Math.hypot(at(i + run - 1)[0] - at(i)[0], at(i + run - 1)[1] - at(i)[1]);
+                const chord = Math.hypot(at(i + run - 1)[0] - at(i)[0], at(i + run - 1)[1] - at(i)[1]);
         if (chord > 0 && c.r > 25 * chord) continue;
         if (!best || run > best.run) best = { run: run, model: m };
       }
@@ -1432,7 +1432,17 @@
         if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 5) closed = false;
       }
       if (closed && !rects.length && !axis) {
-        bucket.push({ kind: "poly", pts: lines.map(function (l) { return [l.p0[0], l.p0[1]]; }) });
+        const n = lines.length, verts = [];
+        for (let i = 0; i < n; i++) {
+          const A = lines[(i - 1 + n) % n], B = lines[i];
+          const ax = A.p1[0] - A.p0[0], ay = A.p1[1] - A.p0[1];
+          const bx = B.p1[0] - B.p0[0], by = B.p1[1] - B.p0[1];
+          const den = ax * by - ay * bx;
+          if (Math.abs(den) < 1e-6) { verts.push([B.p0[0], B.p0[1]]); continue; }
+          const t = ((B.p0[0] - A.p0[0]) * by - (B.p0[1] - A.p0[1]) * bx) / den;
+          verts.push([A.p0[0] + ax * t, A.p0[1] + ay * t]);
+        }
+        bucket.push({ kind: "poly", pts: verts });
         return;
       }
       if (lines.length >= 2 && !rects.length) {
@@ -3067,7 +3077,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260308c",
+      version: "20260309b",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
