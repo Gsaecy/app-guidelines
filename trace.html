@@ -5,23 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
 <title>切割草稿生成器 — App Guidelines</title>
-<link rel="stylesheet" href="assets/style.css?v=20260212d">
+<link rel="stylesheet" href="assets/style.css?v=20260213c">
 <style>
-  .tx-wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px 60px; }
-  .tx-head { padding: 28px 0 8px; }
-  .tx-head h1 { font-size: 26px; margin: 0 0 6px; }
-  .tx-head p { margin: 0; color: var(--text-2); font-size: 13px; }
-  .tx-grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; margin-top: 18px; }
-  @media (max-width: 860px) { .tx-grid { grid-template-columns: 1fr; } }
-  #traceDrop { border: 1.5px dashed var(--line-strong); border-radius: 12px; padding: 22px 16px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+  .tx-wrap { max-width: 1140px; margin: 0 auto; padding: 0 22px 64px; }
+  /* hero */
+  .tx-hero { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; padding: 30px 0 18px; border-bottom: 1px solid var(--line); }
+  .tx-hero h1 { font-size: 30px; letter-spacing: -.02em; margin: 0 0 8px; }
+  .tx-hero p { margin: 0; color: var(--text-2); font-size: 13.5px; max-width: 640px; line-height: 1.7; }
+  .tx-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .tx-chip { font-size: 11.5px; padding: 4px 10px; border-radius: 999px; background: var(--card-2); color: var(--text-2); border: 1px solid var(--line); }
+  .tx-chip b { color: var(--text); font-weight: 600; }
+  /* steps */
+  .tx-steps { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 6px; }
+  .tx-step { flex: 1 1 200px; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+  .tx-step__n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11.5px; font-weight: 700; background: var(--accent-soft); color: var(--accent); flex: none; }
+  .tx-step__t { font-size: 13px; font-weight: 600; }
+  .tx-step__d { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+  /* layout */
+  .tx-grid { display: grid; grid-template-columns: 360px 1fr; gap: 22px; align-items: start; margin-top: 18px; }
+  @media (max-width: 900px) { .tx-grid, .tx-hero { grid-template-columns: 1fr; } }
+  #traceDrop { border: 1.5px dashed var(--line-strong); border-radius: 14px; padding: 24px 16px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; background: var(--card-2); }
   #traceDrop:hover, #traceDrop.is-over { border-color: var(--accent); background: var(--accent-soft); }
   #traceDrop .tx-up { font-size: 12.5px; color: var(--text-2); }
-  #traceDrop .tx-up b { display: block; font-size: 14px; color: var(--text); margin-bottom: 4px; }
-  .trace-status { margin-top: 10px; font-size: 12px; padding: 7px 10px; border-radius: 8px; background: var(--line); color: var(--text-2); }
-  .trace-status.is-ok { background: rgba(14,159,110,.12); color: #0B7A55; }
-  .trace-status.is-err { background: rgba(215,0,21,.10); color: #B00020; }
-  .trace-thumb { display: block; max-width: 100%; max-height: 116px; margin: 0 auto 8px; border-radius: 8px; border: 1px solid var(--line-strong); background: #fff; object-fit: contain; }
-  .trace-progress { margin-top: 10px; }
+  #traceDrop .tx-up b { display: block; font-size: 14.5px; color: var(--text); margin-bottom: 5px; }
+  .trace-status { margin-top: 10px; font-size: 12px; padding: 8px 11px; border-radius: 9px; background: var(--card-2); color: var(--text-2); border: 1px solid var(--line); }
+  .trace-status.is-ok { background: rgba(14,159,110,.12); color: #0B7A55; border-color: rgba(14,159,110,.25); }
+  .trace-status.is-err { background: rgba(215,0,21,.10); color: #B00020; border-color: rgba(215,0,21,.25); }
+  .trace-thumb { display: block; max-width: 100%; max-height: 120px; margin: 0 auto 8px; border-radius: 10px; border: 1px solid var(--line-strong); background: #fff; object-fit: contain; }
+  .trace-progress { margin-top: 12px; }
   .trace-progress__bar { height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; }
   .trace-progress__bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .18s ease; }
   .trace-progress__label { margin-top: 6px; font-size: 11.5px; color: var(--text-2); }
@@ -29,18 +40,30 @@
   .tx-actions .btn { width: 100%; }
   .tx-actions .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .btn[disabled] { opacity: .45; cursor: not-allowed; pointer-events: none; }
-  #traceStage { min-height: 300px; display: flex; align-items: center; justify-content: center; background: var(--bg-2, #f5f6f8); border-radius: 10px; padding: 10px; }
+  details.tx-adv { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+  details.tx-adv summary { font-size: 12.5px; color: var(--text-2); cursor: pointer; }
+  details.tx-adv .body { display: grid; gap: 12px; margin-top: 14px; }
+  .tx-field span { display: block; font-size: 11.5px; color: var(--text-2); margin-bottom: 5px; }
+  /* preview */
+  .tx-pane { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tx-pane b { font-size: 14px; }
+  #traceStage { min-height: 340px; display: flex; align-items: center; justify-content: center; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
   #traceStage svg { width: 100%; height: auto; display: block; }
-  #traceFamily { margin: 0 0 10px; }
-  .rfam { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
-  .rfam__item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  #traceFamily { margin: 0 0 12px; }
+  .rfam { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+  .rfam__item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
   .rfam__lab { font: 600 11px/1.2 ui-monospace, monospace; color: var(--text-2); }
   .rfam__lab b { display: block; font-weight: 400; color: var(--text-3); }
   .tx-info { font-size: 12px; color: var(--text-2); }
-  details.tx-adv { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
-  details.tx-adv summary { font-size: 12.5px; color: var(--text-2); cursor: pointer; }
-  details.tx-adv .body { display: grid; gap: 10px; margin-top: 12px; }
-  .tx-field span { display: block; font-size: 11.5px; color: var(--text-2); margin-bottom: 4px; }
+  /* info cards */
+  .tx-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+  @media (max-width: 900px) { .tx-cards { grid-template-columns: 1fr; } }
+  .tx-card h3 { font-size: 13px; margin: 0 0 8px; }
+  .tx-card ul { margin: 0; padding-left: 16px; font-size: 12px; color: var(--text-2); line-height: 1.85; }
+  .tx-card code { font-size: 11px; }
+  .tx-kv { display: grid; gap: 6px; font-size: 12px; color: var(--text-2); }
+  .tx-kv div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--line); padding-bottom: 5px; }
+  .tx-kv b { color: var(--text); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -58,10 +81,26 @@
 </header>
 
 <main id="main" class="tx-wrap">
-  <div class="tx-head">
-    <h1>切割草稿生成器</h1>
-    <p>上传图形 → 处理 → 导出矢量。图片只在本地处理，不上传服务器。</p>
-  </div>
+  <section class="tx-hero">
+    <div>
+      <h1>切割草稿生成器</h1>
+      <p>上传任意位图，自动拟合成<b>规范几何图形</b>——直线、真圆弧、半径归族、圆弧与直线相切——输出可直接进 Illustrator 的矢量草稿。图片不上传，全部在浏览器本地完成。</p>
+      <div class="tx-chips">
+        <span class="tx-chip"><b>本地处理</b> · 无上传</span>
+        <span class="tx-chip"><b>真圆弧</b> · SVG 的 A 指令</span>
+        <span class="tx-chip"><b>模数 a</b> · 短边归一</span>
+        <span class="tx-chip"><b>R 族</b> · 半径收敛</span>
+        <span class="tx-chip"><b>G1 相切</b> · 接缝无折角</span>
+      </div>
+    </div>
+    <div class="tx-info">当前版本 <code>20260213c</code></div>
+  </section>
+
+  <section class="tx-steps">
+    <div class="tx-step"><div class="tx-step__n">1</div><div><div class="tx-step__t">上传图形</div><div class="tx-step__d">PNG / JPG / WebP · 拖入或粘贴</div></div></div>
+    <div class="tx-step"><div class="tx-step__n">2</div><div><div class="tx-step__t">处理并拟合</div><div class="tx-step__d">分割 → 轮廓 → 直线/圆弧 → 规范化</div></div></div>
+    <div class="tx-step"><div class="tx-step__n">3</div><div><div class="tx-step__t">导出矢量</div><div class="tx-step__d">SVG（含构造层）/ PDF / PNG</div></div></div>
+  </section>
 
   <div class="tx-grid">
     <div class="card">
@@ -90,20 +129,21 @@
         <summary>高级参数</summary>
         <div class="body">
           <label class="tx-field">
-            <span>颜色容差 <code id="thVal">128</code></span>
+            <span>颜色容差 <code id="thVal">128</code> · 越小越敏感</span>
             <input type="range" id="traceThreshold" min="20" max="240" value="128" style="width:100%">
           </label>
           <label class="tx-field">
-            <span>节点简化 <code id="spVal">2.2</code></span>
+            <span>节点简化 <code id="spVal">2.2</code> · 越大越概括</span>
             <input type="range" id="traceSimplify" min="0.4" max="8" step="0.2" value="2.2" style="width:100%">
           </label>
           <label class="check"><input type="checkbox" id="traceInvert">反转前景 / 背景</label>
           <label class="check"><input type="checkbox" id="traceGuides" checked>网格辅助线</label>
           <label class="check"><input type="checkbox" id="traceFit" checked>直线 / 圆弧拟合</label>
+          <label class="check"><input type="checkbox" id="traceCanon" checked>规范化（圆弧与直线相切）</label>
           <label class="check"><input type="checkbox" id="traceConstruct">构造圆</label>
           <label class="tx-field">
             <span>模数网格</span>
-            <select id="traceGrid" style="width:100%;padding:4px 8px;border-radius:6px;border:1px solid var(--line-strong);background:var(--card);color:inherit">
+            <select id="traceGrid" style="width:100%;padding:5px 8px;border-radius:6px;border:1px solid var(--line-strong);background:var(--card);color:inherit">
               <option value="8">8a</option><option value="12" selected>12a</option><option value="16">16a</option><option value="24">24a</option>
             </select>
           </label>
@@ -111,15 +151,17 @@
             <span>成品颜色</span>
             <input type="color" id="traceColor" value="#0071E3" style="width:100%;height:32px;border:1px solid var(--line-strong);border-radius:8px;background:var(--card)">
           </label>
-          <button class="btn btn--secondary btn--sm" type="button" id="traceDemoLeaf">示例 · 叶片</button>
-          <button class="btn btn--secondary btn--sm" type="button" id="traceDemoRing">示例 · 圆环</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn--secondary btn--sm" type="button" id="traceDemoLeaf" style="flex:1">示例 · 叶片</button>
+            <button class="btn btn--secondary btn--sm" type="button" id="traceDemoRing" style="flex:1">示例 · 圆环</button>
+          </div>
         </div>
       </details>
     </div>
 
     <div class="card">
-      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-        <b style="font-size:14px">预览</b>
+      <div class="tx-pane">
+        <b>切割草稿</b>
         <span class="tx-info" id="traceInfo">尚未处理</span>
       </div>
       <div id="traceFamily"></div>
@@ -127,15 +169,45 @@
     </div>
   </div>
 
-  <div class="footer" style="margin-top:26px">
+  <section class="tx-cards">
+    <div class="card tx-card">
+      <h3>输出规范</h3>
+      <div class="tx-kv">
+        <div><span>半径单位</span><b>模数 a（短边 = 12a）</b></div>
+        <div><span>半径归族</span><b>吸附到 a/8 整数倍</b></div>
+        <div><span>接缝关系</span><b>圆弧 ↔ 直线 G1 相切</b></div>
+        <div><span>路径类型</span><b>L / A（真圆弧）/ C</b></div>
+      </div>
+    </div>
+    <div class="card tx-card">
+      <h3>导出格式怎么选</h3>
+      <ul>
+        <li><b>SVG（含构造层）</b>：交付给设计师，含网格/圆心轴/尺寸线</li>
+        <li><b>SVG（仅图形）</b>：上线、嵌入网页、做图标</li>
+        <li><b>PDF</b>：印刷打样；AI 打开后「另存为 .ai」</li>
+        <li><b>PNG @4x</b>：提案、评审、贴到 PPT</li>
+      </ul>
+    </div>
+    <div class="card tx-card">
+      <h3>拟合不理想时</h3>
+      <ul>
+        <li>图形太淡 → 把<b>颜色容差</b>调小（更敏感）</li>
+        <li>边缘碎 → 调大<b>节点简化</b>，或换纯色底图</li>
+        <li>深底 logo → 勾<b>反转前景/背景</b>（通常会自动判断）</li>
+        <li>要看制图关系 → 勾<b>构造圆</b>，显示 R 族与相切</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="footer" style="margin-top:28px">
     <span>App Guidelines · 切割生成器</span>
     <span><a href="logo.html">Logo 规范</a> · <a href="icons.html">图标库</a> · <a href="testing.html">测试工具</a></span>
   </div>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>if(window.AGTrace&&window.AGTrace.version!=="20260212e"){location.replace(location.pathname+"?b="+Date.now())}</script>
+<script>if(window.AGTrace&&window.AGTrace.version!=="20260213c"){location.replace(location.pathname+"?b="+Date.now())}</script>
 <script src="assets/shell.js?v=20260209b"></script>
-<script src="assets/trace.js?v=20260212e"></script>
+<script src="assets/trace.js?v=20260213c"></script>
 </body>
 </html>

@@ -22,6 +22,7 @@
     gridN: 12,
     unify: true,
     standard: true,
+    canonical: true,
     w: 0,
     h: 0,
     name: "",
@@ -384,6 +385,7 @@
     state.h = built.h;
     state.processed = true;
     radiusFamily();
+    if (state.canonical) canonicalize();
     render();
     familyPanel();
     setExports(false);
@@ -595,8 +597,51 @@
     }
 
     if (!corners.length) {
-      const seq = pts.concat([pts[0]]);
-      fitSeg(seq, tol, 3, parts);
+      // 圆角矩形这类"全相切、无拐角"的图形：按曲率把一整圈分成
+      // 直线段段与圆弧段段，再分别拟合成 L / A，避免整圈退化成贝塞尔。
+      const smooth = curv.slice();
+      for (let pass = 0; pass < 2; pass++) {
+        for (let i = 0; i < n; i++) {
+          smooth[i] = (curv[(i - 1 + n) % n] + curv[i] + curv[(i + 1) % n]) / 3;
+        }
+      }
+      const k0 = Math.max(median * 0.75, 0.35 / avgEdge);
+      const kind = smooth.map(function (k) { return k <= k0 ? "L" : "A"; });
+      for (let pass = 0; pass < 2; pass++) {
+        for (let i = 0; i < n; i++) {
+          const a = kind[(i - 1 + n) % n], b = kind[i], c = kind[(i + 1) % n];
+          if (a === c && a !== b) kind[i] = a;
+        }
+      }
+      let runs = [];
+      let runStart = 0;
+      for (let i = 1; i <= n; i++) {
+        if (i === n || kind[i] !== kind[runStart]) {
+          runs.push({ kind: kind[runStart], from: runStart, to: i % n, len: i - runStart });
+          runStart = i;
+        }
+      }
+      if (runs.length === 1) {
+        const seq = pts.concat([pts[0]]);
+        fitSeg(seq, tol, 3, parts);
+        return { start: pts[0], parts: parts };
+      }
+      runs.forEach(function (r) {
+        const seg = [];
+        let i = r.from;
+        for (let k = 0; k <= r.len; k++) {
+          seg.push(pts[i]);
+          i = (i + 1) % n;
+        }
+        if (seg.length < 2) return;
+        if (r.kind === "L" && seg.length >= 2) {
+          parts.push({ t: "L", x: seg[seg.length - 1][0], y: seg[seg.length - 1][1] });
+        } else {
+          const arc = arcFit(seg, tol * 1.6);
+          if (arc) parts.push(arc);
+          else bezierChain(seg, parts);
+        }
+      });
       return { start: pts[0], parts: parts };
     }
 
@@ -641,6 +686,87 @@
       });
     }
     return state.loops.map(function (l) { return pruneParts(fitLoop(l, 1.1)); });  }
+
+  // 规范化：圆弧与相邻直线的接点在几何上“相切”。
+  // 给定接点 P、相邻直线方向 dir、圆弧另一端 Q，满足相切且过 Q 的半径唯一：
+  //   r = |Q-P|² / (2 (Q-P)·n)   （n 为 dir 的法向，指向圆心一侧）
+  // 这样接缝处切线连续，放大后不会出现折角。
+  function tangentArc(p, joint, other, dir, oldR) {
+    const len = Math.hypot(dir[0], dir[1]);
+    if (len < 1e-6) return false;
+    const tx = dir[0] / len, ty = dir[1] / len;
+    let nx = -ty, ny = tx;
+    const dx = other[0] - joint[0], dy = other[1] - joint[1];
+    if (nx * dx + ny * dy < 0) { nx = -nx; ny = -ny; }
+    const d2 = dx * dx + dy * dy;
+    const dn = dx * nx + dy * ny;
+    if (dn < 1e-6) return false;
+    const r = d2 / (2 * dn);
+    if (!isFinite(r) || r <= 0) return false;
+    if (Math.abs(r - oldR) / oldR > 0.12) return false;   // 偏差过大就不硬扭
+    const cx = joint[0] + nx * r, cy = joint[1] + ny * r;
+    const a0 = Math.atan2(other[1] - cy, other[0] - cx);
+    const aj = Math.atan2(joint[1] - cy, joint[0] - cx);
+    const dPlus = norm2pi(aj - a0);
+    const da = p.da > 0 ? dPlus : dPlus - Math.PI * 2;
+    p.cx = cx; p.cy = cy; p.r = r; p.a0 = a0; p.da = da;
+    p.sweep = da > 0 ? 1 : 0;
+    p.large = Math.abs(da) > Math.PI ? 1 : 0;
+    return true;
+  }
+
+  function canonicalize() {
+    let fixed = 0;
+    state.fits.forEach(function (lp) {
+      const parts = lp.parts;
+      for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        if (p.t !== "A") continue;
+        const prev = parts[i - 1];
+        const next = parts[i + 1];
+        const p0 = [p.cx + p.r * Math.cos(p.a0), p.cy + p.r * Math.sin(p.a0)];
+        const p1 = [p.x, p.y];
+        if (prev && prev.t === "L") {
+          const jp = [p0[0], p0[1]];
+          const before = i - 2 >= 0 ? parts[i - 2].x !== undefined ? [parts[i - 2].x, parts[i - 2].y] : null : null;
+          const from = before || [jp[0] - 1, jp[1]];
+          if (tangentArc(p, jp, p1, [jp[0] - from[0], jp[1] - from[1]], p.r)) fixed++;
+        } else if (next && next.t === "L") {
+          const jp = [p1[0], p1[1]];
+          if (tangentArc(p, jp, p0, [next.x - jp[0], next.y - jp[1]], p.r)) fixed++;
+        }
+      }
+    });
+    state.tangentFixed = fixed;
+    return fixed;
+  }
+
+  // 相切误差：圆弧接点处半径与相邻直线方向应成 90°，返回最大偏差（度）
+  function tangencyError() {
+    let worst = 0;
+    state.fits.forEach(function (lp) {
+      const parts = lp.parts;
+      const joints = [lp.start.slice()];
+      parts.forEach(function (p) { joints.push([p.x, p.y]); });
+      for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        if (p.t !== "A") continue;
+        const nb = [parts[i - 1], parts[i + 1]];
+        nb.forEach(function (line, k) {
+          if (!line || line.t !== "L") return;
+          const joint = k === 0 ? joints[i] : joints[i + 1];
+          const a = k === 0 ? joints[i - 1] : joints[i + 2];
+          if (!a) return;
+          const ox = a[0] - joint[0], oy = a[1] - joint[1];
+          const rx = joint[0] - p.cx, ry = joint[1] - p.cy;
+          const ang = Math.abs(Math.atan2(ox * ry - oy * rx, ox * rx + oy * ry)) * 180 / Math.PI;
+          const dev = Math.abs(90 - Math.min(ang, 180 - ang));
+          if (dev > worst) worst = dev;
+        });
+      }
+    });
+    return Math.round(worst * 10) / 10;
+  }
 
   function fitsD(fits, scale, ox, oy) {
     const X = function (v) { return (v * scale + ox).toFixed(2); };
@@ -1106,6 +1232,12 @@
     const runBtn = $("#traceRun");
     if (runBtn) runBtn.addEventListener("click", runProcess);
 
+    const canonBox = $("#traceCanon");
+    if (canonBox) canonBox.addEventListener("change", function () {
+      state.canonical = canonBox.checked;
+      if (state.processed) runProcess();
+    });
+
     const conBox = $("#traceConstruct");
     if (conBox) conBox.addEventListener("change", function () {
       state.construct = conBox.checked;
@@ -1171,12 +1303,14 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260212e",
+      version: "20260213c",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
       fits: function () { return state.fits; },
       stats: function () { return fitStats(); },
+      tangencyError: tangencyError,
+      canonicalize: function () { return canonicalize(); },
       debugFit: function (i) { return fitLoop(state.loops[i], 1.1); },
       demo: function (k) { loadDemo(k || "leaf"); },
     };
