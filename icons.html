@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>图标库 — App Guidelines</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/style.css?v=20260209a">
+<link rel="stylesheet" href="assets/style.css?v=20260210e">
 <style>
 .icon-bar{position:sticky;top:calc(var(--appbar-h) + 6px);z-index:20;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--sh-1);margin-bottom:14px}
 .icon-bar select{height:32px;border-radius:8px;border:1px solid var(--line-strong);background:var(--card);color:var(--text);font:inherit;font-size:12.5px;padding:0 8px;max-width:280px}
@@ -60,6 +60,8 @@
   var IDX={},cur=null,names=[],size=40;
   function $(s){return document.querySelector(s)}
   function api(p){return "https://api.iconify.design/"+p}
+  var LOCAL={lucide:1,tabler:1,heroicons:1,phosphor:1};
+  function srcOf(n,s){ return LOCAL[cur] ? "icons/"+cur+"/"+n+".svg" : api(cur+"/"+n+".svg?height="+s); }
 
   fetch("icons/index.json").then(function(r){return r.json()}).then(function(d){
     $("#statSets").textContent=d.collections; $("#statIcons").textContent=Number(d.total).toLocaleString();
@@ -73,18 +75,19 @@
 
   function load(prefix){
     cur=prefix; $("#iconGrid").innerHTML='<span class="card__hint">加载中…</span>';
-    fetch("https://api.iconify.design/collection?prefix="+prefix).then(function(r){return r.json()}).then(function(d){
-      var arr=[]; if(d.uncategorized) arr=arr.concat(d.uncategorized);
-      if(d.categories) Object.keys(d.categories).forEach(function(k){arr=arr.concat(d.categories[k])});
-      names=Array.from(new Set(arr)); render();
-    }).catch(function(){ $("#iconGrid").innerHTML='<span class="card__hint">加载失败，请检查网络。</span>'; });
+    if (LOCAL[prefix]) {
+      fetch("icons/"+prefix+"/index.json").then(function(r){return r.json()}).then(function(a){ names=a; render(); })
+        .catch(function(){ $("#iconGrid").innerHTML='<span class="card__hint">本地图标集读取失败。</span>'; });
+      return;
+    }
+    $("#iconGrid").innerHTML='<span class="card__hint">这一套需要联网从 Iconify CDN 加载，当前环境访问不到。已离线打包 Lucide / Tabler / Heroicons / Phosphor 四套（共 9382 个图标），请在上方选择它们。</span>'; names=[]; $("#iconCount").textContent="0 / 0";
   }
 
   function render(){
     var q=($("#iconSearch").value||"").trim().toLowerCase();
     var list=names.filter(function(n){return !q||n.indexOf(q)>=0}).slice(0,900);
     $("#iconGrid").innerHTML=list.map(function(n){
-      return '<div class="icon-cell'+(size>=56?" big":"")+'" data-name="'+n+'" title="点击复制 '+n+' 的 SVG"><img loading="lazy" alt="'+n+'" src="'+api(cur+"/"+n+".svg?height="+size)+'" style="width:'+size+'px;height:'+size+'px"><span>'+n+'</span></div>';
+      return '<div class="icon-cell'+(size>=56?" big":"")+'" data-name="'+n+'" title="点击复制 '+n+' 的 SVG"><img loading="lazy" alt="'+n+'" src="'+srcOf(n,size)+'" style="width:'+size+'px;height:'+size+'px"><span>'+n+'</span></div>';
     }).join("") || '<span class="card__hint">没有匹配的图标。</span>';
     $("#iconCount").textContent=list.length+" / "+names.length;
   }
@@ -99,7 +102,7 @@
   $("#iconGrid").addEventListener("click",function(e){
     var c=e.target.closest("[data-name]"); if(!c||!cur) return;
     var n=c.getAttribute("data-name");
-    fetch(api(cur+"/"+n+".svg")).then(function(r){return r.text()}).then(function(svg){ if(window.AG) AG.copy(svg); });
+    fetch(srcOf(n,size)).then(function(r){return r.text()}).then(function(svg){ if(window.AG) AG.copy(svg); });
   });
 })();
 </script>

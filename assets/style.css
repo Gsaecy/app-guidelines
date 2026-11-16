@@ -1219,3 +1219,4 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .rfam__item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .rfam__lab { font: 600 11px/1.15 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text-2); }
 .rfam__lab b { display: block; font-weight: 400; color: var(--text-3); text-align: center; }
+[data-theme="dark"] .icon-cell img { filter: invert(1) opacity(.88); }
