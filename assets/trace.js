@@ -1044,77 +1044,138 @@
     return f ? f.res : 1e9;
   }
 
-  // 转角累积 + 平滑 + 贪心合并（已验证：圆 1 段 / 圆角矩形 8 段 / D 形 4 段）
+  // 顺序贪心假设检验：每步用局部窗口生成「直线/圆」候选，取从当前点开始的最长连续内点段；
+  // 直线可被大圆近似而反之不成立，故两者接近时优先直线，并弃用 r > 25×弦长 的退化圆
+  function mdist(m, p) {
+    if (m.type === "line") return Math.abs(-(p[0] - m.mx) * Math.sin(m.th) + (p[1] - m.my) * Math.cos(m.th));
+    return Math.abs(Math.hypot(p[0] - m.cx, p[1] - m.cy) - m.r);
+  }
+
   function segFit(mask, w, h) {
     const raw = traceBoundary(mask, w, h);
     if (raw.length < 16) return { segments: [], note: "边界点太少" };
     const pts = resample(raw, 2);
     const n = pts.length;
-
-    const th = new Array(n).fill(0);
-    for (let i = 0; i < n; i++) {
-      const a = pts[(i - 1 + n) % n], b = pts[i], c = pts[(i + 1) % n];
-      const v1 = [b[0] - a[0], b[1] - a[1]], v2 = [c[0] - b[0], c[1] - b[1]];
-      th[i] = Math.atan2(v1[0] * v2[1] - v1[1] * v2[0], v1[0] * v2[0] + v1[1] * v2[1]);
-    }
-    const W = 5, sm = new Array(n).fill(0);
-    for (let i = 0; i < n; i++) {
+    const TOL_L = 1.0, TOL_A = 0.9, MINRUN = 6;
+    const at = function (k) { return pts[((k % n) + n) % n]; };
+    const gather = function (i, run) {
+      const g = [];
+      for (let k = 0; k < run; k++) g.push(at(i + k));
+      return g;
+    };
+    const mkModel = function (type, c) {
+      return type === "arc" ? { type: "arc", cx: c.cx, cy: c.cy, r: c.r }
+                            : { type: "line", mx: c.mx, my: c.my, th: c.th };
+    };
+    const meanRes = function (m, g) {
       let s = 0;
-      for (let k = -W; k <= W; k++) s += th[(i + k + n * 2) % n];
-      sm[i] = s / (2 * W + 1);
+      g.forEach(function (p) { s += mdist(m, p); });
+      return s / Math.max(1, g.length);
+    };
+    function bestRun(model, i) {
+      const tol = model.type === "line" ? TOL_L : TOL_A;
+      let run = 0;
+      while (run < n && mdist(model, at(i + run)) <= tol) run++;
+      return run;
     }
 
-    const sorted = sm.slice().sort(function (x, y) { return Math.abs(x) - Math.abs(y); });
-    const med = Math.abs(sorted[Math.floor(n / 2)]);
-    const mx = Math.abs(sorted[n - 1]);
-    const thr = Math.max(med * 3, mx * 0.25, 1e-3);
-    const cuts = [];
-    for (let i = 0; i < n; i++) if (Math.abs(sm[i]) > thr) cuts.push(i);
+    const lineWins = [8, 20, 45, 100];
+    const arcWins = [10, 24, 50, 100];
+    function tryLine(i, rem) {
+      let best = null;
+      for (let wi = 0; wi < lineWins.length; wi++) {
+        const win = Math.min(lineWins[wi], rem);
+        if (win < 4) continue;
+        const m = mkModel("line", fitLine(gather(i, win)));
+        const run = bestRun(m, i);
+        if (run >= MINRUN && (!best || run > best.run)) best = { run: run, model: m };
+      }
+      return best;
+    }
+    function tryArc(i, rem) {
+      let best = null;
+      for (let wi = 0; wi < arcWins.length; wi++) {
+        const win = Math.min(arcWins[wi], rem);
+        if (win < 5) continue;
+        const c = fitCircle(gather(i, win));
+        if (!c || !isFinite(c.r) || c.r <= 0) continue;
+        const m = mkModel("arc", c);
+        const run = bestRun(m, i);
+        if (run < MINRUN) continue;
+        const chord = Math.hypot(at(i + run - 1)[0] - at(i)[0], at(i + run - 1)[1] - at(i)[1]);
+        if (chord > 0 && c.r > 25 * chord) continue;
+        if (!best || run > best.run) best = { run: run, model: m };
+      }
+      return best;
+    }
 
-    let segs;
-    if (!cuts.length) {
-      segs = [pts.slice()];
-    } else {
-      segs = [];
-      for (let k = 0; k < cuts.length; k++) {
-        const a = cuts[k], b = cuts[(k + 1) % cuts.length];
-        let g;
-        if (b > a) g = pts.slice(a, b + 1);
-        else g = pts.slice(a).concat(pts.slice(0, b + 1));
-        if (g.length >= 4) segs.push(g);
+    const pieces = [];
+    let i = 0;
+    while (i < n) {
+      const rem = n - i;
+      const bl = tryLine(i, rem), ba = tryArc(i, rem);
+      let pick = null;
+      if (bl && ba) pick = bl.run >= 0.9 * ba.run ? bl : ba;
+      else pick = bl || ba;
+      if (!pick) { i += 1; continue; }
+      let run = pick.run, model = pick.model;
+      for (let it = 0; it < 2; it++) {
+        const m = mkModel(model.type, model.type === "arc" ? fitCircle(gather(i, run)) : fitLine(gather(i, run)));
+        const r2 = bestRun(m, i);
+        model = m;
+        if (r2 > run) run = r2; else break;
+      }
+      pieces.push({ i: i, run: run, model: model });
+      i += run;
+    }
+
+    // 闭环首尾同型合并
+    if (pieces.length > 1) {
+      const f = pieces[0], l = pieces[pieces.length - 1];
+      if (f.model.type === l.model.type && l.i + l.run >= n) {
+        const g = gather(l.i, n - l.i).concat(gather(0, f.run));
+        const m = mkModel(f.model.type, f.model.type === "arc" ? fitCircle(g) : fitLine(g));
+        if (meanRes(m, g) <= (f.model.type === "arc" ? 0.6 : 0.4)) {
+          pieces.shift(); pieces.pop();
+          pieces.push({ i: l.i, run: l.run + f.run, model: m });
+        }
       }
     }
 
+    let segs = pieces.map(function (c) {
+      const g = gather(c.i, c.run);
+      return { g: g, model: c.model, res: meanRes(c.model, g) };
+    });
+
+    // 相邻同型合并（合并后仍贴合才接受）
     let merged = true;
-    while (merged && segs.length > 1) {
+    while (merged && segs.length > 2) {
       merged = false;
-      for (let i = 0; i < segs.length; i++) {
-        const j = (i + 1) % segs.length;
-        if (segs.length === 2 && j === 0) break;
-        const a = segs[i], b = segs[j];
-        const cat = a.concat(b);
-        const rNew = segRes(cat);
-        const rOld = Math.max(segRes(a), segRes(b));
-        if (rNew <= Math.max(rOld * 1.25, 0.35)) {
-          const nsegs = [];
-          for (let k = 0; k < segs.length; k++) if (k !== i && k !== j) nsegs.push(segs[k]);
-          nsegs.splice(Math.min(i, nsegs.length), 0, cat);
-          segs = nsegs;
+      for (let k = 0; k < segs.length; k++) {
+        const j = (k + 1) % segs.length;
+        if (segs[k].model.type !== segs[j].model.type) continue;
+        const cat = segs[k].g.concat(segs[j].g);
+        const m = mkModel(segs[k].model.type,
+          segs[k].model.type === "arc" ? fitCircle(cat) : fitLine(cat));
+        const res = meanRes(m, cat);
+        if (res <= (segs[k].model.type === "arc" ? 0.6 : 0.4)) {
+          segs = segs.filter(function (_, t) { return t !== k && t !== j; });
+          segs.splice(Math.min(k, segs.length), 0, { g: cat, model: m, res: res });
           merged = true;
           break;
         }
       }
     }
 
-    const out = segs.map(function (g) {
-      const f = fitSeg(g);
-      if (!f) return { type: "unknown", res: 99, n: g.length };
-      if (f.type === "arc") {
-        return { type: "arc", cx: Math.round(f.c.cx * 10) / 10, cy: Math.round(f.c.cy * 10) / 10,
-          r: Math.round(f.c.r * 10) / 10, res: Math.round(f.res * 100) / 100, n: g.length };
+    const r1 = function (v) { return Math.round(v * 10) / 10; };
+    const out = segs.map(function (s) {
+      const m = s.model, g = s.g;
+      if (m.type === "arc") {
+        return { type: "arc", cx: r1(m.cx), cy: r1(m.cy), r: r1(m.r),
+          res: Math.round(s.res * 100) / 100, n: g.length };
       }
-      return { type: "line", th: Math.round(f.c.th * 100) / 100, res: Math.round(f.c.res * 100) / 100,
-        n: g.length, len: Math.round(f.c.len * 10) / 10 };
+      return { type: "line", th: Math.round(m.th * 100) / 100, res: Math.round(s.res * 100) / 100,
+        n: g.length, len: r1(Math.hypot(g[g.length - 1][0] - g[0][0], g[g.length - 1][1] - g[0][1])) };
     });
     state.segs = out;
     state.boundaryPts = pts;
@@ -2613,7 +2674,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260226f",
+      version: "20260301a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
