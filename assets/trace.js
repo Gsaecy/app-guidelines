@@ -633,9 +633,26 @@
         if (r.kind === "L" && seg.length >= 2) {
           parts.push({ t: "L", x: seg[seg.length - 1][0], y: seg[seg.length - 1][1] });
         } else {
-          const arc = arcFit(seg, tol * 1.6);
-          if (arc) parts.push(arc);
-          else bezierChain(seg, parts);
+          const mid = seg[Math.floor(seg.length / 2)];
+          const c = seg.length >= 5 ? circum3(seg[0], mid, seg[seg.length - 1]) : null;
+          if (c) {
+            const p0 = seg[0], p1 = seg[seg.length - 1];
+            const a0 = Math.atan2(p0[1] - c.cy, p0[0] - c.cx);
+            const a1 = Math.atan2(p1[1] - c.cy, p1[0] - c.cx);
+            let da = a1 - a0;
+            if (da > Math.PI) da -= Math.PI * 2;
+            if (da < -Math.PI) da += Math.PI * 2;
+            parts.push({
+              t: "A", x: p1[0], y: p1[1], r: c.r,
+              large: Math.abs(da) > Math.PI ? 1 : 0,
+              sweep: da > 0 ? 1 : 0,
+              cx: c.cx, cy: c.cy, a0: a0, da: da,
+            });
+          } else {
+            const arc = arcFit(seg, tol * 1.6);
+            if (arc) parts.push(arc);
+            else bezierChain(seg, parts);
+          }
         }
       });
       return { start: pts[0], parts: parts };
@@ -761,6 +778,20 @@
     for (let pass = 0; pass < 3; pass++) { state.fits.forEach(function (lp) { moved += refineJoints(lp); }); }
     state.jointsFixed = moved;
     return moved;
+  }
+
+  // 三点定圆：弧段首/中/末三点唯一确定一个圆，圆心与半径比最小二乘更贴近真实圆角
+  function circum3(a, b, c) {
+    const d = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]));
+    if (Math.abs(d) < 1e-6) return null;
+    const a2 = a[0] * a[0] + a[1] * a[1];
+    const b2 = b[0] * b[0] + b[1] * b[1];
+    const c2 = c[0] * c[0] + c[1] * c[1];
+    const cx = (a2 * (b[1] - c[1]) + b2 * (c[1] - a[1]) + c2 * (a[1] - b[1])) / d;
+    const cy = (a2 * (c[0] - b[0]) + b2 * (a[0] - c[0]) + c2 * (b[0] - a[0])) / d;
+    const r = Math.hypot(a[0] - cx, a[1] - cy);
+    if (!isFinite(r) || r < 2 || r > 40000) return null;
+    return { cx: cx, cy: cy, r: r, maxErr: 0 };
   }
 
   function buildFits() {
@@ -1390,7 +1421,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260214c",
+      version: "20260214e",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
