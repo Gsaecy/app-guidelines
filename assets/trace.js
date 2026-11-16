@@ -1064,13 +1064,94 @@
     return o;
   }
 
-  function refineCandidate(c, mask, w, h) {
-    let bestC = c, bestI = evalSet([{ op: "+", c: c }], mask, w, h);
+  // === 边界拟合（不是面积）：F1(召回=原边界被覆盖, 精确=候选边界落在原边界上) ===
+  function edgeMap(mask, w, h) {
+    const e = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (!mask[i]) continue;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1 ||
+          !mask[i - 1] || !mask[i + 1] || !mask[i - w] || !mask[i + w]) e[i] = 1;
+      }
+    }
+    return e;
+  }
+
+  // 2 遍 Chamfer(3,4) 距离变换：返回每个像素到最近标记像素的距离
+  function distField(marks, w, h) {
+    const INF = 1e6, d = new Float32Array(w * h);
+    for (let i = 0; i < d.length; i++) d[i] = marks[i] ? 0 : INF;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        let v = d[i];
+        if (x > 0) v = Math.min(v, d[i - 1] + 3);
+        if (y > 0) v = Math.min(v, d[i - w] + 3);
+        if (x > 0 && y > 0) v = Math.min(v, d[i - w - 1] + 4);
+        if (x < w - 1 && y > 0) v = Math.min(v, d[i - w + 1] + 4);
+        d[i] = v;
+      }
+    }
+    for (let y = h - 1; y >= 0; y--) {
+      for (let x = w - 1; x >= 0; x--) {
+        const i = y * w + x;
+        let v = d[i];
+        if (x < w - 1) v = Math.min(v, d[i + 1] + 3);
+        if (y < h - 1) v = Math.min(v, d[i + w] + 3);
+        if (x < w - 1 && y < h - 1) v = Math.min(v, d[i + w + 1] + 4);
+        if (x > 0 && y < h - 1) v = Math.min(v, d[i + w - 1] + 4);
+        d[i] = v;
+      }
+    }
+    return d;
+  }
+
+  // 组合里所有标准形的"边界线"栅格
+  function setBoundary(set, w, h) {
+    const inside = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const px = x + 0.5, py = y + 0.5;
+        let on = 0;
+        for (let k = 0; k < set.length; k++) {
+          const s = set[k];
+          if (candInside(s.c, px, py)) on = s.op === "-" ? 0 : 1;
+        }
+        inside[y * w + x] = on;
+      }
+    }
+    return edgeMap(inside, w, h);
+  }
+
+  // 边界 F1：tol 以"距离单位"计（Chamfer 3 = 1px 水平，故 1.5px ≈ 4.5）
+  function scoreBoundary(set, E, Edist, mask, w, h, tol) {
+    if (!set.length) return 0;
+    const B = setBoundary(set, w, h);
+    let nb = 0, ne = 0;
+    for (let i = 0; i < B.length; i++) { if (B[i]) nb++; if (E[i]) ne++; }
+    if (!nb || !ne) return 0;
+    const Bdist = distField(B, w, h);
+    let hitB = 0, hitE = 0;
+    for (let i = 0; i < B.length; i++) {
+      if (B[i] && Edist[i] <= tol) hitB++;
+      if (E[i] && Bdist[i] <= tol) hitE++;
+    }
+    const P = hitB / nb, R = hitE / ne;
+    return P + R > 0 ? (2 * P * R) / (P + R) : 0;
+  }
+
+  function refineCandidate(c, mask, w, h, E, Edist, TOL) {
+    const sc = function (cc) {
+      if (E) return scoreBoundary([{ op: "+", c: cc }], E, Edist, mask, w, h, TOL);
+      return evalSet([{ op: "+", c: cc }], mask, w, h);
+    };
+    let bestC = c, bestI = sc(c);
     const probe = function (patch) {
       const cc = {};
       for (const k in c) cc[k] = c[k];
       for (const k in patch) cc[k] = patch[k];
-      const iou = evalSet([{ op: "+", c: cc }], mask, w, h);
+      const iou = sc(cc);
       if (iou > bestI + 1e-6) { bestI = iou; bestC = cc; }
     };
     if (c.kind === "circle") {
@@ -1090,32 +1171,46 @@
   // 自适应贪心：不设形状数上限；停止条件 = 再加一个形改善不到 1 个像素
   function boolFit(mask, w, h) {
     const ds = downscaleMask(mask, w, h, 128);
+    const E = edgeMap(ds.m, ds.w, ds.h);
+    const Edist = distField(E, ds.w, ds.h);
+    const TOL = 4.5;                     // ≈1.5px 容差
+    const score = function (set) { return scoreBoundary(set, E, Edist, ds.m, ds.w, ds.h, TOL); };
     const raw = boolCandidates(ds.m, ds.w, ds.h);
-    const pool = raw.map(function (c) { return refineCandidate(c, ds.m, ds.w, ds.h); });
-    let set = [], cur = evalSet(set, ds.m, ds.w, ds.h);
-    const EPS = Math.max(1 / (ds.w * ds.h), 0.0005);
+    const pool = raw.map(function (c) { return refineCandidate(c, ds.m, ds.w, ds.h, E, Edist, TOL); });
+    let set = [], cur = 0;
+    const EPS = 0.004;                   // 边际 F1 提升小于 0.4% 即停（由量化噪声决定）
     const steps = [];
-    const guard = Math.max(12, Math.round((ds.w * ds.h) / 200));
+    const guard = Math.max(10, Math.round((ds.w * ds.h) / 400));
     for (let i = 0; i < guard; i++) {
       let best = null;
       pool.forEach(function (c) {
         ["+", "-"].forEach(function (op) {
           if (!set.length && op === "-") return;
           const s2 = set.concat([{ op: op, c: c }]);
-          const iou = evalSet(s2, ds.m, ds.w, ds.h);
-          if (!best || iou > best.iou + 1e-9) best = { set: s2, iou: iou, gain: iou - cur, c: c, op: op };
+          const f = score(s2);
+          const pen = 0.002 * s2.length;      // 同分时少形优先
+          if (!best || f - pen > best.rank + 1e-9) best = { set: s2, f: f, rank: f - pen, c: c, op: op };
         });
       });
-      if (!best || best.gain < EPS) break;
+      if (!best || best.f - cur < EPS) break;
       set = best.set;
-      cur = best.iou;
-      steps.push({ op: best.op, kind: best.c.kind + (best.c.n ? best.c.n : ""), gain: Math.round(best.gain * 10000) / 100, iou: Math.round(best.iou * 10000) / 100 });
+      steps.push({ op: best.op, kind: best.c.kind + (best.c.n ? best.c.n : ""), gain: Math.round((best.f - cur) * 10000) / 100, f: Math.round(best.f * 10000) / 100 });
+      cur = best.f;
+    }
+    // 消融检验：移除后 F1 不下降的形状一律删掉（每个形都必须有布尔作用）
+    let changed = true;
+    while (changed && set.length > 1) {
+      changed = false;
+      for (let i = 0; i < set.length; i++) {
+        const sub = set.filter(function (_, j) { return j !== i; });
+        if (score(sub) >= cur - 0.0005) { set = sub; changed = true; break; }
+      }
     }
     state.bset = set.map(function (s) { return { op: s.op, c: scaleCand(s.c, 1 / ds.f) }; });
     state.biou = Math.round(cur * 1000) / 10;
     state.bsteps = steps;
-    state.bsmall = ds;
-    return { iou: cur, steps: steps, n: set.length };
+    state.bsmall = { w: ds.w, h: ds.h };
+    return { iou: cur, f: cur, steps: steps, n: set.length };
   }
 
   function snapStandardShape(mask, w, h) {
@@ -2350,7 +2445,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260224b",
+      version: "20260225a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
