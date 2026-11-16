@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设备规格示例 — App Guidelines</title>
+<meta name="description" content="手机、iPad、桌面三种设备规格的 UI 示例：悬停显示元素名称，点击进入页面或播放对应效果。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.device-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--card);box-shadow:var(--sh-1);margin-bottom:16px}
+.stage-wrap{display:flex;justify-content:center;padding:24px 0 40px;overflow:hidden}
+.frame{position:relative;background:#0b0b0d;border-radius:38px;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.28);transform-origin:top center}
+.frame--tablet{border-radius:26px;padding:12px}
+.frame--desk{border-radius:14px;padding:0;overflow:hidden}
+.screen{position:relative;overflow:hidden;background:var(--bg);border-radius:30px;width:390px;height:844px}
+.frame--tablet .screen{border-radius:18px;width:820px;height:1180px}
+.frame--desk .screen{border-radius:0;width:1440px;height:900px}
+.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#0b0b0d;border-radius:0 0 16px 16px;z-index:5}
+.winbar{height:44px;display:flex;align-items:center;gap:8px;padding:0 14px;background:var(--card);border-bottom:1px solid var(--line);font-size:12px;color:var(--text-2)}
+.lights{display:flex;gap:6px;margin-right:6px}
+.lights i{width:11px;height:11px;border-radius:50%;display:block}
+.hot{position:absolute;border-radius:8px;cursor:pointer;transition:background .12s,outline-color .12s;outline:1px dashed transparent}
+.hot:hover{background:rgba(0,113,227,.10);outline:1px dashed var(--accent)}
+.hot__tag{position:absolute;left:0;top:-26px;background:var(--accent);color:#fff;font-size:11px;padding:2px 7px;border-radius:6px;white-space:nowrap;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;pointer-events:none;z-index:9}
+.hot:hover .hot__tag{opacity:1;transform:translateY(0)}
+.hot__tag small{opacity:.7;font-family:var(--mono);margin-left:4px}
+.f-ui{position:absolute;inset:0;padding:44px 0 0;display:flex;flex-direction:column;color:var(--text)}
+.f-head{padding:8px 18px 12px}
+.f-title{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.f-sub{font-size:12px;color:var(--text-2);margin-top:2px}
+.f-cards{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 18px;align-content:start;overflow:hidden}
+.f-card{height:150px;border-radius:14px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh-1);overflow:hidden}
+.f-card i{display:block;height:92px;background:linear-gradient(135deg,#7b5cff,#00c2a8)}
+.f-card b{display:block;font-size:12px;padding:8px 10px 2px}
+.f-card span{display:block;font-size:10px;color:var(--text-3);padding:0 10px}
+.f-tabs{height:64px;display:flex;border-top:1px solid var(--line);background:var(--card)}
+.f-tabs div{flex:1;display:grid;place-items:center;font-size:11px;color:var(--text-2)}
+.f-tabs div.on{color:var(--accent);font-weight:600}
+.f-side{width:232px;border-right:1px solid var(--line);background:var(--card);padding:10px}
+.f-side a{display:flex;align-items:center;gap:8px;height:38px;padding:0 10px;border-radius:9px;font-size:13px;color:var(--text-2)}
+.f-side a.on{background:var(--accent);color:#fff}
+.f-main{flex:1;padding:20px 24px;overflow:hidden}
+.f-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px}
+.f-tbl{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.f-tbl div{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:9px 12px;font-size:12px;border-top:1px solid var(--line)}
+.f-tbl div:first-child{border-top:0;background:var(--card-2);font-weight:600;font-size:11px;color:var(--text-2)}
+.mock-dialog{position:absolute;inset:0;display:none;place-items:center;background:rgba(0,0,0,.35);z-index:20}
+.mock-dialog.on{display:grid}
+.mock-dialog__box{width:min(360px,80%);background:var(--card);border-radius:16px;padding:20px;box-shadow:0 18px 40px rgba(0,0,0,.3)}
+.spin{animation:spin 900ms linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse{animation:pulse 600ms ease-out}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,113,227,.5)}100%{box-shadow:0 0 0 18px rgba(0,113,227,0)}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="appbar">
+  <div class="brand"><div class="brand__mark" aria-hidden="true">A</div><div class="brand__name">App Guidelines</div><div class="brand__tag">设备规格</div></div>
+  <div class="appbar__spacer"></div>
+  <nav class="topnav" aria-label="站点导航">
+    <a href="index.html">规范速查</a><a href="principles.html">设计原理</a><a href="elements.html">元素总览</a>
+    <a href="components.html">组件画廊</a><a href="blueprint.html">产品蓝图</a><a href="logo.html">Logo 规范</a>
+    <a href="icons.html">图标库</a><a href="devices.html">设备示例</a><a href="trace.html">切割生成器</a><a href="testing.html">测试工具</a>
+  </nav>
+  <div class="appbar__actions"><button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色">◐</button></div>
+</header>
+
+<div class="wrap"><main class="main" id="main">
+  <div class="page-head">
+    <div class="hero__eyebrow">Devices · 设备规格与元素标注</div>
+    <h1>设备规格示例</h1>
+    <p>同一套界面在 <b>手机 / iPad / 桌面</b> 上的真实规格：悬停任意区域显示<b>元素名称与英文</b>；点击进入对应规范页、弹出对话框、或播放状态效果。</p>
+  </div>
+
+  <div class="device-bar">
+    <div class="segmented" id="deviceSwitch" role="group" aria-label="设备">
+      <button type="button" class="is-on" data-dev="phone">手机 390×844</button>
+      <button type="button" data-dev="se">小屏 375×667</button>
+      <button type="button" data-dev="tablet">iPad 820×1180</button>
+      <button type="button" data-dev="tabletL">iPad 横屏 1180×820</button>
+      <button type="button" data-dev="desk">桌面 1440×900</button>
+    </div>
+    <span class="card__hint" id="devNote">悬停看名称，点击看效果</span>
+  </div>
+
+  <div class="stage-wrap" id="stageWrap"></div>
+
+  <div class="card" style="margin-top:8px">
+    <div class="card__title">规格对照</div>
+    <div class="table-wrap" style="border:0;box-shadow:none;margin-top:10px">
+      <table><thead><tr><th>设备</th><th>逻辑分辨率</th><th>安全区</th><th>导航形态</th><th>列数</th></tr></thead>
+      <tbody id="specBody"></tbody></table>
+    </div>
+  </div>
+
+  <div class="footer"><span>App Guidelines · 设备规格</span><span><a href="elements.html">元素总览</a> · <a href="components.html">组件画廊</a></span></div>
+</main></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/shell.js"></script>
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  var DEV={
+    phone:{w:390,h:844,cls:"",note:"iPhone 逻辑 390×844 · 底部标签 · 2 列卡片"},
+    se:{w:375,h:667,cls:"",note:"小屏 375×667 · 单列为主 · 标签 5 个"},
+    tablet:{w:820,h:1180,cls:"frame--tablet",note:"iPad 竖 820×1180 · 侧栏 232 · 3 列"},
+    tabletL:{w:1180,h:820,cls:"frame--tablet",note:"iPad 横 1180×820 · 侧栏 232 · 3 列"},
+    desk:{w:1440,h:900,cls:"frame--desk",note:"桌面 1440×900 · 侧栏 232 · 3 列 + 表格"}
+  };
+  var SPECS=[
+    ["手机 390×844","390×844 @3x","顶部 47 / 底部 34","底部标签 5","2 列"],
+    ["小屏 375×667","375×667 @2x","顶部 20 / 底部 0","底部标签 5","1–2 列"],
+    ["iPad 竖 820×1180","820×1180 @2x","顶部 24 / 底部 20","侧栏 232","3 列"],
+    ["iPad 横 1180×820","1180×820 @2x","顶部 24 / 底部 20","侧栏 232","3 列"],
+    ["桌面 1440×900","1440×900 @1x","标题栏 44","侧栏 232","3 列 + 表格"]
+  ];
+  $("#specBody").innerHTML=SPECS.map(function(r){return "<tr>"+r.map(function(c){return "<td>"+c+"</td>"}).join("")+"</tr>"}).join("");
+
+  function hotspots(dev){
+    if(dev==="desk"||dev==="tablet"||dev==="tabletL"){
+      return [
+        {x:0,y:0,w:"100%",h:44,name:"标题栏",en:"Title Bar",act:"page",to:"index.html#controls"},
+        {x:0,y:44,w:232,h:"100%",name:"侧栏",en:"Sidebar",act:"page",to:"index.html#layout"},
+        {x:248,y:70,w:520,h:56,name:"页面标题",en:"Page Title",act:"page",to:"index.html#type"},
+        {x:248,y:140,w:"calc(100% - 280px)",h:44,name:"搜索框",en:"Search",act:"effect",msg:"搜索：输入即结果（防抖 250ms）"},
+        {x:248,y:200,w:420,h:200,name:"内容卡片",en:"Card",act:"page",to:"components.html"},
+        {x:700,y:200,w:420,h:200,name:"数据表格",en:"Data Table",act:"page",to:"index.html#performance"},
+        {x:248,y:430,w:"calc(100% - 280px)",h:220,name:"列表行",en:"List Row",act:"effect",msg:"行悬停 120ms · 点击进入详情"},
+        {x:0,y:"calc(100% - 32px)",w:"100%",h:32,name:"状态栏",en:"Status Bar",act:"effect",msg:"显示同步状态与网络情况"}
+      ];
+    }
+    return [
+      {x:0,y:0,w:"100%",h:44,name:"状态栏",en:"Status Bar",act:"effect",msg:"时间 / 信号 / 电量，高度 44–47"},
+      {x:14,y:52,w:250,h:56,name:"页面标题",en:"Large Title",act:"page",to:"index.html#type"},
+      {x:300,y:56,w:72,h:36,name:"图标按钮",en:"Icon Button",act:"effect",msg:"热区 ≥ 44×44，视觉 32"},
+      {x:14,y:116,w:"calc(100% - 28px)",h:36,name:"搜索框",en:"Search Field",act:"effect",msg:"输入即结果，可清除"},
+      {x:14,y:168,w:172,h:150,name:"卡片",en:"Card",act:"page",to:"components.html"},
+      {x:198,y:168,w:172,h:150,name:"卡片（可点）",en:"Card",act:"page",to:"elements.html"},
+      {x:14,y:330,w:"calc(100% - 28px)",h:56,name:"提示条",en:"InfoBar",act:"effect",msg:"离线模式：显示已缓存内容"},
+      {x:14,y:"calc(100% - 108px)",w:"calc(100% - 28px)",h:44,name:"主按钮",en:"Primary Button",act:"dialog"},
+      {x:0,y:"calc(100% - 64px)",w:"100%",h:64,name:"标签栏",en:"Tab Bar",act:"page",to:"index.html#layout"}
+    ];
+  }
+
+  function screenHTML(dev){
+    var d=DEV[dev];
+    var chrome = dev==="desk" ? '<div class="winbar"><span class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></span>MaiKer · 壁纸库</div>' : (dev==="phone"||dev==="se") ? '<div class="notch"></div>' : '';
+    var body;
+    if(dev==="desk"||dev==="tablet"||dev==="tabletL"){
+      body='<div class="f-ui" style="padding-top:0;flex-direction:row;'+(dev==="desk"?'padding-top:44px':'padding-top:0')+'">'+
+        '<div class="f-side"><div style="font-size:12px;color:var(--text-3);padding:8px 10px">导航</div>'+
+        '<a class="on">每日推荐</a><a>全部壁纸</a><a>壁纸特效</a><a>我的收藏</a><a>设置</a></div>'+
+        '<div class="f-main"><div class="f-title">壁纸库</div><div class="f-sub">共 299 张 · 已缓存 128 张</div>'+
+        '<div style="height:36px;border-radius:9px;background:var(--card);border:1px solid var(--line);margin-top:12px"></div>'+
+        '<div class="f-row"><div class="f-card" style="height:200px"><i></i><b>晨雾山谷</b><span>4K · 128 MB</span></div>'+
+        '<div class="f-card" style="height:200px"><i style="background:linear-gradient(135deg,#ff9a3d,#ff5f8f)"></i><b>液态金属</b><span>4K · 96 MB</span></div>'+
+        '<div class="f-card" style="height:200px"><i style="background:linear-gradient(135deg,#00c2a8,#5ac8fa)"></i><b>枯山水</b><span>2K · 42 MB</span></div></div>'+
+        '<div class="f-tbl"><div><span>名称</span><span>分辨率</span><span>大小</span></div><div><span>晨雾山谷</span><span>3840×2160</span><span>128 MB</span></div><div><span>液态金属</span><span>2560×1440</span><span>96 MB</span></div><div><span>枯山水</span><span>1920×1080</span><span>42 MB</span></div></div>'+
+        '</div></div>';
+    } else {
+      body='<div class="f-ui">'+
+        '<div class="f-head"><div class="f-title">壁纸库</div><div class="f-sub">299 张 · 已缓存 128</div></div>'+
+        '<div style="padding:0 18px"><div style="height:36px;border-radius:9px;background:var(--card);border:1px solid var(--line)"></div></div>'+
+        '<div class="f-cards"><div class="f-card"><i></i><b>晨雾山谷</b><span>4K · 128 MB</span></div>'+
+        '<div class="f-card"><i style="background:linear-gradient(135deg,#ff9a3d,#ff5f8f)"></i><b>液态金属</b><span>4K · 96 MB</span></div>'+
+        '<div class="f-card"><i style="background:linear-gradient(135deg,#00c2a8,#5ac8fa)"></i><b>枯山水</b><span>2K · 42 MB</span></div>'+
+        '<div class="f-card"><i style="background:linear-gradient(135deg,#7b5cff,#0a84ff)"></i><b>星轨</b><span>4K · 110 MB</span></div></div>'+
+        '<div style="padding:0 18px 10px"><div class="btn btn--primary" style="width:100%;height:44px;display:flex;align-items:center;justify-content:center">设为壁纸</div></div>'+
+        '<div class="f-tabs"><div class="on">推荐</div><div>全部</div><div>特效</div><div>收藏</div><div>我的</div></div></div>';
+    }
+    return '<div class="frame '+d.cls+'" id="frame"><div class="screen" id="screen" style="width:'+d.w+'px;height:'+d.h+'px">'+chrome+body+'<div class="mock-dialog" id="mockDialog"><div class="mock-dialog__box"><div class="card__title">删除这张壁纸？</div><p class="card__hint" style="margin-top:8px">删除后可从云端重新下载。</p><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px"><button class="btn btn--secondary" type="button" data-close>取消</button><button class="btn btn--primary" type="button" data-close>删除</button></div></div></div></div></div>';
+  }
+
+  function mount(dev){
+    var d=DEV[dev];
+    $("#devNote").textContent=d.note;
+    var wrap=$("#stageWrap");
+    wrap.innerHTML=screenHTML(dev);
+    var screen=$("#screen"), frame=$("#frame");
+    hotspots(dev).forEach(function(h){
+      var el=document.createElement("div");
+      el.className="hot";
+      el.style.left=(typeof h.x==="number"?h.x+"px":h.x);
+      el.style.top=(typeof h.y==="number"?h.y+"px":h.y);
+      el.style.width=(typeof h.w==="number"?h.w+"px":h.w);
+      el.style.height=(typeof h.h==="number"?h.h+"px":h.h);
+      el.innerHTML='<span class="hot__tag">'+h.name+'<small>'+h.en+'</small></span>';
+      el.addEventListener("click",function(){
+        if(h.act==="page"){ if(window.AG) AG.toast("进入："+h.name+" → "+h.to); setTimeout(function(){location.href=h.to},420); }
+        else if(h.act==="dialog"){ var m=$("#mockDialog"); if(m) m.classList.add("on"); }
+        else { el.classList.add("pulse"); setTimeout(function(){el.classList.remove("pulse")},650); if(window.AG) AG.toast(h.name+"："+h.msg); }
+      });
+      screen.appendChild(el);
+    });
+    var dlg=$("#mockDialog");
+    if(dlg) dlg.addEventListener("click",function(e){ if(e.target.hasAttribute("data-close")||e.target===dlg) dlg.classList.remove("on"); });
+    // scale to fit viewport
+    var avail=wrap.clientWidth-32;
+    var scale=Math.min(1, avail/d.w);
+    frame.style.transform="scale("+scale+")";
+    wrap.style.height=(d.h*scale+40)+"px";
+    frame.style.marginBottom="0";
+  }
+
+  $("#deviceSwitch").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-dev]"); if(!b) return;
+    document.querySelectorAll("#deviceSwitch button").forEach(function(n){n.classList.toggle("is-on",n===b)});
+    mount(b.getAttribute("data-dev"));
+  });
+  window.addEventListener("resize",function(){ var on=document.querySelector("#deviceSwitch .is-on"); if(on) mount(on.getAttribute("data-dev")); });
+  mount("phone");
+})();
+</script>
+</body>
+</html>
