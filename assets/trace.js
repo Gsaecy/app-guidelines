@@ -367,8 +367,22 @@
     if (!state.img) return;
     const built = buildMask(state.img);
     if (state.construct) buildDisks(built.mask, built.w, built.h);
-    snapStandardShape(built.mask, built.w, built.h);
     detectHoles(built.mask, built.w, built.h);
+    let snapMask = built.mask;
+    if ((state.holes || []).length) {
+      snapMask = built.mask.slice();
+      (state.holes || []).forEach(function (h) {
+        if (h.kind === "circle") {
+          const y0 = Math.max(0, Math.floor(h.cy - h.r)), y1 = Math.min(built.h - 1, Math.ceil(h.cy + h.r));
+          const x0 = Math.max(0, Math.floor(h.cx - h.r)), x1 = Math.min(built.w - 1, Math.ceil(h.cx + h.r));
+          for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++)
+            if ((x + 0.5 - h.cx) ** 2 + (y + 0.5 - h.cy) ** 2 <= h.r * h.r) snapMask[y * built.w + x] = 1;
+        } else {
+          for (let y = h.y0; y <= h.y1; y++) for (let x = h.x0; x <= h.x1; x++) snapMask[y * built.w + x] = 1;
+        }
+      });
+    }
+    snapStandardShape(snapMask, built.w, built.h);
     let loops = contours(built.mask, built.w, built.h);
     const minArea = Math.max(4, built.w * built.h * 0.00002);
     loops = loops
@@ -928,6 +942,7 @@
 
   function snapStandardShape(mask, w, h) {
     state._mask = mask;
+    state._mask = mask;
     let x0 = w, y0 = h, x1 = -1, y1 = -1, area = 0;
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
@@ -1357,6 +1372,40 @@
     const Y = function (v) { return +(v * scale + oy).toFixed(2); };
     const n = state.gridN || 12;
     const a = Math.max(state.w, state.h) / n;          // one module = a
+    // 构造线 = 成品同色相，明度拉开：浅底取更深，深底取更淡（同色系，不突兀）
+    const c0 = String(state.color || "#9AA0A6").replace("#", "");
+    const cr = parseInt(c0.substr(0, 2), 16) || 0, cg = parseInt(c0.substr(2, 2), 16) || 0, cb = parseInt(c0.substr(4, 2), 16) || 0;
+    const lum = (0.299 * cr + 0.587 * cg + 0.114 * cb) / 255;
+    const hsl = (function (r_, g_, b_) {
+      r_ /= 255; g_ /= 255; b_ /= 255;
+      const mx = Math.max(r_, g_, b_), mn = Math.min(r_, g_, b_);
+      let h = 0, s = 0; const l = (mx + mn) / 2;
+      const d = mx - mn;
+      if (d > 1e-6) {
+        s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+        if (mx === r_) h = ((g_ - b_) / d + (g_ < b_ ? 6 : 0)) / 6;
+        else if (mx === g_) h = ((b_ - r_) / d + 2) / 6;
+        else h = ((r_ - g_) / d + 4) / 6;
+      }
+      return { h: h, s: s, l: l };
+    })(cr, cg, cb);
+    const toHex = function (h, s, l) {
+      const f = function (p, q, x) {
+        if (x < 0) x += 1; if (x > 1) x -= 1;
+        if (x < 1 / 6) return p + (q - p) * 6 * x;
+        if (x < 1 / 2) return q;
+        if (x < 2 / 3) return p + (q - p) * (2 / 3 - x) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+      const r_ = Math.round(f(p, q, h + 1 / 3) * 255), g_ = Math.round(f(p, q, h) * 255), b_ = Math.round(f(p, q, h - 1 / 3) * 255);
+      const hx = function (v) { const k = v.toString(16); return k.length === 1 ? "0" + k : k; };
+      return "#" + hx(r_) + hx(g_) + hx(b_);
+    };
+    const HI = lum > 0.55
+      ? toHex(hsl.h, Math.min(1, hsl.s + 0.12), Math.max(0.26, hsl.l - 0.34))   // 浅底 → 同色相更深
+      : toHex(hsl.h, Math.min(1, hsl.s + 0.12), Math.min(0.82, hsl.l + 0.34));  // 深底 → 同色相更淡
+    const HALO = lum > 0.55 ? "#FFFFFF" : "#0E1116";
     const bw = state.w * scale, bh = state.h * scale;
     const clipId = "traceArtboard";
     const s = [];
@@ -1388,40 +1437,6 @@
       const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
       const R = (r * scale).toFixed(2);
       const ua = "R" + (r / a).toFixed(1);      // 半径符号大写 R，数值不带单位
-      // 构造线 = 成品同色相，明度拉开：浅底取更深，深底取更淡（同色系，不突兀）
-      const c0 = String(state.color || "#9AA0A6").replace("#", "");
-      const cr = parseInt(c0.substr(0, 2), 16) || 0, cg = parseInt(c0.substr(2, 2), 16) || 0, cb = parseInt(c0.substr(4, 2), 16) || 0;
-      const lum = (0.299 * cr + 0.587 * cg + 0.114 * cb) / 255;
-      const hsl = (function (r_, g_, b_) {
-        r_ /= 255; g_ /= 255; b_ /= 255;
-        const mx = Math.max(r_, g_, b_), mn = Math.min(r_, g_, b_);
-        let h = 0, s = 0; const l = (mx + mn) / 2;
-        const d = mx - mn;
-        if (d > 1e-6) {
-          s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
-          if (mx === r_) h = ((g_ - b_) / d + (g_ < b_ ? 6 : 0)) / 6;
-          else if (mx === g_) h = ((b_ - r_) / d + 2) / 6;
-          else h = ((r_ - g_) / d + 4) / 6;
-        }
-        return { h: h, s: s, l: l };
-      })(cr, cg, cb);
-      const toHex = function (h, s, l) {
-        const f = function (p, q, x) {
-          if (x < 0) x += 1; if (x > 1) x -= 1;
-          if (x < 1 / 6) return p + (q - p) * 6 * x;
-          if (x < 1 / 2) return q;
-          if (x < 2 / 3) return p + (q - p) * (2 / 3 - x) * 6;
-          return p;
-        };
-        const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
-        const r_ = Math.round(f(p, q, h + 1 / 3) * 255), g_ = Math.round(f(p, q, h) * 255), b_ = Math.round(f(p, q, h - 1 / 3) * 255);
-        const hx = function (v) { const k = v.toString(16); return k.length === 1 ? "0" + k : k; };
-        return "#" + hx(r_) + hx(g_) + hx(b_);
-      };
-      const HI = lum > 0.55
-        ? toHex(hsl.h, Math.min(1, hsl.s + 0.12), Math.max(0.26, hsl.l - 0.34))   // 浅底 → 同色相更深
-        : toHex(hsl.h, Math.min(1, hsl.s + 0.12), Math.min(0.82, hsl.l + 0.34));  // 深底 → 同色相更淡
-      const HALO = lum > 0.55 ? "#FFFFFF" : "#0E1116";
 
       // 同一条构造线画两遍：先粗光晕，再细高亮
       function layer(stroke, w, dash, opac) {
@@ -1526,6 +1541,76 @@
           "4 圆 ∪ 相切矩形 → 1 个圆角矩形</text>");
         s.push('<text x="' + X(bx0) + '" y="' + Y(by1) + '" dy="48" text-anchor="start">' +
           "单位：a（模数 = 短边 / " + n + "），未注尺寸均为 a 的整数倍</text>");
+        s.push("</g>");
+      }
+      return s.join("");
+    }
+
+    // 圆 / 矩形 / 椭圆 / 带孔图形：同样要出构造线（中心线 + 尺寸），不能只有一条轮廓
+    if (std && (std.kind === "circle" || std.kind === "rect" || std.kind === "ellipse")) {
+      const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
+      const cx = (bx0 + bx1) / 2, cy = (by0 + by1) / 2;
+      const AR = 6, hwv = AR * Math.tan(Math.PI / 12);
+      const arrow = function (x, y, ang) {
+        const c = Math.cos(ang), s_ = Math.sin(ang), bx = x - AR * c, by = y - AR * s_, px = -s_ * hwv, py = c * hwv;
+        return '<path d="M' + x + " " + y + "L" + (bx + px) + " " + (by + py) + "L" + (bx - px) + " " + (by - py) + '" fill="' + HI + '" stroke="none"/>';
+      };
+      // 差集图案（孔）先画出来：虚线整圆 + 尺寸引线
+      s.push('<g id="holes" fill="none" stroke="' + HI + '" stroke-width="1" stroke-dasharray="5 4" opacity="0.95">');
+      (state.holes || []).forEach(function (h) {
+        if (h.kind === "circle") {
+          s.push('<circle cx="' + X(h.cx) + '" cy="' + Y(h.cy) + '" r="' + (h.r * scale).toFixed(2) + '"/>');
+        } else {
+          s.push('<rect x="' + X(h.x0) + '" y="' + Y(h.y0) + '" width="' + ((h.x1 + 1 - h.x0) * scale).toFixed(2) +
+            '" height="' + ((h.y1 + 1 - h.y0) * scale).toFixed(2) + '"/>');
+        }
+      });
+      s.push("</g>");
+
+      // 中心线：长划点线，伸出轮廓约 2~5mm
+      s.push('<g id="centrelines" stroke="' + HI + '" stroke-width="0.6" stroke-dasharray="14 3 1 3" opacity="0.9">');
+      s.push('<line x1="' + (X(bx0) - 8) + '" y1="' + Y(cy) + '" x2="' + (X(bx1) + 8) + '" y2="' + Y(cy) + '"/>');
+      s.push('<line x1="' + X(cx) + '" y1="' + (Y(by0) - 8) + '" x2="' + X(cx) + '" y2="' + (Y(by1) + 8) + '"/>');
+      s.push("</g>");
+      s.push('<g id="centres" stroke="' + HI + '" stroke-width="0.6">');
+      s.push('<line x1="' + (X(cx) - 5) + '" y1="' + Y(cy) + '" x2="' + (X(cx) + 5) + '" y2="' + Y(cy) + '"/>');
+      s.push('<line x1="' + X(cx) + '" y1="' + (Y(cy) - 5) + '" x2="' + X(cx) + '" y2="' + (Y(cy) + 5) + '"/>');
+      s.push("</g>");
+
+      const dOff = 16, gap = 2, over = 4, wy = Y(by1) + dOff, hx = X(bx0) - dOff;
+      const dwv = ((bx1 - bx0) / a).toFixed(1), dhv = ((by1 - by0) / a).toFixed(1);
+      s.push('<g id="dims" fill="none" stroke="' + HI + '" stroke-width="0.7">');
+      if (std.kind === "circle") {
+        s.push('<line x1="' + (X(bx0) + AR) + '" y1="' + Y(cy) + '" x2="' + (X(bx1) - AR) + '" y2="' + Y(cy) + '"/>');
+        s.push(arrow(X(bx0), Y(cy), 0), arrow(X(bx1), Y(cy), Math.PI));
+      } else {
+        s.push('<line x1="' + X(bx0) + '" y1="' + (Y(by1) + gap) + '" x2="' + X(bx0) + '" y2="' + (wy + over) + '"/>');
+        s.push('<line x1="' + X(bx1) + '" y1="' + (Y(by1) + gap) + '" x2="' + X(bx1) + '" y2="' + (wy + over) + '"/>');
+        s.push('<line x1="' + (X(bx0) + AR) + '" y1="' + wy + '" x2="' + (X(bx1) - AR) + '" y2="' + wy + '"/>');
+        s.push(arrow(X(bx0), wy, 0), arrow(X(bx1), wy, Math.PI));
+        s.push('<line x1="' + (X(bx0) - gap) + '" y1="' + Y(by0) + '" x2="' + (hx - over) + '" y2="' + Y(by0) + '"/>');
+        s.push('<line x1="' + (X(bx0) - gap) + '" y1="' + Y(by1) + '" x2="' + (hx - over) + '" y2="' + Y(by1) + '"/>');
+        s.push('<line x1="' + hx + '" y1="' + (Y(by0) + AR) + '" x2="' + hx + '" y2="' + (Y(by1) - AR) + '"/>');
+        s.push(arrow(hx, Y(by0), Math.PI / 2), arrow(hx, Y(by1), -Math.PI / 2));
+      }
+      s.push("</g>");
+
+      if (fontSize) {
+        const mask = ' style="paint-order:stroke" stroke="#FFFFFF" stroke-width="2.5"';
+        s.push('<g id="dim-text" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
+          '" font-weight="500" fill="' + HI + '" text-anchor="middle"' + mask + ">");
+        if (std.kind === "circle") {
+          s.push('<text x="' + X(cx) + '" y="' + (Y(cy) - 5) + '">⌀' + dwv + "</text>");
+        } else {
+          s.push('<text x="' + ((X(bx0) + X(bx1)) / 2) + '" y="' + (wy - 4) + '">' + dwv + "</text>");
+          s.push('<text x="' + (hx - 3) + '" y="' + ((Y(by0) + Y(by1)) / 2) + '" dy="3" text-anchor="end">' + dhv + "</text>");
+        }
+        (state.holes || []).forEach(function (h) {
+          if (h.kind !== "circle") return;
+          s.push('<text x="' + X(h.cx) + '" y="' + (Y(h.cy) - 4) + '">⌀' + ((h.r * 2) / a).toFixed(1) + "</text>");
+        });
+        s.push('<text x="' + X(bx0) + '" y="' + Y(by1) + '" dy="40" text-anchor="start">' +
+          "单位：a（模数 = 短边 / " + n + "）" + ((state.holes || []).length ? "，内孔为差集图案（−）" : "") + "</text>");
         s.push("</g>");
       }
       return s.join("");
@@ -1642,9 +1727,24 @@
   }
 
   // 预览/导出统一取用：有基本形就用基本形路径，否则退回拟合路径
+  function holesD(scale, ox, oy) {
+    let d = "";
+    (state.holes || []).forEach(function (h) {
+      if (h.kind === "circle") {
+        const cd = (h.r * scale).toFixed(2), cx = h.cx * scale + ox, cy = h.cy * scale + oy, rr = h.r * scale;
+        d += "M" + (cx - rr) + " " + cy + "A" + cd + " " + cd + " 0 1 0 " + (cx + rr) + " " + cy +
+             "A" + cd + " " + cd + " 0 1 0 " + (cx - rr) + " " + cy + "Z";
+      } else {
+        const x0 = h.x0 * scale + ox, x1 = (h.x1 + 1) * scale + ox, y0 = h.y0 * scale + oy, y1 = (h.y1 + 1) * scale + oy;
+        d += "M" + x0 + " " + y0 + "H" + x1 + "V" + y1 + "H" + x0 + "Z";
+      }
+    });
+    return d;
+  }
+
   function shapeD(scale, ox, oy) {
-    if (state.standard) return standardD(state.standard, scale, ox, oy);
-    return fitsD(state.fits, scale, ox, oy);
+    const base = state.standard ? standardD(state.standard, scale, ox, oy) : fitsD(state.fits, scale, ox, oy);
+    return base + holesD(scale, ox, oy);
   }
 
   function render() {
@@ -1973,7 +2073,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222d",
+      version: "20260222g",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
