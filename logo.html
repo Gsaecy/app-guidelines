@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo 规范 — App Guidelines</title>
+<meta name="description" content="Logo 设计专业规范：类型、几何构造、图案切割（布尔运算）、光学修正、安全区、最小尺寸、响应式标识、动效与 SVG 交付。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+
+<header class="appbar">
+  <div class="brand">
+    <div class="brand__mark" aria-hidden="true">A</div>
+    <div class="brand__name">App Guidelines</div>
+    <div class="brand__tag">Logo 规范</div>
+  </div>
+  <div class="appbar__spacer"></div>
+  <nav class="topnav" aria-label="站点导航">
+    <a href="index.html">规范速查</a>
+    <a href="principles.html">设计原理</a>
+    <a href="elements.html">元素总览</a>
+    <a href="components.html">组件画廊</a>
+    <a href="blueprint.html">产品蓝图</a>
+    <a href="logo.html">Logo 规范</a>
+    <a href="testing.html">测试工具</a>
+  </nav>
+  <div class="appbar__actions">
+    <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"></circle>
+        <path d="M12 2.8v2.1M12 19.1v2.1M4.5 4.5l1.5 1.5M18 18l1.5 1.5M2.8 12h2.1M19.1 12h2.1M4.5 19.5 6 18M18 6l1.5-1.5"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <main class="main" id="main">
+
+    <div class="page-head">
+      <div class="hero__eyebrow">Logo · 几何构造与交付</div>
+      <h1>Logo 设计规范</h1>
+      <p>Logo 不是「画一个图形」，而是<b>用几何规则切出来、并在所有尺寸下都不变形</b>的资产。本页覆盖：类型选择、构造网格、图案切割（布尔运算）、光学修正、安全区与最小尺寸、响应式标识、动效与 SVG 交付。</p>
+      <div class="subnav">
+        <a href="#types">类型</a>
+        <a href="#cut">图案切割</a>
+        <a href="#optical">光学修正</a>
+        <a href="#space">安全区</a>
+        <a href="#responsive">响应式与动效</a>
+        <a href="#delivery">交付</a>
+        <a href="#checklist">走查</a>
+      </div>
+    </div>
+
+    <!-- ============================================================ types -->
+    <section class="section" id="types">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">01</span>Types</div>
+        <h2>先选类型，再谈造型</h2>
+        <p class="section__lead">不同类型的识别成本与扩展性完全不同：文字标最好读，图形标最好缩小，组合标最完整但最受限。</p>
+      </div>
+      <div class="logo-type-grid">
+        <div class="logo-type">
+          <svg viewBox="0 0 120 56"><text x="8" y="40" font-size="30" font-weight="700" fill="currentColor">MaiKer</text></svg>
+          <strong>文字标</strong><span>Wordmark</span>
+        </div>
+        <div class="logo-type">
+          <svg viewBox="0 0 120 56"><text x="14" y="42" font-size="38" font-weight="800" fill="currentColor">MK</text></svg>
+          <strong>字母标</strong><span>Lettermark</span>
+        </div>
+        <div class="logo-type">
+          <svg viewBox="0 0 120 56"><circle cx="46" cy="28" r="18" fill="none" stroke="currentColor" stroke-width="6"/><path d="M70 16v24" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></svg>
+          <strong>图形标</strong><span>Pictorial</span>
+        </div>
+        <div class="logo-type">
+          <svg viewBox="0 0 120 56"><path d="M30 40 60 12l30 28" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/><circle cx="60" cy="42" r="5" fill="currentColor"/></svg>
+          <strong>抽象标</strong><span>Abstract</span>
+        </div>
+        <div class="logo-type">
+          <svg viewBox="0 0 120 56"><circle cx="60" cy="28" r="22" fill="none" stroke="currentColor" stroke-width="3"/><text x="48" y="35" font-size="18" font-weight="700" fill="currentColor">M</text></svg>
+          <strong>徽章标</strong><span>Emblem</span>
+        </div>
+        <div class="logo-type">
+          <svg viewBox="0 0 120 56"><rect x="8" y="14" width="28" height="28" rx="8" fill="currentColor"/><text x="44" y="36" font-size="20" font-weight="700" fill="currentColor">MaiKer</text></svg>
+          <strong>组合标</strong><span>Combination</span>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top:16px">
+        <table>
+          <thead><tr><th>类型</th><th>优点</th><th>风险</th><th>适用</th></tr></thead>
+          <tbody id="typeTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ cut -->
+    <section class="section" id="cut">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">02</span>Pattern Cutting</div>
+        <h2>图案切割：用布尔运算把形状「切」出来</h2>
+        <p class="section__lead">专业标识几乎都是两个以上基础形的合并、相减、相交或排除。规则一旦确定，任何尺寸、任何设计师都能复现同一个形状。</p>
+      </div>
+
+      <div class="split">
+        <div class="demo-panel">
+          <div class="demo-panel__body">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+              <div class="card__title">布尔运算实验台</div>
+              <label class="check"><input type="checkbox" id="opGrid" checked>显示网格</label>
+            </div>
+            <div class="logo-stage" style="margin-top:12px">
+              <svg class="op-svg" viewBox="0 0 260 200" role="img" aria-label="布尔运算示意">
+                <g id="opGridLayer" stroke="var(--line-strong)" stroke-width="0.6">
+                  <path d="M0 26H260M0 52H260M0 78H260M0 104H260M0 130H260M0 156H260M0 182H260"></path>
+                  <path d="M26 0V200M52 0V200M78 0V200M104 0V200M130 0V200M156 0V200M182 0V200M208 0V200M234 0V200"></path>
+                </g>
+                <g id="opSource" opacity=".35" fill="none" stroke-dasharray="4 4">
+                  <circle cx="104" cy="100" r="58" stroke="var(--accent)" stroke-width="1.4"></circle>
+                  <rect x="86" y="42" width="116" height="116" stroke="#ff9f0a" stroke-width="1.4"></rect>
+                </g>
+
+                <g id="opUnion">
+                  <path class="shape-a" d="M104 42a58 58 0 1 1-.1 0z"></path>
+                  <path class="shape-a" d="M86 42h116v116H86z"></path>
+                </g>
+
+                <g id="opSubtract">
+                  <defs>
+                    <mask id="maskSub">
+                      <rect x="0" y="0" width="260" height="200" fill="#fff"></rect>
+                      <rect x="86" y="42" width="116" height="116" fill="#000"></rect>
+                    </mask>
+                  </defs>
+                  <path class="shape-a" mask="url(#maskSub)" d="M104 42a58 58 0 1 1-.1 0z"></path>
+                </g>
+
+                <g id="opIntersect">
+                  <defs><clipPath id="clipRect"><rect x="86" y="42" width="116" height="116"></rect></clipPath></defs>
+                  <path class="shape-a" clip-path="url(#clipRect)" d="M104 42a58 58 0 1 1-.1 0z"></path>
+                </g>
+
+                <g id="opExclude">
+                  <path class="shape-a" fill-rule="evenodd" d="M104 42a58 58 0 1 1-.1 0z M86 42h116v116H86z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="logo-op-btns" style="margin-top:12px">
+              <div class="segmented" id="opSwitch" role="group" aria-label="布尔运算">
+                <button type="button" data-op="source" class="is-on">原始形</button>
+                <button type="button" data-op="union">合并</button>
+                <button type="button" data-op="subtract">减去</button>
+                <button type="button" data-op="intersect">相交</button>
+                <button type="button" data-op="exclude">排除</button>
+              </div>
+            </div>
+            <p class="card__hint" id="opNote" style="margin-top:10px">原始形：圆形与方形，虚线表示两条基础几何。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__title">切割流程（7 步）</div>
+          <ol style="margin:10px 0 0;padding-left:20px;font-size:12.5px;color:var(--text-2);line-height:1.85">
+            <li><b>定画板</b>：24×24 / 32×32 / 1024×1024，1 单位 = 1 网格格</li>
+            <li><b>定几何</b>：只用圆、方、三角、直线；半径取整</li>
+            <li><b>定比例</b>：优先 1:1、1:2、Φ 1:1.618、√2 1:1.414</li>
+            <li><b>切形状</b>：用合并 / 减去 / 相交 / 排除得到主体</li>
+            <li><b>调光心</b>：光学居中，不做数学居中（见下一节）</li>
+            <li><b>加呼吸</b>：切角 ≥ 1 单位，避免小尺寸糊成一团</li>
+            <li><b>转轮廓</b>：所有描边转为填充路径，锁定 viewBox</li>
+          </ol>
+          <div class="note" style="margin-top:12px">
+            <div><b>可复现性：</b>把画板、网格、圆半径、布尔顺序写成一行构造说明（如「R=58 圆 − 116 方，切角 12」），下一个设计师才能画出同一个 Logo。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:16px">
+        <table>
+          <thead><tr><th>比例 / 体系</th><th>数值</th><th>用途</th></tr></thead>
+          <tbody id="ratioTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ optical -->
+    <section class="section" id="optical">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">03</span>Optical Corrections</div>
+        <h2>光学修正：数学对齐 ≠ 视觉对齐</h2>
+        <p class="section__lead">同样外接框的圆形看起来比方形小。专业做法是有意让圆形、三角形略微超出边界（overshoot），并把文字按视觉重心上提。</p>
+      </div>
+
+      <div class="split">
+        <div class="demo-panel">
+          <div class="demo-panel__body">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+              <div class="card__title">同尺寸的圆与方</div>
+              <label class="check"><input type="checkbox" id="optFix" checked>应用光学修正</label>
+            </div>
+            <div class="opt-demo" style="margin-top:16px">
+              <div class="opt-box"><span class="ci" id="optCircle" style="background:var(--accent)"></span><span>圆 r=48</span></div>
+              <div class="opt-box"><span class="sq" style="border-radius:2px"></span><span>方 96×96</span></div>
+              <div class="opt-box"><span class="ci" style="background:var(--text-3);width:26px;height:26px"></span><span>视觉参考</span></div>
+            </div>
+            <p class="card__hint" id="optNote" style="margin-top:14px">修正中：圆放大 2%（overshoot），视觉面积与方形接近。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__title">必须做的 5 项修正</div>
+          <table style="margin-top:10px">
+            <tbody>
+              <tr><td>圆形 / 三角 overshoot</td><td class="mono">+1.5–2.5%</td></tr>
+              <tr><td>文字基线</td><td class="mono">视觉居中，上提 1–2%</td></tr>
+              <tr><td>描边转角</td><td class="mono">外角半径 ≥ 描边宽</td></tr>
+              <tr><td>尖角小尺寸</td><td class="mono">16px 加 hinting / 简化</td></tr>
+              <tr><td>横竖笔画</td><td class="mono">横比竖细 5–8%</td></tr>
+            </tbody>
+          </table>
+          <p class="card__hint" style="margin-top:10px">判断方法：把标识缩小到 16px 再看——如果某个角「消失」或糊成一团，就是修正不足。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ space -->
+    <section class="section" id="space">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">04</span>Clear Space</div>
+        <h2>安全区与最小尺寸</h2>
+        <p class="section__lead">安全区不是「看起来差不多」，而是用一个可测量的单位定义：常用标识高度（x）或字高（cap height）的 0.5–1 倍。</p>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <div class="card__title">安全区公式</div>
+          <div class="logo-stage" style="margin-top:12px;min-height:190px">
+            <svg viewBox="0 0 300 180" aria-label="安全区示意">
+              <rect x="18" y="18" width="264" height="144" rx="10" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+              <rect x="106" y="58" width="88" height="64" rx="14" fill="var(--accent)"></rect>
+              <text x="150" y="99" text-anchor="middle" font-size="26" font-weight="700" fill="#fff">M</text>
+              <path d="M106 50h88" stroke="var(--text-3)" stroke-width="1"></path>
+              <text x="150" y="45" text-anchor="middle" font-size="10" fill="var(--text-3)" font-family="monospace">x</text>
+              <path d="M106 132h88" stroke="var(--text-3)" stroke-width="1"></path>
+              <text x="150" y="146" text-anchor="middle" font-size="10" fill="var(--text-3)" font-family="monospace">x（安全区）</text>
+            </svg>
+          </div>
+          <p class="card__hint" style="margin-top:10px">Clear space = 0.5 × 标识高度（最小不低于 8px）；四周等距，任何文字、边框、图标不得进入。</p>
+        </div>
+        <div class="card">
+          <div class="card__title">最小尺寸（按介质）</div>
+          <div class="table-wrap" style="border:0;box-shadow:none;margin-top:10px">
+            <table class="table-wrap--tight">
+              <thead><tr><th>介质</th><th>最小尺寸</th><th>处理</th></tr></thead>
+              <tbody id="minSizeBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ responsive -->
+    <section class="section" id="responsive">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">05</span>Responsive &amp; Motion</div>
+        <h2>响应式标识与动效</h2>
+        <p class="section__lead">一个 Logo 要准备 3 个形态：完整组合、紧凑版（去 tagline）、纯标识。宽度不够时按顺序降级，而不是等比缩小到看不清。</p>
+      </div>
+
+      <div class="split">
+        <div class="demo-panel">
+          <div class="demo-panel__body">
+            <div class="card__title">宽度驱动的形态降级</div>
+            <div class="logo-responsive" id="respStage" style="margin-top:12px">
+              <div class="logo-responsive__full" id="respLogo">
+                <span class="logo-responsive__mark">M</span><span class="resp-word">MaiKer</span>
+              </div>
+            </div>
+            <label class="field" style="margin-top:12px">
+              <span class="field__label">可用宽度 <code id="respWVal">420px</code> · 当前形态 <code id="respVariant">完整组合</code></span>
+              <input type="range" id="respW" min="120" max="620" step="10" value="420">
+            </label>
+          </div>
+          <div class="demo-panel__foot">
+            <span>阈值建议：≥ 320 完整 / 160–320 紧凑 / &lt; 160 纯标识</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__title">动效参数</div>
+          <div class="table-wrap" style="border:0;box-shadow:none;margin-top:10px">
+            <table class="table-wrap--tight">
+              <thead><tr><th>场景</th><th>参数</th></tr></thead>
+              <tbody id="logoMotionBody"></tbody>
+            </table>
+          </div>
+          <p class="card__hint" style="margin-top:10px">Logo 动效只在「首次启动 / 加载」出现，且 ≤ 1.2s；重复触发会显得廉价。</p>
+        </div>
+      </div>
+
+      <div class="swatch-pair" style="margin-top:16px">
+        <div style="background:#ffffff"><svg width="120" height="40" viewBox="0 0 120 40"><rect x="4" y="6" width="28" height="28" rx="8" fill="#0071E3"/><text x="40" y="27" font-size="16" font-weight="700" fill="#1D1D1F">MaiKer</text></svg></div>
+        <div style="background:#1c1c1e"><svg width="120" height="40" viewBox="0 0 120 40"><rect x="4" y="6" width="28" height="28" rx="8" fill="#0A84FF"/><text x="40" y="27" font-size="16" font-weight="700" fill="#ffffff">MaiKer</text></svg></div>
+        <div style="background:#0071E3"><svg width="120" height="40" viewBox="0 0 120 40"><rect x="4" y="6" width="28" height="28" rx="8" fill="#ffffff"/><text x="40" y="27" font-size="16" font-weight="700" fill="#ffffff">MaiKer</text></svg></div>
+      </div>
+      <p class="card__hint" style="margin-top:8px">三套必备：浅色 / 深色 / 反白。反白版要检查对比度 ≥ 3:1（标识按非文本处理）。</p>
+    </section>
+
+    <!-- ============================================================ delivery -->
+    <section class="section" id="delivery">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">06</span>Delivery</div>
+        <h2>文件交付规范</h2>
+        <p class="section__lead">交付的不是「一个 logo.svg」，而是一套能被工程直接使用的资产。SVG 里最常见的三个事故：带描边、viewBox 不统一、路径精度过高。</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>项</th><th>规范</th><th>检查方法</th></tr></thead>
+          <tbody id="deliveryBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ checklist -->
+    <section class="section" id="checklist">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">07</span>Checklist</div>
+        <h2>Logo 走查清单</h2>
+        <p class="section__lead">提交前逐条过；任何一条「否」，都不算定稿。</p>
+      </div>
+      <div class="card">
+        <div class="progress-head"><span>完成度</span><span id="logoProgressText">0 / 0</span></div>
+        <div class="progress"><i id="logoProgressBar" style="width:0%"></i></div>
+        <div class="grid cols-2" id="logoCheckGrid" style="margin-top:16px"></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>App Guidelines · Logo 规范</span>
+      <span><a href="blueprint.html#logo">产品蓝图</a> · <a href="index.html#icons">图标规范</a> · <a href="testing.html">测试工具</a></span>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/shell.js"></script>
+<script src="assets/logo.js"></script>
+</body>
+</html>

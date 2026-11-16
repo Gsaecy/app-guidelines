@@ -4,9 +4,9 @@
 
 > 在线浏览：<https://gsaecy.github.io/app-guidelines/>
 
-![pages](https://img.shields.io/badge/pages-6-0071e3) ![components](https://img.shields.io/badge/components-29-34c759) ![elements](https://img.shields.io/badge/elements-66-34c759) ![deps](https://img.shields.io/badge/dependencies-0-34c759) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+![pages](https://img.shields.io/badge/pages-7-0071e3) ![components](https://img.shields.io/badge/components-29-34c759) ![elements](https://img.shields.io/badge/elements-66-34c759) ![deps](https://img.shields.io/badge/dependencies-0-34c759) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
-## 六个页面
+## 七个页面
 
 | 页面 | 内容 |
 |---|---|
@@ -15,6 +15,7 @@
 | [元素总览](https://gsaecy.github.io/app-guidelines/elements.html) | 7 大族 66 个界面元素：规范要点 / 效果参数 / 深查链接，附三大元素解剖与效果落点表 |
 | [组件画廊](https://gsaecy.github.io/app-guidelines/components.html) | 29 个组件实时样例，可切换密度（32/40/48）与圆角（4/8/10），含状态对比 |
 | [产品蓝图](https://gsaecy.github.io/app-guidelines/blueprint.html) | 12 个产品模块 × 9 个规范维度矩阵，Logo 构造/禁用示例、全平台图标尺寸、登录字段规范、48 项交付物清单 |
+| [Logo 规范](https://gsaecy.github.io/app-guidelines/logo.html) | 6 种类型、几何比例、布尔切割实验台、光学修正、安全区与最小尺寸、响应式三形态、SVG 交付 |
 | [测试工具](https://gsaecy.github.io/app-guidelines/testing.html) | 对比度检查、色盲模拟、热区检查、键盘可达性、响应式预览、可读性、12 题知识自测 |
 
 ## 包含什么
@@ -75,7 +76,8 @@ skills/app-design-spec/
     ├── glossary.md       # 92 条中英术语 + 16 类页面结构
     ├── platforms.md      # Apple / M3 / Windows 数值对照
     ├── modules.md        # 12 模块 × 9 维度矩阵、Logo/图标/登录、交付物清单
-    └── elements.md       # 7 族 66 个元素的规范要点与效果参数
+    ├── elements.md       # 7 族 66 个元素的规范要点与效果参数
+    └── logo.md           # Logo 类型/布尔切割/光学修正/安全区/交付
 ```
 
 安装（用户级）：
@@ -94,6 +96,7 @@ principles.html            设计原理（格式塔 + 13 条定律 + 3 个实验
 elements.html              元素总览（7 族 66 个元素的规范与效果索引）
 components.html            组件画廊（29 个组件，密度/圆角/状态切换）
 blueprint.html             产品蓝图（12 模块矩阵 + Logo/图标/登录规范 + 交付物）
+logo.html                  Logo 规范（类型/布尔切割实验台/光学修正/安全区/交付）
 testing.html               测试工具（7 个检查器 + 12 题自测）
 assets/style.css           设计令牌 + 全部样式（浅/深色 + 打印）
 assets/data.js             规范唯一数据源：所有数值、术语、清单、变更记录
@@ -102,6 +105,7 @@ assets/shell.js            共享：主题、Toast、复制、顶部导航高亮
 assets/principles.js       定律卡片 + Fitts/Hick/分块实验
 assets/elements.js         66 个元素的族分组、搜索与效果落点
 assets/components.js       29 个组件样例与规格标注
+assets/logo.js             Logo 布尔切割实验台、光学修正、响应式与清单
 assets/testing.js          对比度/色盲/热区/键盘/响应式/可读性/自测
 skills/app-design-spec/    Agent Skill（SKILL.md + references/）
 .github/workflows/pages.yml GitHub Pages 自动部署

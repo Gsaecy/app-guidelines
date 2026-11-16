@@ -1160,3 +1160,42 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .el-table .el-links a { font-size: 11px; color: var(--accent); white-space: nowrap; }
 .el-anatomy { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 .el-anatomy__demo { background: var(--card-2); border-radius: 12px; padding: 20px; display: grid; place-items: center; min-height: 110px; }
+
+/* ==========================================================================
+   Logo page
+   ========================================================================== */
+.logo-stage {
+  position: relative; border-radius: 14px; background: var(--card-2);
+  display: grid; place-items: center; overflow: hidden; padding: 18px;
+}
+.logo-stage svg { display: block; max-width: 100%; height: auto; }
+.logo-op-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.op-svg { width: 100%; height: auto; }
+.guide { stroke: var(--accent); stroke-width: 0.8; opacity: .45; fill: none; }
+.guide-dash { stroke-dasharray: 3 3; }
+.shape-a { fill: color-mix(in srgb, var(--accent) 82%, white); }
+.shape-b { fill: color-mix(in srgb, #ff9f0a 70%, white); }
+.opt-demo { display: flex; gap: 26px; align-items: flex-end; justify-content: center; flex-wrap: wrap; }
+.opt-box { text-align: center; }
+.opt-box .sq, .opt-box .ci {
+  width: 96px; height: 96px; display: block; margin: 0 auto 8px;
+  background: var(--accent);
+}
+.opt-box .ci { border-radius: 50%; }
+.opt-box span { font-size: 11px; color: var(--text-2); font-family: var(--mono); }
+.logo-responsive { display: grid; place-items: center; min-height: 130px; }
+.logo-responsive__full { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+.logo-responsive__mark {
+  width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center;
+  background: linear-gradient(145deg,#0a84ff,#0071e3 60%,#5ac8fa); color: #fff; font-weight: 700; font-size: 20px;
+}
+.logo-type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.logo-type {
+  border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--card);
+  text-align: center;
+}
+.logo-type svg { height: 56px; width: auto; }
+.logo-type strong { display: block; font-size: 12.5px; margin-top: 8px; }
+.logo-type span { font-size: 10.5px; color: var(--text-3); font-family: var(--mono); }
+.swatch-pair { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.swatch-pair > div { border-radius: 10px; padding: 18px; display: grid; place-items: center; border: 1px solid var(--line); }
