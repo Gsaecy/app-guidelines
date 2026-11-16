@@ -1387,7 +1387,7 @@
       const r = std.r;
       const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
       const R = (r * scale).toFixed(2);
-      const ua = "r" + (r / a).toFixed(1) + "a";
+      const ua = "R" + (r / a).toFixed(1);      // 半径符号大写 R，数值不带单位
       // 构造线 = 成品同色相，明度拉开：浅底取更深，深底取更淡（同色系，不突兀）
       const c0 = String(state.color || "#9AA0A6").replace("#", "");
       const cr = parseInt(c0.substr(0, 2), 16) || 0, cg = parseInt(c0.substr(2, 2), 16) || 0, cb = parseInt(c0.substr(4, 2), 16) || 0;
@@ -1466,11 +1466,12 @@
       s.push("</g>");
 
       // ⑤ 尺寸标注：ISO 129-1 / GB-T 4458 三要素（尺寸界线 + 尺寸线 + 数字）
-      const dOff = 16, gap = 1.5, over = 5, AR = 6;
+      const dOff = 16, gap = 2, over = 4, AR = 6, LW = 0.7;
       const arrow = function (x, y, ang) {
         // x,y = 箭头尖端；ang = 指向（弧度）
         const c = Math.cos(ang), s_ = Math.sin(ang);
-        const bx = x - AR * c, by = y - AR * s_, px = -s_ * 1.1, py = c * 1.1;
+        const hw = AR * Math.tan(Math.PI / 12);   // 30° 闭合箭头：半角 15°
+        const bx = x - AR * c, by = y - AR * s_, px = -s_ * hw, py = c * hw;
         return '<path d="M' + x + " " + y + "L" + (bx + px) + " " + (by + py) + "L" + (bx - px) + " " + (by - py) +
           'Z" fill="' + HI + '" stroke="none"/>';
       };
@@ -1499,23 +1500,22 @@
       });
       s.push("</g>");
       // 圆心标记：细点画线十字（中心线伸出轮廓）
-      s.push('<g id="centres" stroke="' + HI + '" stroke-width="0.5" opacity="0.85">');
+      s.push('<g id="centres" stroke="' + HI + '" stroke-width="0.6">');
       std.corners.forEach(function (c) {
-        const cx = X(c.cx), cy = Y(c.cy), L = 7;
-        s.push('<line x1="' + (cx - L) + '" y1="' + cy + '" x2="' + (cx + L) + '" y2="' + cy + '" stroke-dasharray="4 1.5 1 1.5"/>');
-        s.push('<line x1="' + cx + '" y1="' + (cy - L) + '" x2="' + cx + '" y2="' + (cy + L) + '" stroke-dasharray="4 1.5 1 1.5"/>');
-        s.push('<circle cx="' + cx + '" cy="' + cy + '" r="0.9" fill="' + HI + '" stroke="none"/>');
+        const cx = X(c.cx), cy = Y(c.cy), L = 5;   // 圆心标记 = 细实线十字，约 10d
+        s.push('<line x1="' + (cx - L) + '" y1="' + cy + '" x2="' + (cx + L) + '" y2="' + cy + '"/>');
+        s.push('<line x1="' + cx + '" y1="' + (cy - L) + '" x2="' + cx + '" y2="' + (cy + L) + '"/>');
       });
       s.push("</g>");
 
       if (fontSize) {
-        const dw = ((bx1 - bx0) / a).toFixed(1) + "a", dh = ((by1 - by0) / a).toFixed(1) + "a";
+        const dw = ((bx1 - bx0) / a).toFixed(1), dh = ((by1 - by0) / a).toFixed(1);
         // 数字不得被图线穿过：文字加与背景同色的遮罩（制图标准要求，视觉上不是描边）
         const mask = ' style="paint-order:stroke" stroke="' + (state.construct ? "#FFFFFF" : "#FFFFFF") + '" stroke-width="2.5"';
         s.push('<g id="dim-text" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
           '" font-weight="500" fill="' + HI + '" text-anchor="middle"' + mask + ">");
         s.push('<text x="' + ((X(bx0) + X(bx1)) / 2) + '" y="' + (wy - 4) + '">' + dw + "</text>");
-        s.push('<text x="' + (hx - 5) + '" y="' + ((Y(by0) + Y(by1)) / 2) + '" dy="3" transform="rotate(-90 ' + (hx - 5) + " " + ((Y(by0) + Y(by1)) / 2) + ')">' + dh + "</text>");
+        s.push('<text x="' + (hx - 3) + '" y="' + ((Y(by0) + Y(by1)) / 2) + '" dy="3" text-anchor="end">' + dh + "</text>");
         rAnchors.forEach(function (q) {
           s.push('<text x="' + q.x + '" y="' + q.y + '" dy="3">' + ua + "</text>");
         });
@@ -1524,6 +1524,8 @@
           '" font-weight="500" fill="' + HI + '" text-anchor="middle">');
         s.push('<text x="' + X((bx0 + bx1) / 2) + '" y="' + Y(by1) + '" dy="34">' +
           "4 圆 ∪ 相切矩形 → 1 个圆角矩形</text>");
+        s.push('<text x="' + X(bx0) + '" y="' + Y(by1) + '" dy="48" text-anchor="start">' +
+          "单位：a（模数 = 短边 / " + n + "），未注尺寸均为 a 的整数倍</text>");
         s.push("</g>");
       }
       return s.join("");
@@ -1971,7 +1973,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222c",
+      version: "20260222d",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
