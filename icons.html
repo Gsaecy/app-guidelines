@@ -4,19 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>图标库 — App Guidelines</title>
-<meta name="description" content="常用开源图标库浏览器：Lucide、Tabler、Material Symbols、Fluent、Phosphor、Bootstrap Icons 等，按集检索、一键复制 SVG。">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/style.css">
 <style>
-.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:14px}
-.icon-cell{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;transition:background .15s}
-.icon-cell:hover{background:var(--card-2)}
-.icon-cell img{width:24px;height:24px}
-.icon-cell span{font-size:10px;color:var(--text-2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono)}
-.set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:12px}
-.set-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;font-size:12.5px}
-.set-row.is-on{border-color:var(--accent);background:var(--accent-soft)}
-.set-row b{font-weight:600}.set-row small{margin-left:auto;color:var(--text-3);font-family:var(--mono);font-size:10.5px}
+.icon-bar{position:sticky;top:calc(var(--appbar-h) + 6px);z-index:20;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--sh-1);margin-bottom:14px}
+.icon-bar select{height:32px;border-radius:8px;border:1px solid var(--line-strong);background:var(--card);color:var(--text);font:inherit;font-size:12.5px;padding:0 8px;max-width:280px}
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.icon-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 6px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;transition:border-color .15s,transform .15s,background .15s}
+.icon-cell:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-2px)}
+.icon-cell img{width:40px;height:40px}
+.icon-cell span{font-size:10.5px;color:var(--text-2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono)}
+.icon-cell.big img{width:56px;height:56px}
 </style>
 </head>
 <body>
@@ -27,88 +25,80 @@
   <nav class="topnav" aria-label="站点导航">
     <a href="index.html">规范速查</a><a href="principles.html">设计原理</a><a href="elements.html">元素总览</a>
     <a href="components.html">组件画廊</a><a href="blueprint.html">产品蓝图</a><a href="logo.html">Logo 规范</a>
-    <a href="devices.html">设备示例</a>
-    <a href="icons.html">图标库</a>
-    <a href="devices.html">设备示例</a><a href="trace.html">切割生成器</a>
-    <a href="devices.html">设备示例</a><a href="testing.html">测试工具</a>
+    <a href="icons.html">图标库</a><a href="devices.html">设备示例</a><a href="trace.html">切割生成器</a><a href="testing.html">测试工具</a>
   </nav>
   <div class="appbar__actions"><button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色">◐</button></div>
 </header>
 
 <div class="wrap"><main class="main" id="main">
-  <div class="page-head">
+  <div class="page-head" style="padding-bottom:0">
     <div class="hero__eyebrow">Icons · 常用开源图标库</div>
     <h1>图标库</h1>
-    <p>收录 <b id="statSets">—</b> 套开源图标集、<b id="statIcons">—</b> 个图标（数据来自 Iconify 全量索引）。下方按常用度列出主流图标集，选中即可浏览、搜索并复制 SVG 源码。图标按其原库协议授权。</p>
+    <p style="margin-bottom:10px">共 <b id="statSets">—</b> 套 / <b id="statIcons">—</b> 个开源图标。选一套即可浏览，<b>点击任意图标复制 SVG 源码</b>。</p>
   </div>
 
-  <div class="el-toolbar">
-    <input class="input" id="iconSearch" type="search" placeholder="搜索图标名：home / user / arrow …" style="flex:1;min-width:200px">
-    <span class="card__hint" id="iconCount">选择左侧图标集</span>
-  </div>
-
-  <div class="split" style="align-items:start">
-    <div class="card">
-      <div class="card__title">图标集（按常用度）</div>
-      <div class="set-grid" id="setList"></div>
-      <p class="card__hint" style="margin-top:10px">每套协议独立：MIT / Apache-2.0 / CC-BY 等，商用前请核对原库 LICENSE。</p>
+  <div class="icon-bar">
+    <select id="setSel" aria-label="选择图标集"></select>
+    <input class="input" id="iconSearch" type="search" placeholder="搜索图标名…" style="flex:1;min-width:160px;height:32px">
+    <div class="segmented" id="sizeSwitch" role="group" aria-label="图标尺寸">
+      <button type="button" data-size="32">32</button>
+      <button type="button" class="is-on" data-size="40">40</button>
+      <button type="button" data-size="56">56</button>
     </div>
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
-        <div class="card__title" id="setTitle">未选择</div>
-        <button class="copy-chip" type="button" id="dlAll" style="display:none">下载该 SVG</button>
-      </div>
-      <div class="icon-grid" id="iconGrid"></div>
-      <p class="card__hint" id="iconHint" style="margin-top:12px">点击任意图标复制 SVG 源码；数据经 app-guidelines 站点代理加载自 Iconify。</p>
-    </div>
+    <span class="card__hint" id="iconCount">选择图标集</span>
   </div>
 
-  <div class="footer"><span>App Guidelines · 图标库</span><span><a href="index.html">规范速查</a> · <a href="logo.html#geometry">Logo 规范</a></span></div>
+  <div class="icon-grid" id="iconGrid"><span class="card__hint">加载中…</span></div>
+
+  <div class="footer"><span>App Guidelines · 图标库</span><span><a href="index.html">规范速查</a> · <a href="components.html">组件画廊</a></span></div>
 </main></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/shell.js"></script>
 <script>
 (function(){
   var CURATED=[["lucide","Lucide"],["tabler","Tabler"],["mdi","Material Design Icons"],["material-symbols","Material Symbols"],["fluent","Fluent UI"],["ph","Phosphor"],["bi","Bootstrap Icons"],["heroicons","Heroicons"],["ri","Remix Icon"],["carbon","Carbon"],["iconoir","Iconoir"],["mingcute","MingCute"],["mage","Mage"],["solar","Solar"],["hugeicons","Hugeicons"],["ion","Ionicons"],["octicon","Octicons"],["fa6-solid","Font Awesome"],["simple-icons","Simple Icons"],["devicon","Devicon"]];
-  var IDX={},cur=null,names=[];
+  var IDX={},cur=null,names=[],size=40;
   function $(s){return document.querySelector(s)}
   function api(p){return "https://api.iconify.design/"+p}
+
   fetch("icons/index.json").then(function(r){return r.json()}).then(function(d){
     $("#statSets").textContent=d.collections; $("#statIcons").textContent=Number(d.total).toLocaleString();
     (d.sets||[]).forEach(function(s){IDX[s.name]=s});
-    $("#setList").innerHTML=CURATED.map(function(c){
+    $("#setSel").innerHTML=CURATED.map(function(c){
       var s=IDX[c[0]]||{icons:"?",license:"?"};
-      return '<div class="set-row" data-prefix="'+c[0]+'"><b>'+c[1]+'</b><small>'+s.icons+' · '+s.license+'</small></div>';
+      return '<option value="'+c[0]+'">'+c[1]+' · '+s.icons+' · '+s.license+'</option>';
     }).join("");
-    $("#setList").addEventListener("click",function(e){
-      var row=e.target.closest("[data-prefix]"); if(!row) return;
-      document.querySelectorAll(".set-row").forEach(function(r){r.classList.toggle("is-on",r===row)});
-      load(row.getAttribute("data-prefix"),row.querySelector("b").textContent);
-    });
-  }).catch(function(){$("#statSets").textContent="—";});
+    load(CURATED[0][0]);
+  }).catch(function(){ $("#statSets").textContent="—"; });
 
-  function load(prefix,label){
-    cur=prefix; $("#setTitle").textContent=label+" · "+prefix; $("#iconGrid").innerHTML='<span class="card__hint">加载中…</span>';
+  function load(prefix){
+    cur=prefix; $("#iconGrid").innerHTML='<span class="card__hint">加载中…</span>';
     fetch("https://api.iconify.design/collection?prefix="+prefix).then(function(r){return r.json()}).then(function(d){
       var arr=[]; if(d.uncategorized) arr=arr.concat(d.uncategorized);
       if(d.categories) Object.keys(d.categories).forEach(function(k){arr=arr.concat(d.categories[k])});
       names=Array.from(new Set(arr)); render();
-    }).catch(function(){ $("#iconGrid").innerHTML='<span class="card__hint">该图标集加载失败（可能需联网）。</span>'; });
+    }).catch(function(){ $("#iconGrid").innerHTML='<span class="card__hint">加载失败，请检查网络。</span>'; });
   }
 
   function render(){
     var q=($("#iconSearch").value||"").trim().toLowerCase();
-    var list=names.filter(function(n){return !q||n.indexOf(q)>=0}).slice(0,600);
+    var list=names.filter(function(n){return !q||n.indexOf(q)>=0}).slice(0,900);
     $("#iconGrid").innerHTML=list.map(function(n){
-      return '<div class="icon-cell" data-name="'+n+'" title="'+n+'"><img loading="lazy" alt="'+n+'" src="'+api("/"+cur+"/"+n+".svg?height=24")+'"><span>'+n+'</span></div>';
+      return '<div class="icon-cell'+(size>=56?" big":"")+'" data-name="'+n+'" title="点击复制 '+n+' 的 SVG"><img loading="lazy" alt="'+n+'" src="'+api("/"+cur+"/"+n+".svg?height="+size)+'" style="width:'+size+'px;height:'+size+'px"><span>'+n+'</span></div>';
     }).join("") || '<span class="card__hint">没有匹配的图标。</span>';
-    $("#iconCount").textContent=list.length+" / "+names.length+" 个（最多显示 600）";
+    $("#iconCount").textContent=list.length+" / "+names.length;
   }
 
+  $("#setSel").addEventListener("change",function(){ load(this.value); });
   $("#iconSearch").addEventListener("input",function(){ if(cur) render(); });
+  $("#sizeSwitch").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-size]"); if(!b) return;
+    document.querySelectorAll("#sizeSwitch button").forEach(function(n){n.classList.toggle("is-on",n===b)});
+    size=Number(b.getAttribute("data-size")); if(cur) render();
+  });
   $("#iconGrid").addEventListener("click",function(e){
-    var cell=e.target.closest("[data-name]"); if(!cell||!cur) return;
-    var n=cell.getAttribute("data-name");
+    var c=e.target.closest("[data-name]"); if(!c||!cur) return;
+    var n=c.getAttribute("data-name");
     fetch(api("/"+cur+"/"+n+".svg")).then(function(r){return r.text()}).then(function(svg){ if(window.AG) AG.copy(svg); });
   });
 })();
