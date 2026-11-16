@@ -392,6 +392,7 @@
       });
     }
     snapStandardShape(snapMask, built.w, built.h);
+    boolFit(built.mask, built.w, built.h);
     let loops = contours(built.mask, built.w, built.h);
     const minArea = Math.max(4, built.w * built.h * 0.00002);
     loops = loops
@@ -1026,6 +1027,95 @@
       }
     }
     return uni ? inter / uni : 0;
+  }
+
+  // === 布尔重构 · 第2片：降采样拟合 + 自适应贪心 ∪/− ===
+  function downscaleMask(mask, w, h, cap) {
+    const f = Math.min(1, cap / Math.max(w, h));
+    if (f >= 1) return { m: mask, w: w, h: h, f: 1 };
+    const w2 = Math.max(8, Math.round(w * f)), h2 = Math.max(8, Math.round(h * f));
+    const m2 = new Uint8Array(w2 * h2);
+    for (let y = 0; y < h2; y++) {
+      for (let x = 0; x < w2; x++) {
+        const sx = Math.min(w - 1, Math.floor(x / f)), sy = Math.min(h - 1, Math.floor(y / f));
+        m2[y * w2 + x] = mask[sy * w + sx] ? 1 : 0;
+      }
+    }
+    return { m: m2, w: w2, h: h2, f: f };
+  }
+
+  function scaleCand(c, f) {
+    const o = {};
+    for (const k in c) o[k] = c[k];
+    if (c.kind === "circle" || c.kind === "ellipse" || c.kind === "poly") {
+      o.cx = c.cx * f;
+      o.cy = c.cy * f;
+      if (c.r) o.r = c.r * f;
+      if (c.a) o.a = c.a * f;
+      if (c.b) o.b = c.b * f;
+      if (c.R) o.R = c.R * f;
+    } else {
+      o.x0 = c.x0 * f;
+      o.y0 = c.y0 * f;
+      o.x1 = (c.x1 + 1) * f - 1;
+      o.y1 = (c.y1 + 1) * f - 1;
+      if (c.r) o.r = c.r * f;
+    }
+    return o;
+  }
+
+  function refineCandidate(c, mask, w, h) {
+    let bestC = c, bestI = evalSet([{ op: "+", c: c }], mask, w, h);
+    const probe = function (patch) {
+      const cc = {};
+      for (const k in c) cc[k] = c[k];
+      for (const k in patch) cc[k] = patch[k];
+      const iou = evalSet([{ op: "+", c: cc }], mask, w, h);
+      if (iou > bestI + 1e-6) { bestI = iou; bestC = cc; }
+    };
+    if (c.kind === "circle") {
+      [0.88, 0.94, 0.97, 1.03, 1.06, 1.12].forEach(function (k) { probe({ r: c.r * k }); });
+    } else if (c.kind === "rrect") {
+      [0.6, 0.8, 1.0, 1.2, 1.4].forEach(function (k) { probe({ r: c.r * k }); });
+    } else if (c.kind === "ellipse") {
+      [0.94, 1.0, 1.06].forEach(function (k) { probe({ a: c.a * k, b: c.b * k }); });
+    } else if (c.kind === "poly") {
+      [0.5, 0.6, 0.7, 0.8].forEach(function (k) {
+        [0, 0.5].forEach(function (j) { probe({ R: c.R * k, rot: c.rot + j * Math.PI / c.n }); });
+      });
+    }
+    return bestC;
+  }
+
+  // 自适应贪心：不设形状数上限；停止条件 = 再加一个形改善不到 1 个像素
+  function boolFit(mask, w, h) {
+    const ds = downscaleMask(mask, w, h, 128);
+    const raw = boolCandidates(ds.m, ds.w, ds.h);
+    const pool = raw.map(function (c) { return refineCandidate(c, ds.m, ds.w, ds.h); });
+    let set = [], cur = evalSet(set, ds.m, ds.w, ds.h);
+    const EPS = Math.max(1 / (ds.w * ds.h), 0.0005);
+    const steps = [];
+    const guard = Math.max(12, Math.round((ds.w * ds.h) / 200));
+    for (let i = 0; i < guard; i++) {
+      let best = null;
+      pool.forEach(function (c) {
+        ["+", "-"].forEach(function (op) {
+          if (!set.length && op === "-") return;
+          const s2 = set.concat([{ op: op, c: c }]);
+          const iou = evalSet(s2, ds.m, ds.w, ds.h);
+          if (!best || iou > best.iou + 1e-9) best = { set: s2, iou: iou, gain: iou - cur, c: c, op: op };
+        });
+      });
+      if (!best || best.gain < EPS) break;
+      set = best.set;
+      cur = best.iou;
+      steps.push({ op: best.op, kind: best.c.kind + (best.c.n ? best.c.n : ""), gain: Math.round(best.gain * 10000) / 100, iou: Math.round(best.iou * 10000) / 100 });
+    }
+    state.bset = set.map(function (s) { return { op: s.op, c: scaleCand(s.c, 1 / ds.f) }; });
+    state.biou = Math.round(cur * 1000) / 10;
+    state.bsteps = steps;
+    state.bsmall = ds;
+    return { iou: cur, steps: steps, n: set.length };
   }
 
   function snapStandardShape(mask, w, h) {
@@ -1873,7 +1963,57 @@
     return d;
   }
 
+  function bsetD(scale, ox, oy, only) {
+    let d = "";
+    (only || state.bset || []).forEach(function (s) {
+      const c = s.c, cw = s.op === "+" ? 1 : 0;
+      if (c.kind === "circle") {
+        const cx = c.cx * scale + ox, cy = c.cy * scale + oy, rr = (c.r * scale).toFixed(2);
+        d += "M" + (c.cx * scale + ox - c.r * scale) + " " + cy + "A" + rr + " " + rr + " 0 1 " + cw + " " +
+          (c.cx * scale + ox + c.r * scale) + " " + cy + "A" + rr + " " + rr + " 0 1 " + cw + " " +
+          (c.cx * scale + ox - c.r * scale) + " " + cy + "Z";
+      } else if (c.kind === "ellipse") {
+        const cx = c.cx * scale + ox, cy = c.cy * scale + oy;
+        const ax = (c.a * scale).toFixed(2), by = (c.b * scale).toFixed(2);
+        d += "M" + (c.cx * scale + ox - c.a * scale) + " " + cy + "A" + ax + " " + by + " 0 1 " + cw + " " +
+          (c.cx * scale + ox + c.a * scale) + " " + cy + "A" + ax + " " + by + " 0 1 " + cw + " " +
+          (c.cx * scale + ox - c.a * scale) + " " + cy + "Z";
+      } else if (c.kind === "rect" || c.kind === "rrect") {
+        const x0 = c.x0 * scale + ox, y0 = c.y0 * scale + oy, x1 = (c.x1 + 1) * scale + ox, y1 = (c.y1 + 1) * scale + oy;
+        const rr = c.kind === "rrect" ? c.r * scale : 0;
+        if (!rr) {
+          d += "M" + x0 + " " + y0 + "L" + x1 + " " + y0 + "L" + x1 + " " + y1 + "L" + x0 + " " + y1 + "Z";
+        } else {
+          const q = rr.toFixed(2), sf = cw;
+          d += "M" + (x0 + rr) + " " + y0 + "L" + (x1 - rr) + " " + y0 + "A" + q + " " + q + " 0 0 " + sf + " " + x1 + " " + (y0 + rr) +
+            "L" + x1 + " " + (y1 - rr) + "A" + q + " " + q + " 0 0 " + sf + " " + (x1 - rr) + " " + y1 +
+            "L" + (x0 + rr) + " " + y1 + "A" + q + " " + q + " 0 0 " + sf + " " + x0 + " " + (y1 - rr) +
+            "L" + x0 + " " + (y0 + rr) + "A" + q + " " + q + " 0 0 " + sf + " " + (x0 + rr) + " " + y0 + "Z";
+        }
+      } else if (c.kind === "poly") {
+        const pts = [];
+        for (let i = 0; i < c.n; i++) {
+          const a1 = -Math.PI / 2 + c.rot + (cw ? 1 : -1) * i * 2 * Math.PI / c.n;
+          pts.push([(c.cx + c.R * Math.cos(a1)) * scale + ox, (c.cy + c.R * Math.sin(a1)) * scale + oy]);
+        }
+        d += "M" + pts[0][0].toFixed(2) + " " + pts[0][1].toFixed(2) +
+          pts.slice(1).map(function (q) { return "L" + q[0].toFixed(2) + " " + q[1].toFixed(2); }).join("") + "Z";
+      }
+    });
+    return d;
+  }
+
+  function bsetLabel() {
+    const nm = { circle: "圆", rect: "矩形", rrect: "圆角矩形", ellipse: "椭圆" };
+    return (state.bset || []).map(function (s, i) {
+      const c = s.c;
+      const name = c.kind === "poly" ? c.n + "边形" : nm[c.kind];
+      return (i ? s.op + " " : "") + name;
+    }).join(" ");
+  }
+
   function shapeD(scale, ox, oy) {
+    if (state.bset && state.bset.length > 1) return bsetD(scale, ox, oy);
     const base = state.standard ? standardD(state.standard, scale, ox, oy) : fitsD(state.fits, scale, ox, oy);
     return base + holesD(scale, ox, oy);
   }
@@ -1893,7 +2033,13 @@
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="切割草稿预览">');
     if (state.construct) s.push(rrectGridMarkup(scale, ox, oy));
     if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-opacity="0.92" fill-rule="evenodd"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
-    if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
+    if (state.bset && state.bset.length > 1 && state.construct) {
+      s.push('<g id="bprim" fill="none" stroke="#3C4957" stroke-width="0.9" stroke-dasharray="5 4" opacity="0.9">');
+      state.bset.forEach(function (b) { s.push('<path d="' + bsetD(scale, ox, oy, [b]) + '"/>'); });
+      s.push("</g>");
+      s.push('<text x="10" y="16" font-family="ui-monospace, monospace" font-size="9" fill="#3C4957">' +
+        bsetLabel() + "　拟合率 " + state.biou + "%</text>");
+    } else if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
     s.push('<rect x="6" y="6" width="' + (W - 12) + '" height="' + (H - 12) + '" fill="none" stroke="rgba(0,0,0,.16)" stroke-dasharray="3 4"/>');
     s.push("</svg>");
     host.innerHTML = s.join("");
@@ -2204,7 +2350,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260223a",
+      version: "20260224b",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -2233,6 +2379,7 @@
         return parts;
       },
       holes: function () { return state.holes || []; },
+      boolFit: function () { return { iou: state.biou, steps: state.bsteps || [], label: bsetLabel(), n: (state.bset || []).length, small: state.bsmall && { w: state.bsmall.w, h: state.bsmall.h } }; },
       boolTest: function () { return { candidates: state._biou || [], w: state._bw, h: state._bh }; },
       constraints: function () { return this.boolExpr().filter(function (k) { return k.charAt(0) === "·"; }); },
       standard: function () {
