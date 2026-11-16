@@ -1495,43 +1495,79 @@
       return { iou: uni ? inter / uni : 0, miss: miss, extra: extra, inter: inter, uni: uni };
     };
 
-    // 参数微调：逐实体、逐参数做坐标下降，最大化与掩膜的重合（收敛到亚像素最优）
-    let cur = stats();
+    // 运算也是未知量：逐操作数在 ∪/∩/∖ 里选失配最小的那个（不靠猜）
+    const pool = plus.concat(minus);
+    const nOp = pool.length;
+    const ops = pool.map(function (s, i) { return "∪"; });
+    const evalFormula = function () {
+      let inter = 0, uni = 0, miss = 0, extra = 0, bad = 0;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const px = x + 0.5, py = y + 0.5;
+          let v = false;
+          for (let i = 0; i < nOp; i++) {
+            const hp = hit(pool[i], px, py);
+            if (ops[i] === "∪") v = v || hp;
+            else if (ops[i] === "∩") v = v && hp;
+            else v = v && !hp;
+          }
+          const m = !!mask[y * w + x];
+          if (v && m) inter++;
+          if (v || m) uni++;
+          if (m && !v) miss++;
+          if (v && !m) extra++;
+          if (v !== m) bad++;
+        }
+      }
+      return { iou: uni ? inter / uni : 0, miss: miss, extra: extra, inter: inter, uni: uni, bad: bad };
+    };
+
+    let cur = evalFormula();
+    for (let i = 1; i < nOp; i++) {
+      const keep = ops[i];
+      let bestOp = keep, bestBad = cur.bad;
+      ["∪", "∩", "∖"].forEach(function (op) {
+        ops[i] = op;
+        const v = evalFormula();
+        if (v.bad < bestBad) { bestBad = v.bad; bestOp = op; }
+      });
+      ops[i] = bestOp;
+      cur = evalFormula();
+    }
+
+    // 参数微调：逐实体逐参数坐标下降，仍以同一套 formula 的失配量为目标
     const steps = [1, 0.5];
     for (let iter = 0; iter < 4; iter++) {
       let improved = false;
-      [plus, minus].forEach(function (bucket) {
-        bucket.forEach(function (sol) {
-          if (sol.kind === "poly") return;
-          const keys = sol.kind === "circle" ? ["cx", "cy", "r"] : ["x0", "y0", "x1", "y1"];
-          keys.forEach(function (k) {
-            for (let si = 0; si < steps.length; si++) {
-              for (let sg = -1; sg <= 1; sg += 2) {
-                const d = steps[si] * sg;
-                sol[k] += d;
-                const v = stats();
-                if (v.iou > cur.iou + 1e-9) { cur = v; improved = true; }
-                else sol[k] -= d;
-              }
+      pool.forEach(function (sol) {
+        if (sol.kind === "poly") return;
+        const keys = sol.kind === "circle" ? ["cx", "cy", "r"] : ["x0", "y0", "x1", "y1"];
+        keys.forEach(function (k) {
+          for (let si = 0; si < steps.length; si++) {
+            for (let sg = -1; sg <= 1; sg += 2) {
+              const d = steps[si] * sg;
+              sol[k] += d;
+              const v = evalFormula();
+              if (v.bad < cur.bad) { cur = v; improved = true; }
+              else sol[k] -= d;
             }
-          });
+          }
         });
       });
       if (!improved) break;
     }
 
-    const labels = [];
-    plus.forEach(function (s) {
-      if (s.kind === "poly") labels.push("+多边形 " + s.pts.length + " 边");
-      else if (s.kind === "circle") labels.push("+圆 R" + r1(s.r));
-      else if (s.kind === "rrect") labels.push("+圆角矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0) + " R" + r1(s.r));
-      else labels.push("+矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0));
-    });
-    minus.forEach(function (s) {
-      if (s.kind === "circle") labels.push("-圆 R" + r1(s.r));
-      else labels.push("-矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0));
-    });
-    return { plus: plus, minus: minus, expr: labels.join("  "),
+    const nameOf = function (s) {
+      if (s.kind === "poly") return "多边形 " + s.pts.length + " 边";
+      if (s.kind === "circle") return "圆 R" + r1(s.r);
+      if (s.kind === "rrect") return "圆角矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0) + " R" + r1(s.r);
+      if (s.kind === "halfcut") return "圆 R" + r1(s.r) + " ∩ 半平面";
+      return "矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0);
+    };
+    const formula = pool.map(function (s, i) { return { sol: s, op: ops[i] }; });
+    const labels = formula.map(function (f) { return f.op + " " + nameOf(f.sol); });
+    return { plus: plus, minus: minus, formula: formula,
+      expr: labels.join("  "), ops: ops.join(""),
       iou: cur.iou, miss: cur.miss, extra: cur.extra, overlap: cur.inter };
   }
 
@@ -3089,7 +3125,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260313a",
+      version: "20260314a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -3149,9 +3185,11 @@
         cvs.width = w; cvs.height = h;
         const ctx = cvs.getContext("2d");
         ctx.fillStyle = "#fff";
-        c.plus.forEach(function (s) { ctx.fill(pathOf(s), "nonzero"); });
-        ctx.globalCompositeOperation = "destination-out";
-        c.minus.forEach(function (s) { ctx.fill(pathOf(s), "nonzero"); });
+        (c.formula || c.plus.map(function (z) { return { sol: z, op: "∪" }; })).forEach(function (f) {
+          ctx.globalCompositeOperation = f.op === "∩" ? "destination-in" : (f.op === "∖" ? "destination-out" : "source-over");
+          ctx.fillStyle = "#fff";
+          ctx.fill(pathOf(f.sol), "nonzero");
+        });
         ctx.globalCompositeOperation = "source-over";
         const px = ctx.getImageData(0, 0, w, h).data;
         const B = new Uint8Array(w * h);
