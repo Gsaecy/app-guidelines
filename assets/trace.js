@@ -1496,7 +1496,7 @@
           'Z" fill="' + HI + '" stroke="none"/>';
       };
       const wy = Y(by1) + dOff, hx = X(bx0) - dOff;
-      s.push('<g id="dims" fill="none" stroke="' + HI + '" stroke-width="0.7">');
+      s.push('<g id="dims" fill="none" stroke="' + HI + '" stroke-width="0.55">');
       // 宽度：尺寸界线（与被注线段留间隙，超出尺寸线 5）
       s.push('<line x1="' + X(bx0) + '" y1="' + (Y(by1) + gap) + '" x2="' + X(bx0) + '" y2="' + (wy + over) + '"/>');
       s.push('<line x1="' + X(bx1) + '" y1="' + (Y(by1) + gap) + '" x2="' + X(bx1) + '" y2="' + (wy + over) + '"/>');
@@ -1516,7 +1516,7 @@
         const px = cx + rr * Math.cos(ang), py = cy + rr * Math.sin(ang);
         s.push('<line x1="' + (cx - 4 * Math.cos(ang)) + '" y1="' + (cy - 4 * Math.sin(ang)) + '" x2="' + px + '" y2="' + py + '"/>');
         s.push(arrow(px, py, ang));
-        rAnchors.push({ x: px + 12 * Math.cos(ang), y: py + 12 * Math.sin(ang) });
+        rAnchors.push({ x: px + 13 * Math.cos(ang) - 4 * Math.sin(ang), y: py + 13 * Math.sin(ang) + 4 * Math.cos(ang) });
       });
       s.push("</g>");
       // 圆心标记：细点画线十字（中心线伸出轮廓）
@@ -1602,7 +1602,7 @@
 
       const dOff = 16, gap = 2, over = 4, wy = Y(by1) + dOff, hx = X(bx0) - dOff;
       const dwv = ((bx1 - bx0) / a).toFixed(1), dhv = ((by1 - by0) / a).toFixed(1);
-      s.push('<g id="dims" fill="none" stroke="' + HI + '" stroke-width="0.7">');
+      s.push('<g id="dims" fill="none" stroke="' + HI + '" stroke-width="0.55">');
       if (std.kind === "circle") {
         s.push('<line x1="' + (X(bx0) + AR) + '" y1="' + Y(cy) + '" x2="' + (X(bx1) - AR) + '" y2="' + Y(cy) + '"/>');
         s.push(arrow(X(bx0), Y(cy), 0), arrow(X(bx1), Y(cy), Math.PI));
@@ -2097,7 +2097,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222j",
+      version: "20260222k",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
