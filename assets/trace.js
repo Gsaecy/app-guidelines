@@ -1147,6 +1147,34 @@
       return { g: g, model: c.model, res: meanRes(c.model, g) };
     });
 
+    // 短段吸收：短段若落在邻段模型上（容差内），并入邻段——切点附近常被切成碎线
+    const SHORT = MINRUN * 2;
+    let absorbed = true;
+    while (absorbed && segs.length > 2) {
+      absorbed = false;
+      for (let k = 0; k < segs.length; k++) {
+        if (segs[k].g.length >= SHORT) continue;
+        const cand = [(k - 1 + segs.length) % segs.length, (k + 1) % segs.length];
+        for (let t = 0; t < cand.length; t++) {
+          const j = cand[t];
+          if (j === k) continue;
+          const nb = segs[j];
+          const tol = nb.model.type === "line" ? TOL_L : TOL_A;
+          let ok = true;
+          for (let q = 0; q < segs[k].g.length; q++) {
+            if (mdist(nb.model, segs[k].g[q]) > tol * 1.6) { ok = false; break; }
+          }
+          if (!ok) continue;
+          nb.g = (j === (k + 1) % segs.length) ? nb.g.concat(segs[k].g) : segs[k].g.concat(nb.g);
+          nb.res = meanRes(nb.model, nb.g);
+          segs.splice(k, 1);
+          absorbed = true;
+          break;
+        }
+        if (absorbed) break;
+      }
+    }
+
     // 相邻同型合并（合并后仍贴合才接受）
     let merged = true;
     while (merged && segs.length > 2) {
@@ -2674,7 +2702,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260301a",
+      version: "20260301b",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
