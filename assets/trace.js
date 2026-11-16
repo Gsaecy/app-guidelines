@@ -368,6 +368,15 @@
     const built = buildMask(state.img);
     if (state.construct) buildDisks(built.mask, built.w, built.h);
     detectHoles(built.mask, built.w, built.h);
+    state._bm = built.mask;
+    state._bw = built.w;
+    state._bh = built.h;
+    state._biou = (function () {
+      const cs = boolCandidates(built.mask, built.w, built.h);
+      return cs.map(function (c) {
+        return { kind: c.kind + (c.n ? c.n : ""), iou: Math.round(evalSet([{ op: "+", c: c }], built.mask, built.w, built.h) * 1000) / 10 };
+      }).sort(function (x, y) { return y.iou - x.iou; });
+    })();
     let snapMask = built.mask;
     if ((state.holes || []).length) {
       snapMask = built.mask.slice();
@@ -940,6 +949,83 @@
     }
     state.holes = holes;
     return holes;
+  }
+
+  // === 布尔重构 · 第1片：候选池 + 单个候选评估 ===
+  function boolCandidates(mask, w, h) {
+    let x0 = w, y0 = h, x1 = -1, y1 = -1, area = 0, sx = 0, sy = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (!mask[y * w + x]) continue;
+        area++; sx += x + 0.5; sy += y + 0.5;
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+    if (!area) return [];
+    const cx = sx / area, cy = sy / area;
+    const bw = x1 + 1 - x0, bh = y1 + 1 - y0;
+    const mx = (x0 + x1 + 1) / 2, my = (y0 + y1 + 1) / 2;
+    const out = [
+      { kind: "circle", cx: cx, cy: cy, r: Math.sqrt(area / Math.PI) },
+      { kind: "circle", cx: mx, cy: my, r: Math.min(bw, bh) / 2 },
+      { kind: "rect", x0: x0, y0: y0, x1: x1, y1: y1 },
+      { kind: "ellipse", cx: mx, cy: my, a: bw / 2, b: bh / 2 },
+    ];
+    const rr = Math.sqrt(Math.max(0, (bw * bh - area) / (4 - Math.PI)));
+    if (rr > 0.5 && rr < Math.min(bw, bh) / 2) out.push({ kind: "rrect", x0: x0, y0: y0, x1: x1, y1: y1, r: rr });
+    for (let n = 3; n <= 8; n++) {
+      for (let q = 0; q < 2; q++) {
+        out.push({ kind: "poly", n: n, cx: mx, cy: my, R: Math.sqrt(bw * bw + bh * bh) / 2, rot: q ? Math.PI / n : 0 });
+      }
+    }
+    return out;
+  }
+
+  function candInside(c, x, y) {
+    if (c.kind === "circle") return (x - c.cx) * (x - c.cx) + (y - c.cy) * (y - c.cy) <= c.r * c.r;
+    if (c.kind === "ellipse") return ((x - c.cx) / c.a) * ((x - c.cx) / c.a) + ((y - c.cy) / c.b) * ((y - c.cy) / c.b) <= 1;
+    if (c.kind === "rect") return x >= c.x0 && x <= c.x1 + 1 && y >= c.y0 && y <= c.y1 + 1;
+    if (c.kind === "rrect") {
+      if (x < c.x0 || x > c.x1 + 1 || y < c.y0 || y > c.y1 + 1) return false;
+      const qx = Math.min(Math.max(x, c.x0 + c.r), c.x1 + 1 - c.r);
+      const qy = Math.min(Math.max(y, c.y0 + c.r), c.y1 + 1 - c.r);
+      const inCorner = (x - qx) * (x - qx) + (y - qy) * (y - qy) <= c.r * c.r;
+      return inCorner || (x >= c.x0 + c.r && x <= c.x1 + 1 - c.r) || (y >= c.y0 + c.r && y <= c.y1 + 1 - c.r);
+    }
+    if (c.kind === "poly") {
+      let hit = false;
+      for (let i = 0, j = c.n - 1; i < c.n; j = i++) {
+        const a1 = -Math.PI / 2 + c.rot + i * 2 * Math.PI / c.n;
+        const a2 = -Math.PI / 2 + c.rot + j * 2 * Math.PI / c.n;
+        const xi = c.cx + c.R * Math.cos(a1), yi = c.cy + c.R * Math.sin(a1);
+        const xj = c.cx + c.R * Math.cos(a2), yj = c.cy + c.R * Math.sin(a2);
+        if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) hit = !hit;
+      }
+      return hit;
+    }
+    return false;
+  }
+
+  // 单候选 / 组合的拟合率（IoU）
+  function evalSet(set, mask, w, h) {
+    let inter = 0, uni = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const px = x + 0.5, py = y + 0.5;
+        let on = false;
+        for (let k = 0; k < set.length; k++) {
+          const s = set[k];
+          if (candInside(s.c, px, py)) on = s.op === "-" ? false : true;
+        }
+        const m = !!mask[y * w + x];
+        if (on && m) inter++;
+        if (on || m) uni++;
+      }
+    }
+    return uni ? inter / uni : 0;
   }
 
   function snapStandardShape(mask, w, h) {
@@ -2118,7 +2204,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222q",
+      version: "20260223a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -2147,6 +2233,7 @@
         return parts;
       },
       holes: function () { return state.holes || []; },
+      boolTest: function () { return { candidates: state._biou || [], w: state._bw, h: state._bh }; },
       constraints: function () { return this.boolExpr().filter(function (k) { return k.charAt(0) === "·"; }); },
       standard: function () {
         const s = state.standard;
