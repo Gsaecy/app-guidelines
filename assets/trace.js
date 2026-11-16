@@ -18,7 +18,7 @@
     loops: [],
     fits: [],
     fit: true,
-    construct: false,
+    construct: true,
     gridN: 12,
     unify: true,
     standard: true,
@@ -1012,7 +1012,7 @@
     const oy = (H - state.h * scale) / 2;
     const s = [];
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="切割草稿预览">');
-    s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="' + (state.construct ? "none" : "none") + '" stroke="' + (state.construct ? "#6B7280" : state.color) + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>');
+    if (state.construct) { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="#9AA0A6" fill-rule="evenodd" opacity="0.9"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
     if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
     s.push('<rect x="6" y="6" width="' + (W - 12) + '" height="' + (H - 12) + '" fill="none" stroke="rgba(0,0,0,.16)" stroke-dasharray="3 4"/>');
     s.push("</svg>");
@@ -1298,7 +1298,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260213m",
+      version: "20260214a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
