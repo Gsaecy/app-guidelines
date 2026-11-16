@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>产品蓝图 — App Guidelines</title>
+<meta name="description" content="一个软件从 Logo、应用图标、登录注册到完整功能的模块级设计规范：12 个模块、9 个规范维度、交付物清单与验收标准。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+
+<header class="appbar">
+  <div class="brand">
+    <div class="brand__mark" aria-hidden="true">A</div>
+    <div class="brand__name">App Guidelines</div>
+    <div class="brand__tag">产品蓝图</div>
+  </div>
+  <div class="appbar__spacer"></div>
+  <nav class="topnav" aria-label="站点导航">
+    <a href="index.html">规范速查</a>
+    <a href="principles.html">设计原理</a>
+    <a href="components.html">组件画廊</a>
+    <a href="blueprint.html">产品蓝图</a>
+    <a href="testing.html">测试工具</a>
+  </nav>
+  <div class="appbar__actions">
+    <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"></circle>
+        <path d="M12 2.8v2.1M12 19.1v2.1M4.5 4.5l1.5 1.5M18 18l1.5 1.5M2.8 12h2.1M19.1 12h2.1M4.5 19.5 6 18M18 6l1.5-1.5"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <main class="main" id="main">
+
+    <div class="page-head">
+      <div class="hero__eyebrow">Blueprint · 模块级规范</div>
+      <h1>产品蓝图</h1>
+      <p>把一个软件拆成 12 个模块：从 <b>Logo 与应用图标</b>、<b>登录注册</b>，到列表、详情、商业化、系统集成与交付。每个模块列出「必须定义什么规范、关键数值是多少、常见错误是什么、去哪查」，可直接当立项与验收清单用。</p>
+      <div class="subnav">
+        <a href="#modules">12 个模块</a>
+        <a href="#matrix">规范矩阵</a>
+        <a href="#logo">Logo 与图标</a>
+        <a href="#login">登录注册</a>
+        <a href="#deliverables">交付物清单</a>
+      </div>
+    </div>
+
+    <div class="stage-rail" aria-label="产品阶段">
+      <div class="stage-step"><div class="stage-step__num">01</div><div class="stage-step__name">品牌</div><div class="stage-step__meta">Logo · 图标 · 色与字</div></div>
+      <div class="stage-step"><div class="stage-step__num">02</div><div class="stage-step__name">获客</div><div class="stage-step__meta">商店页 · 落地页</div></div>
+      <div class="stage-step"><div class="stage-step__num">03</div><div class="stage-step__name">首次体验</div><div class="stage-step__meta">闪屏 · 引导 · 登录</div></div>
+      <div class="stage-step"><div class="stage-step__num">04</div><div class="stage-step__name">核心功能</div><div class="stage-step__meta">导航 · 列表 · 详情 · 编辑</div></div>
+      <div class="stage-step"><div class="stage-step__num">05</div><div class="stage-step__name">商业化</div><div class="stage-step__meta">定价 · 支付 · 会员</div></div>
+      <div class="stage-step"><div class="stage-step__num">06</div><div class="stage-step__name">质量</div><div class="stage-step__meta">无障碍 · 性能 · 交付</div></div>
+    </div>
+
+    <section class="section" id="modules">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">01</span>Modules</div>
+        <h2>12 个模块，每个都要有规范</h2>
+        <p class="section__lead">没有规范的模块一定会长出多个版本。每张卡右下角是本站对应的深查章节。</p>
+      </div>
+
+      <div class="segmented" id="moduleFilter" role="group" aria-label="按阶段筛选" style="margin-bottom:16px;flex-wrap:wrap">
+        <button type="button" class="is-on" data-stage="all">全部</button>
+        <button type="button" data-stage="brand">品牌与获客</button>
+        <button type="button" data-stage="onboard">首次体验</button>
+        <button type="button" data-stage="core">核心功能</button>
+        <button type="button" data-stage="money">商业化</button>
+        <button type="button" data-stage="system">系统与质量</button>
+      </div>
+
+      <div class="module-grid" id="moduleGrid"></div>
+    </section>
+
+    <section class="section" id="matrix">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">02</span>Matrix</div>
+        <h2>模块 × 规范维度</h2>
+        <p class="section__lead">● 必须定义　○ 视情况定义　— 不适用。评审时按行检查，缺一个 ● 就是欠规范。</p>
+      </div>
+      <div class="matrix-wrap">
+        <table class="matrix">
+          <thead><tr id="matrixHead"></tr></thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="logo">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">03</span>Brand &amp; Icon</div>
+        <h2>Logo 与应用图标</h2>
+        <p class="section__lead">Logo 的第一步不是「好看」，而是定义构造网格、安全区、最小尺寸与使用禁区；应用图标则必须按平台出齐尺寸。</p>
+      </div>
+
+      <div class="split">
+        <div class="demo-panel">
+          <div class="demo-panel__body">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+              <div class="card__title">构造网格与安全区</div>
+              <div style="display:flex;gap:14px">
+                <label class="check"><input type="checkbox" id="logoGrid">网格</label>
+                <label class="check"><input type="checkbox" id="logoClear" checked>安全区</label>
+              </div>
+            </div>
+            <div class="logo-demo" style="margin-top:12px">
+              <div class="logo-demo__grid" id="logoGridLayer"></div>
+              <div class="logo-demo__clear" id="logoClearLayer"></div>
+              <div class="logo-mark">M</div>
+              <div class="logo-demo__cap">安全区 = 0.5 × 标识高度（四周等距）</div>
+            </div>
+            <p class="card__hint" style="margin-top:10px">网格用 20px 基准；标识落在 6×6 单元内，四周留 1 单元安全区。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__title">Logo 规范必须写清的 8 件事</div>
+          <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;color:var(--text-2);line-height:1.85">
+            <li>构造网格：单元尺寸、圆角半径、描边粗细</li>
+            <li>安全区：四周 ≥ 0.5 × 标识高度，任何元素不得入侵</li>
+            <li>最小尺寸：数字端高 ≥ 24px；favicon 16px 需单独简化版</li>
+            <li>组合形式：横版 / 竖版 / 纯标识 / 带 tagline</li>
+            <li>配色版本：彩色 / 单色黑 / 反白 / 深色模式</li>
+            <li>背景规则：对比 ≥ 3:1，禁止放在杂乱图片上</li>
+            <li>禁止用法：拉伸、旋转、改色、加描边、加投影、低对比</li>
+            <li>文件交付：SVG + PNG@1x/2x/3x + 图标全套尺寸</li>
+          </ul>
+          <div class="logo-donts" style="margin-top:14px">
+            <figure class="logo-dont"><div class="logo-dont__stage"><div class="logo-dont__mark" style="transform:scaleX(1.6)">M</div></div><figcaption>横向拉伸</figcaption></figure>
+            <figure class="logo-dont"><div class="logo-dont__stage"><div class="logo-dont__mark" style="background:#ff453a">M</div></div><figcaption>擅自改色</figcaption></figure>
+            <figure class="logo-dont"><div class="logo-dont__stage"><div class="logo-dont__mark" style="transform:rotate(18deg)">M</div></div><figcaption>旋转</figcaption></figure>
+            <figure class="logo-dont"><div class="logo-dont__stage"><div class="logo-dont__mark" style="box-shadow:0 0 0 3px #111">M</div></div><figcaption>加描边</figcaption></figure>
+            <figure class="logo-dont"><div class="logo-dont__stage" style="background:#9aa0a6"><div class="logo-dont__mark" style="opacity:.55">M</div></div><figcaption>低对比背景</figcaption></figure>
+            <figure class="logo-dont"><div class="logo-dont__stage"><div class="logo-dont__mark" style="filter:blur(1.5px)">M</div></div><figcaption>缩放模糊</figcaption></figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:16px">
+        <table>
+          <thead><tr><th>平台</th><th>资源</th><th>尺寸</th><th>圆角 / 安全区</th></tr></thead>
+          <tbody id="iconSizeBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="login">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">04</span>Sign In</div>
+        <h2>登录 / 注册模块规范</h2>
+        <p class="section__lead">登录页只有两个目标：让老用户 3 秒进来，让新用户不迷路。字段越少越好，错误必须说清「怎么改」。</p>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <div class="card__title">字段与校验</div>
+          <div class="table-wrap" style="border:0;box-shadow:none;margin-top:10px">
+            <table class="table-wrap--tight">
+              <thead><tr><th>字段</th><th>规则</th><th>错误文案</th></tr></thead>
+              <tbody id="loginFieldBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <div class="card__title">流程规则</div>
+            <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;color:var(--text-2);line-height:1.85">
+              <li>优先第三方登录；iOS 提供「通过 Apple 登录」时必须有同等显著入口</li>
+              <li>手机号 / 邮箱二选一，不要同时要求；验证码 6 位、60s 重发、可粘贴</li>
+              <li>密码 ≥ 8 位，允许粘贴与密码管理器；提供显示密码开关</li>
+              <li>错误提示贴近字段，不用弹窗；不透露「账号是否存在」</li>
+              <li>登录按钮：提交中显示 spinner 并禁用，防重复提交</li>
+              <li>忘记密码与「没有账号」必须在一屏内可见</li>
+              <li>勾选协议默认不勾选，链接可点开且不丢失已填内容</li>
+              <li>二次验证（2FA）单独一步，支持 6 位码与恢复码</li>
+            </ul>
+          </div>
+          <div class="note">
+            <div><b>验收：</b>键盘 Tab 能走完全部字段 → 提交 → 错误可被读屏朗读；弱网 3G 下首屏 &lt; 2s；无密码明文日志。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="deliverables">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">05</span>Deliverables</div>
+        <h2>交付物清单</h2>
+        <p class="section__lead">勾选状态存在本地。一个模块「设计完成」= 下面每一项都有产出，而不是只有一张高保真图。</p>
+      </div>
+
+      <div class="card">
+        <div class="progress-head"><span>完成度</span><span id="deliverProgressText">0 / 0</span></div>
+        <div class="progress"><i id="deliverProgressBar" style="width:0%"></i></div>
+        <div class="deliver-grid" id="deliverGrid" style="margin-top:18px"></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>App Guidelines · 产品蓝图</span>
+      <span><a href="index.html">规范速查</a> · <a href="components.html">组件画廊</a> · <a href="testing.html">测试工具</a></span>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/shell.js"></script>
+<script src="assets/blueprint.js"></script>
+</body>
+</html>

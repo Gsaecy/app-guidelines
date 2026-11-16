@@ -4,15 +4,16 @@
 
 > 在线浏览：<https://gsaecy.github.io/app-guidelines/>
 
-![pages](https://img.shields.io/badge/pages-4-0071e3) ![components](https://img.shields.io/badge/components-29-34c759) ![deps](https://img.shields.io/badge/dependencies-0-34c759) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+![pages](https://img.shields.io/badge/pages-5-0071e3) ![components](https://img.shields.io/badge/components-29-34c759) ![deps](https://img.shields.io/badge/dependencies-0-34c759) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
-## 四个页面
+## 五个页面
 
 | 页面 | 内容 |
 |---|---|
 | [规范速查](https://gsaecy.github.io/app-guidelines/) | 24 章：圆角 / 间距 / 布局断点 / 字号 / 图标 / 控件 / 颜色 / 状态 / 材质 / 阴影 / 动效 / 文案 / 页面结构 / 令牌 / 工具 / 性能 / 清单 / 陷阱 |
 | [设计原理](https://gsaecy.github.io/app-guidelines/principles.html) | 格式塔 6 原则、13 条交互与认知定律，配 Fitts 靶场、Hick 反应、分块记忆三个实验 |
 | [组件画廊](https://gsaecy.github.io/app-guidelines/components.html) | 29 个组件实时样例，可切换密度（32/40/48）与圆角（4/8/10），含状态对比 |
+| [产品蓝图](https://gsaecy.github.io/app-guidelines/blueprint.html) | 12 个产品模块 × 9 个规范维度矩阵，Logo 构造/禁用示例、全平台图标尺寸、登录字段规范、48 项交付物清单 |
 | [测试工具](https://gsaecy.github.io/app-guidelines/testing.html) | 对比度检查、色盲模拟、热区检查、键盘可达性、响应式预览、可读性、12 题知识自测 |
 
 ## 包含什么
@@ -71,7 +72,8 @@ skills/app-design-spec/
     ├── components.md     # 29 个组件的尺寸/圆角/内边距/状态/常见错误
     ├── testing.md        # 7 项上线检查、WCAG 2.2 清单、性能预算
     ├── glossary.md       # 92 条中英术语 + 16 类页面结构
-    └── platforms.md      # Apple / M3 / Windows 数值对照
+    ├── platforms.md      # Apple / M3 / Windows 数值对照
+    └── modules.md        # 12 模块 × 9 维度矩阵、Logo/图标/登录、交付物清单
 ```
 
 安装（用户级）：
@@ -88,6 +90,7 @@ cp -r skills/app-design-spec ~/.copilot/skills/
 index.html                 规范速查（24 章，数据表 + 材质/动效/粒子实验室 + 工具集）
 principles.html            设计原理（格式塔 + 13 条定律 + 3 个实验）
 components.html            组件画廊（29 个组件，密度/圆角/状态切换）
+blueprint.html             产品蓝图（12 模块矩阵 + Logo/图标/登录规范 + 交付物）
 testing.html               测试工具（7 个检查器 + 12 题自测）
 assets/style.css           设计令牌 + 全部样式（浅/深色 + 打印）
 assets/data.js             规范唯一数据源：所有数值、术语、清单、变更记录

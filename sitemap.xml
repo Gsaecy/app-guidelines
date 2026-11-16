@@ -3,5 +3,6 @@
   <url><loc>https://gsaecy.github.io/app-guidelines/</loc><priority>1.0</priority></url>
   <url><loc>https://gsaecy.github.io/app-guidelines/principles.html</loc><priority>0.9</priority></url>
   <url><loc>https://gsaecy.github.io/app-guidelines/components.html</loc><priority>0.9</priority></url>
+  <url><loc>https://gsaecy.github.io/app-guidelines/blueprint.html</loc><priority>0.9</priority></url>
   <url><loc>https://gsaecy.github.io/app-guidelines/testing.html</loc><priority>0.9</priority></url>
 </urlset>
