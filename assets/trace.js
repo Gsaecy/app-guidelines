@@ -1249,12 +1249,13 @@
         if (Math.abs(ny) >= Math.abs(nx)) { if (ny < 0) { nx = -nx; ny = -ny; } }
         else if (nx < 0) { nx = -nx; ny = -ny; }
         const a0 = -ny * l.p0[0] + nx * l.p0[1], a1 = -ny * l.p1[0] + nx * l.p1[1];
-        const lo = Math.min(a0, a1) - 2, hi = Math.max(a0, a1) + 2;
+        const mid = (a0 + a1) / 2, half = Math.abs(a1 - a0) / 2 * 0.7;
+        const lo = mid - half, hi = mid + half;
         let sum = 0, cnt = 0;
         for (let i = 0; i < bpts.length; i++) {
           const p = bpts[i];
           const d = nx * p[0] + ny * p[1] - l.off;
-          if (Math.abs(d) > 3) continue;
+          if (Math.abs(d) > 1.5) continue;
           const a = -ny * p[0] + nx * p[1];
           if (a < lo || a > hi) continue;
           sum += d; cnt++;
@@ -2833,7 +2834,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260304a",
+      version: "20260304b",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
