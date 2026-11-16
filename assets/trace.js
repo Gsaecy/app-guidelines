@@ -3077,7 +3077,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260310a",
+      version: "20260311a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -3108,6 +3108,109 @@
       holes: function () { return state.holes || []; },
       boolFit: function () { return { iou: state.biou, steps: state.bsteps || [], label: bsetLabel(), n: (state.bset || []).length, small: state.bsmall && { w: state.bsmall.w, h: state.bsmall.h } }; },
       // 从标准形直接产出干净 SVG：一个 path，孔用 evenodd 减法，不夹带任何构造圆
+      // 验收：直接用重结实体的几何栅格化回来（不解析 SVG），与原掩膜同尺寸比对
+      // 口径：双向边界像素距离 mean/p95/max + 拓扑(components/holes)
+      verify: function () {
+        const p = this.plan();
+        if (!p) return null;
+        const c = reconstruct(p, state._bm, state._bw, state._bh);
+        const w = state._bw, h = state._bh, A = state._bm;
+        const pathOf = function (s) {
+          const P = new Path2D();
+          if (s.kind === "circle") { P.arc(s.cx, s.cy, s.r, 0, Math.PI * 2); P.closePath(); }
+          else if (s.kind === "rect") P.rect(s.x0, s.y0, s.x1 - s.x0, s.y1 - s.y0);
+          else if (s.kind === "rrect") {
+            const r = s.r, x0 = s.x0, y0 = s.y0, x1 = s.x1, y1 = s.y1;
+            P.moveTo(x0 + r, y0);
+            P.lineTo(x1 - r, y0); P.arc(x1 - r, y0 + r, r, -Math.PI / 2, 0);
+            P.lineTo(x1, y1 - r); P.arc(x1 - r, y1 - r, r, 0, Math.PI / 2);
+            P.lineTo(x0 + r, y1); P.arc(x0 + r, y1 - r, r, Math.PI / 2, Math.PI);
+            P.lineTo(x0, y0 + r); P.arc(x0 + r, y0 + r, r, Math.PI, Math.PI * 1.5);
+            P.closePath();
+          } else if (s.kind === "poly") {
+            s.pts.forEach(function (q, i) { if (i) P.lineTo(q[0], q[1]); else P.moveTo(q[0], q[1]); });
+            P.closePath();
+          }
+          return P;
+        };
+        const cvs = document.createElement("canvas");
+        cvs.width = w; cvs.height = h;
+        const ctx = cvs.getContext("2d");
+        ctx.fillStyle = "#fff";
+        c.plus.forEach(function (s) { ctx.fill(pathOf(s), "nonzero"); });
+        ctx.globalCompositeOperation = "destination-out";
+        c.minus.forEach(function (s) { ctx.fill(pathOf(s), "nonzero"); });
+        ctx.globalCompositeOperation = "source-over";
+        const px = ctx.getImageData(0, 0, w, h).data;
+        const B = new Uint8Array(w * h);
+        for (let i = 0; i < w * h; i++) B[i] = px[i * 4] > 128 ? 1 : 0;
+        const bd = function (m) {
+          const out = [];
+          for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+              const i = y * w + x;
+              if (!m[i]) continue;
+              if (x === 0 || y === 0 || x === w - 1 || y === h - 1 ||
+                  !m[i - 1] || !m[i + 1] || !m[i - w] || !m[i + w]) out.push([x, y]);
+            }
+          }
+          return out;
+        };
+        const pa = bd(A), pb = bd(B);
+        const nn = function (from, to) {
+          const ds = [];
+          for (let i = 0; i < from.length; i++) {
+            let best = 1e9;
+            for (let j = 0; j < to.length; j++) {
+              const dx = from[i][0] - to[j][0], dy = from[i][1] - to[j][1];
+              const q = dx * dx + dy * dy;
+              if (q < best) best = q;
+            }
+            ds.push(Math.sqrt(best));
+          }
+          return ds;
+        };
+        if (!pa.length || !pb.length) return { iou: 0, note: "边界为空" };
+        const dist = nn(pa, pb).concat(nn(pb, pa)).sort(function (a, b) { return a - b; });
+        const topo = function (m, wantBg) {
+          const lab = new Int32Array(w * h).fill(-1);
+          const st = [];
+          let comps = 0, holes = 0;
+          for (let i = 0; i < w * h; i++) {
+            const v = wantBg ? (m[i] ? 0 : 1) : m[i];
+            if (!v || lab[i] >= 0) continue;
+            let touch = false;
+            lab[i] = 1; st.push(i);
+            while (st.length) {
+              const q = st.pop();
+              const x = q % w, y = (q - x) / w;
+              if (x === 0 || y === 0 || x === w - 1 || y === h - 1) touch = true;
+              const nb = [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, y > 0 ? q - w : -1, y < h - 1 ? q + w : -1];
+              for (let k = 0; k < 4; k++) {
+                const z = nb[k];
+                if (z < 0 || lab[z] >= 0) continue;
+                const vv = wantBg ? (m[z] ? 0 : 1) : m[z];
+                if (vv) { lab[z] = 1; st.push(z); }
+              }
+            }
+            if (wantBg) { if (!touch) holes++; } else comps++;
+          }
+          return { components: comps, holes: holes };
+        };
+        let inter = 0, uni = 0;
+        for (let i = 0; i < w * h; i++) { if (A[i] && B[i]) inter++; if (A[i] || B[i]) uni++; }
+        const ta = topo(A, false), ha = topo(A, true), tb = topo(B, false), hb = topo(B, true);
+        ta.holes = ha.holes; tb.holes = hb.holes;
+        const mean = dist.reduce(function (x, y) { return x + y; }, 0) / dist.length;
+        return {
+          iou: Math.round(inter / Math.max(1, uni) * 100000) / 100000,
+          meanPx: Math.round(mean * 100) / 100,
+          p95Px: Math.round(dist[Math.floor((dist.length - 1) * 0.95)] * 100) / 100,
+          maxPx: Math.round(dist[dist.length - 1] * 100) / 100,
+          topology: { original: ta, rebuilt: tb, equal: ta.components === tb.components && ta.holes === tb.holes }
+        };
+      },
+
       svgPlan: function () {
         const p = this.plan();
         if (!p) return null;
