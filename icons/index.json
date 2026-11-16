@@ -1,0 +1,2031 @@
+{
+    "generated":  "2026-11-16",
+    "collections":  276,
+    "total":  480671,
+    "byLicense":  [
+                      {
+                          "license":  "MIT",
+                          "sets":  144,
+                          "icons":  273945
+                      },
+                      {
+                          "license":  "Apache-2.0",
+                          "sets":  31,
+                          "icons":  85624
+                      },
+                      {
+                          "license":  "CC-BY-4.0",
+                          "sets":  53,
+                          "icons":  65533
+                      },
+                      {
+                          "license":  "CC-BY-SA-4.0",
+                          "sets":  7,
+                          "icons":  22814
+                      },
+                      {
+                          "license":  "CC0-1.0",
+                          "sets":  10,
+                          "icons":  11317
+                      },
+                      {
+                          "license":  "ISC",
+                          "sets":  4,
+                          "icons":  6255
+                      },
+                      {
+                          "license":  "OFL-1.1",
+                          "sets":  13,
+                          "icons":  6240
+                      },
+                      {
+                          "license":  "CC-BY-3.0",
+                          "sets":  1,
+                          "icons":  4133
+                      },
+                      {
+                          "license":  "CC-BY-NC-SA-4.0",
+                          "sets":  1,
+                          "icons":  1795
+                      },
+                      {
+                          "license":  "GPL-2.0-or-later",
+                          "sets":  2,
+                          "icons":  680
+                      },
+                      {
+                          "license":  "GPL-3.0-or-later",
+                          "sets":  2,
+                          "icons":  591
+                      },
+                      {
+                          "license":  "CC-BY-NC-4.0",
+                          "sets":  1,
+                          "icons":  479
+                      },
+                      {
+                          "license":  "Unlicense",
+                          "sets":  1,
+                          "icons":  430
+                      },
+                      {
+                          "license":  "MPL-2.0",
+                          "sets":  1,
+                          "icons":  288
+                      },
+                      {
+                          "license":  "BSD-3-Clause",
+                          "sets":  1,
+                          "icons":  210
+                      },
+                      {
+                          "license":  "GPL-2.0-only",
+                          "sets":  1,
+                          "icons":  207
+                      },
+                      {
+                          "license":  "CC-BY-SA-3.0",
+                          "sets":  2,
+                          "icons":  79
+                      },
+                      {
+                          "license":  "GPL-3.0",
+                          "sets":  1,
+                          "icons":  51
+                      }
+                  ],
+    "sets":  [
+                 {
+                     "name":  "iconmind",
+                     "icons":  31722,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "coolicons",
+                     "icons":  23250,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "fluent",
+                     "icons":  19945,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "iconoven",
+                     "icons":  18236,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "material-symbols-light",
+                     "icons":  15875,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "Material"
+                 },
+                 {
+                     "name":  "material-symbols",
+                     "icons":  15810,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "Material"
+                 },
+                 {
+                     "name":  "arcticons",
+                     "icons":  15474,
+                     "license":  "CC-BY-SA-4.0",
+                     "height":  48,
+                     "category":  "High Detail"
+                 },
+                 {
+                     "name":  "keyline-icons",
+                     "icons":  14664,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "ic",
+                     "icons":  10955,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "Material"
+                 },
+                 {
+                     "name":  "solar",
+                     "icons":  9102,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "ph",
+                     "icons":  9072,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "energy-icons",
+                     "icons":  8252,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "mdi",
+                     "icons":  7447,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "Material"
+                 },
+                 {
+                     "name":  "selfhst",
+                     "icons":  7339,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "withicons",
+                     "icons":  7000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "reicon",
+                     "icons":  6590,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "tabler",
+                     "icons":  6545,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "hugeicons",
+                     "icons":  6065,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "thesvg-color",
+                     "icons":  5209,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "openmoji",
+                     "icons":  4546,
+                     "license":  "CC-BY-SA-4.0",
+                     "height":  36,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "mingcute",
+                     "icons":  4526,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "game-icons",
+                     "icons":  4133,
+                     "license":  "CC-BY-3.0",
+                     "height":  null,
+                     "category":  "Thematic"
+                 },
+                 {
+                     "name":  "token-branded",
+                     "icons":  4087,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "twemoji",
+                     "icons":  3988,
+                     "license":  "CC-BY-4.0",
+                     "height":  36,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "thesvg",
+                     "icons":  3805,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "boxicons",
+                     "icons":  3768,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "noto",
+                     "icons":  3729,
+                     "license":  "Apache-2.0",
+                     "height":  16,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "simple-icons",
+                     "icons":  3470,
+                     "license":  "CC0-1.0",
+                     "height":  24,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "glyphs",
+                     "icons":  3452,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "ri",
+                     "icons":  3188,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "fluent-emoji-flat",
+                     "icons":  3145,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "fluent-emoji",
+                     "icons":  3126,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  null
+                 },
+                 {
+                     "name":  "streamline",
+                     "icons":  3000,
+                     "license":  "CC-BY-4.0",
+                     "height":  28,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "lucide-extended",
+                     "icons":  2900,
+                     "license":  "ISC",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "pinhead",
+                     "icons":  2845,
+                     "license":  "CC0-1.0",
+                     "height":  15,
+                     "category":  "Location"
+                 },
+                 {
+                     "name":  "andrsrxn",
+                     "icons":  2772,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "icon-park",
+                     "icons":  2658,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "icon-park-outline",
+                     "icons":  2658,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "carbon",
+                     "icons":  2644,
+                     "license":  "Apache-2.0",
+                     "height":  32,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "mynaui",
+                     "icons":  2620,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "tdesign",
+                     "icons":  2358,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "noto-v1",
+                     "icons":  2162,
+                     "license":  "Apache-2.0",
+                     "height":  16,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "healthicons",
+                     "icons":  2128,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "High Detail"
+                 },
+                 {
+                     "name":  "whh",
+                     "icons":  2125,
+                     "license":  "OFL-1.1",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "bi",
+                     "icons":  2078,
+                     "license":  "MIT",
+                     "height":  16,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "logos",
+                     "icons":  2066,
+                     "license":  "CC0-1.0",
+                     "height":  null,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "lucide",
+                     "icons":  2052,
+                     "license":  "ISC",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "vadivam",
+                     "icons":  2020,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "griddy-icons",
+                     "icons":  2010,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "streamline-color",
+                     "icons":  2000,
+                     "license":  "CC-BY-4.0",
+                     "height":  28,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "fa7-solid",
+                     "icons":  2000,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "streamline-ultimate",
+                     "icons":  1999,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "icon-park-solid",
+                     "icons":  1947,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "icon-park-twotone",
+                     "icons":  1944,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "emojione",
+                     "icons":  1834,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "cbi",
+                     "icons":  1795,
+                     "license":  "CC-BY-NC-SA-4.0",
+                     "height":  null,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "token",
+                     "icons":  1790,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "iconamoon",
+                     "icons":  1781,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "fluent-mdl2",
+                     "icons":  1735,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "vscode-icons",
+                     "icons":  1720,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "iconoir",
+                     "icons":  1671,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "fluent-emoji-high-contrast",
+                     "icons":  1595,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "la",
+                     "icons":  1544,
+                     "license":  "Apache-2.0",
+                     "height":  null,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "lets-icons",
+                     "icons":  1528,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "streamline-sharp",
+                     "icons":  1500,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "streamline-flex",
+                     "icons":  1500,
+                     "license":  "CC-BY-4.0",
+                     "height":  28,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "streamline-plump",
+                     "icons":  1499,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "garden",
+                     "icons":  1491,
+                     "license":  "Apache-2.0",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "ix",
+                     "icons":  1490,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "emojione-monotone",
+                     "icons":  1403,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "fa6-solid",
+                     "icons":  1402,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "streamline-logos",
+                     "icons":  1362,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "ion",
+                     "icons":  1357,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "famicons",
+                     "icons":  1342,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "si",
+                     "icons":  1299,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "heroicons",
+                     "icons":  1288,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "pepicons-print",
+                     "icons":  1275,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "pepicons-pencil",
+                     "icons":  1275,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "pepicons-pop",
+                     "icons":  1275,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "emojione-v1",
+                     "icons":  1262,
+                     "license":  "CC-BY-SA-4.0",
+                     "height":  32,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "f7",
+                     "icons":  1253,
+                     "license":  "MIT",
+                     "height":  28,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "line-md",
+                     "icons":  1218,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Material"
+                 },
+                 {
+                     "name":  "uil",
+                     "icons":  1215,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "teenyicons",
+                     "icons":  1200,
+                     "license":  "MIT",
+                     "height":  15,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "dinkie-icons",
+                     "icons":  1198,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "devicon",
+                     "icons":  1147,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "clarity",
+                     "icons":  1103,
+                     "license":  "MIT",
+                     "height":  36,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "mage",
+                     "icons":  1042,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "pixelarticons",
+                     "icons":  1036,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "fxemoji",
+                     "icons":  1034,
+                     "license":  "Apache-2.0",
+                     "height":  32,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "fa-solid",
+                     "icons":  1001,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "withicons-sticker",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-pastel",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-halloween",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Holiday / Seasonal"
+                 },
+                 {
+                     "name":  "withicons-skeuo",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-dock",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Apps"
+                 },
+                 {
+                     "name":  "withicons-valentine",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Holiday / Seasonal"
+                 },
+                 {
+                     "name":  "streamline-freehand-color",
+                     "icons":  1000,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-soft3d",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "High Detail Multicolor"
+                 },
+                 {
+                     "name":  "streamline-plump-color",
+                     "icons":  1000,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-lunar",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Holiday / Seasonal"
+                 },
+                 {
+                     "name":  "withicons-christmas",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Holiday / Seasonal"
+                 },
+                 {
+                     "name":  "withicons-rangoli",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Holiday / Seasonal"
+                 },
+                 {
+                     "name":  "withicons-utsav",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Holiday / Seasonal"
+                 },
+                 {
+                     "name":  "withicons-suite",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-chrome",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-clay",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-bento",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-brutal",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "streamline-flex-color",
+                     "icons":  1000,
+                     "license":  "CC-BY-4.0",
+                     "height":  28,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "streamline-sharp-color",
+                     "icons":  1000,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-liquid",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-gothic",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-anime",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-bauhaus",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-plush",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-coquette",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-luxe",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-retro",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-glass",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "withicons-kawaii",
+                     "icons":  1000,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "streamline-freehand",
+                     "icons":  1000,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "streamline-ultimate-color",
+                     "icons":  998,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "stash",
+                     "icons":  982,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "jam",
+                     "icons":  940,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "file-icons",
+                     "icons":  930,
+                     "license":  "ISC",
+                     "height":  16,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "material-icon-theme",
+                     "icons":  910,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "qlementine-icons",
+                     "icons":  905,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "fluent-color",
+                     "icons":  890,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "glyphs-poly",
+                     "icons":  863,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "ant-design",
+                     "icons":  848,
+                     "license":  "MIT",
+                     "height":  16,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "cib",
+                     "icons":  830,
+                     "license":  "CC0-1.0",
+                     "height":  32,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "devicon-plain",
+                     "icons":  826,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "picon",
+                     "icons":  824,
+                     "license":  "OFL-1.1",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "bx",
+                     "icons":  814,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "gravity-ui",
+                     "icons":  809,
+                     "license":  "MIT",
+                     "height":  16,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "si-glyph",
+                     "icons":  799,
+                     "license":  "CC-BY-SA-4.0",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "streamline-emojis",
+                     "icons":  787,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "Emoji"
+                 },
+                 {
+                     "name":  "octicon",
+                     "icons":  780,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "zmdi",
+                     "icons":  777,
+                     "license":  "OFL-1.1",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "majesticons",
+                     "icons":  760,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "flowbite",
+                     "icons":  751,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "lsicon",
+                     "icons":  716,
+                     "license":  "MIT",
+                     "height":  16,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "at-icons",
+                     "icons":  705,
+                     "license":  "MIT",
+                     "height":  16,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "gg",
+                     "icons":  704,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "fa",
+                     "icons":  678,
+                     "license":  "OFL-1.1",
+                     "height":  null,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "bxs",
+                     "icons":  665,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "streamline-pixel",
+                     "icons":  662,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "codicon",
+                     "icons":  657,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "catppuccin",
+                     "icons":  656,
+                     "license":  "MIT",
+                     "height":  16,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "memory",
+                     "icons":  651,
+                     "license":  "Apache-2.0",
+                     "height":  22,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "sidekickicons",
+                     "icons":  644,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "nrk",
+                     "icons":  637,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "grommet-icons",
+                     "icons":  636,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "vaadin",
+                     "icons":  636,
+                     "license":  "Apache-2.0",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "fontisto",
+                     "icons":  615,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "fa7-brands",
+                     "icons":  608,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "lineicons",
+                     "icons":  606,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "streamline-kameleon-color",
+                     "icons":  600,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "marketeq",
+                     "icons":  590,
+                     "license":  "MIT",
+                     "height":  25,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "pixel",
+                     "icons":  578,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "roentgen",
+                     "icons":  574,
+                     "license":  "CC-BY-4.0",
+                     "height":  16,
+                     "category":  "Location"
+                 },
+                 {
+                     "name":  "temaki",
+                     "icons":  557,
+                     "license":  "CC0-1.0",
+                     "height":  null,
+                     "category":  "Location"
+                 },
+                 {
+                     "name":  "cil",
+                     "icons":  554,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "proicons",
+                     "icons":  544,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "flag",
+                     "icons":  542,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "Flags"
+                 },
+                 {
+                     "name":  "streamline-cyber-color",
+                     "icons":  500,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "streamline-cyber",
+                     "icons":  500,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "fa6-brands",
+                     "icons":  495,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "basil",
+                     "icons":  493,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "icomoon-free",
+                     "icons":  491,
+                     "license":  "GPL-3.0-or-later",
+                     "height":  16,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "eva",
+                     "icons":  490,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "cryptocurrency-color",
+                     "icons":  483,
+                     "license":  "CC0-1.0",
+                     "height":  32,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "cryptocurrency",
+                     "icons":  483,
+                     "license":  "CC0-1.0",
+                     "height":  32,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "ps",
+                     "icons":  479,
+                     "license":  "CC-BY-NC-4.0",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "fa-brands",
+                     "icons":  457,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "akar-icons",
+                     "icons":  454,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "meteocons",
+                     "icons":  447,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "High Detail Multicolor"
+                 },
+                 {
+                     "name":  "circle-flags",
+                     "icons":  444,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "Flags"
+                 },
+                 {
+                     "name":  "ci",
+                     "icons":  442,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "oui",
+                     "icons":  437,
+                     "license":  "Apache-2.0",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "system-uicons",
+                     "icons":  430,
+                     "license":  "Unlicense",
+                     "height":  21,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "pepicons",
+                     "icons":  428,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "ooui",
+                     "icons":  421,
+                     "license":  "MIT",
+                     "height":  20,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "pajamas",
+                     "icons":  410,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "meteor-icons",
+                     "icons":  409,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "skill-icons",
+                     "icons":  400,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "matita",
+                     "icons":  383,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "lucide-lab",
+                     "icons":  373,
+                     "license":  "ISC",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "gis",
+                     "icons":  367,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  "Location"
+                 },
+                 {
+                     "name":  "guidance",
+                     "icons":  360,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "ls",
+                     "icons":  348,
+                     "license":  "OFL-1.1",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "dashicons",
+                     "icons":  342,
+                     "license":  "GPL-2.0-or-later",
+                     "height":  20,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "wordpress",
+                     "icons":  338,
+                     "license":  "GPL-2.0-or-later",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "typcn",
+                     "icons":  336,
+                     "license":  "CC-BY-SA-4.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "radix-icons",
+                     "icons":  332,
+                     "license":  "MIT",
+                     "height":  15,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "bitcoin-icons",
+                     "icons":  330,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "flat-color-icons",
+                     "icons":  329,
+                     "license":  "MIT",
+                     "height":  48,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "entypo",
+                     "icons":  321,
+                     "license":  "CC-BY-SA-4.0",
+                     "height":  20,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "prime",
+                     "icons":  313,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "subway",
+                     "icons":  306,
+                     "license":  "CC-BY-4.0",
+                     "height":  16,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "el",
+                     "icons":  304,
+                     "license":  "OFL-1.1",
+                     "height":  null,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "struq",
+                     "icons":  300,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "streamline-block",
+                     "icons":  300,
+                     "license":  "CC-BY-4.0",
+                     "height":  16,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "uim",
+                     "icons":  298,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "zondicons",
+                     "icons":  297,
+                     "license":  "MIT",
+                     "height":  20,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "tabler-flags",
+                     "icons":  297,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "Flags"
+                 },
+                 {
+                     "name":  "bxl",
+                     "icons":  295,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "ep",
+                     "icons":  293,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "circum",
+                     "icons":  288,
+                     "license":  "MPL-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "humbleicons",
+                     "icons":  286,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "feather",
+                     "icons":  286,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  null
+                 },
+                 {
+                     "name":  "mdi-light",
+                     "icons":  284,
+                     "license":  "OFL-1.1",
+                     "height":  24,
+                     "category":  "Material"
+                 },
+                 {
+                     "name":  "foundation",
+                     "icons":  283,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "fa7-regular",
+                     "icons":  272,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "raphael",
+                     "icons":  266,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "charm",
+                     "icons":  261,
+                     "license":  "MIT",
+                     "height":  16,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "fe",
+                     "icons":  255,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "flagpack",
+                     "icons":  254,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Flags"
+                 },
+                 {
+                     "name":  "eos-icons",
+                     "icons":  253,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "icons8",
+                     "icons":  234,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "heroicons-solid",
+                     "icons":  230,
+                     "license":  "MIT",
+                     "height":  20,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "heroicons-outline",
+                     "icons":  230,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "oi",
+                     "icons":  223,
+                     "license":  "MIT",
+                     "height":  8,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "wi",
+                     "icons":  219,
+                     "license":  "OFL-1.1",
+                     "height":  30,
+                     "category":  "Thematic"
+                 },
+                 {
+                     "name":  "uit",
+                     "icons":  216,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "maki",
+                     "icons":  215,
+                     "license":  "CC0-1.0",
+                     "height":  15,
+                     "category":  "Location"
+                 },
+                 {
+                     "name":  "gcp",
+                     "icons":  214,
+                     "license":  "Apache-2.0",
+                     "height":  null,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "uiw",
+                     "icons":  214,
+                     "license":  "MIT",
+                     "height":  20,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "rivet-icons",
+                     "icons":  210,
+                     "license":  "BSD-3-Clause",
+                     "height":  16,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "gridicons",
+                     "icons":  207,
+                     "license":  "GPL-2.0-only",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "doodle-icons",
+                     "icons":  204,
+                     "license":  "MIT",
+                     "height":  48,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "streamline-stickies-color",
+                     "icons":  200,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  "UI Multicolor"
+                 },
+                 {
+                     "name":  "wpf",
+                     "icons":  200,
+                     "license":  "MIT",
+                     "height":  26,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "cif",
+                     "icons":  199,
+                     "license":  "CC0-1.0",
+                     "height":  null,
+                     "category":  "Flags"
+                 },
+                 {
+                     "name":  "uis",
+                     "icons":  190,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "simple-line-icons",
+                     "icons":  189,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "cuida",
+                     "icons":  182,
+                     "license":  "Apache-2.0",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "mono-icons",
+                     "icons":  180,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  null
+                 },
+                 {
+                     "name":  "mi",
+                     "icons":  180,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "osmic",
+                     "icons":  169,
+                     "license":  "CC0-1.0",
+                     "height":  null,
+                     "category":  "Location"
+                 },
+                 {
+                     "name":  "map",
+                     "icons":  167,
+                     "license":  "OFL-1.1",
+                     "height":  25,
+                     "category":  "Location"
+                 },
+                 {
+                     "name":  "fa6-regular",
+                     "icons":  163,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "weui",
+                     "icons":  162,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "vs",
+                     "icons":  159,
+                     "license":  "OFL-1.1",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "academicons",
+                     "icons":  158,
+                     "license":  "OFL-1.1",
+                     "height":  32,
+                     "category":  "Thematic"
+                 },
+                 {
+                     "name":  "codex",
+                     "icons":  156,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "fad",
+                     "icons":  155,
+                     "license":  "CC-BY-4.0",
+                     "height":  16,
+                     "category":  "Thematic"
+                 },
+                 {
+                     "name":  "fa-regular",
+                     "icons":  151,
+                     "license":  "CC-BY-4.0",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "medical-icon",
+                     "icons":  144,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "Thematic"
+                 },
+                 {
+                     "name":  "formkit",
+                     "icons":  144,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "covid",
+                     "icons":  142,
+                     "license":  "CC-BY-4.0",
+                     "height":  24,
+                     "category":  "Thematic"
+                 },
+                 {
+                     "name":  "nimbus",
+                     "icons":  140,
+                     "license":  "MIT",
+                     "height":  16,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "quill",
+                     "icons":  140,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "iconito",
+                     "icons":  120,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "High Detail Multicolor"
+                 },
+                 {
+                     "name":  "bpmn",
+                     "icons":  112,
+                     "license":  "OFL-1.1",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "iwwa",
+                     "icons":  105,
+                     "license":  "Apache-2.0",
+                     "height":  null,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "bytesize",
+                     "icons":  101,
+                     "license":  "MIT",
+                     "height":  32,
+                     "category":  "UI 16px / 32px"
+                 },
+                 {
+                     "name":  "flat-ui",
+                     "icons":  100,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "et",
+                     "icons":  100,
+                     "license":  "GPL-3.0-or-later",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "duo-icons",
+                     "icons":  91,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "topcoat",
+                     "icons":  89,
+                     "license":  "Apache-2.0",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "websymbol",
+                     "icons":  85,
+                     "license":  "OFL-1.1",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "streamline-memes",
+                     "icons":  84,
+                     "license":  "CC-BY-4.0",
+                     "height":  null,
+                     "category":  "High Detail"
+                 },
+                 {
+                     "name":  "il",
+                     "icons":  84,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "entypo-social",
+                     "icons":  76,
+                     "license":  "CC-BY-SA-4.0",
+                     "height":  20,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "ei",
+                     "icons":  70,
+                     "license":  "MIT",
+                     "height":  25,
+                     "category":  "UI Other / Mixed Grid"
+                 },
+                 {
+                     "name":  "nonicons",
+                     "icons":  69,
+                     "license":  "MIT",
+                     "height":  16,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "unjs",
+                     "icons":  63,
+                     "license":  "Apache-2.0",
+                     "height":  32,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "gala",
+                     "icons":  51,
+                     "license":  "GPL-3.0",
+                     "height":  32,
+                     "category":  "Archive / Unmaintained"
+                 },
+                 {
+                     "name":  "ginetex",
+                     "icons":  50,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "Thematic"
+                 },
+                 {
+                     "name":  "svg-spinners",
+                     "icons":  46,
+                     "license":  "MIT",
+                     "height":  24,
+                     "category":  "UI 24px"
+                 },
+                 {
+                     "name":  "brandico",
+                     "icons":  45,
+                     "license":  "CC-BY-SA-3.0",
+                     "height":  null,
+                     "category":  "Logos"
+                 },
+                 {
+                     "name":  "k8s",
+                     "icons":  38,
+                     "license":  "Apache-2.0",
+                     "height":  null,
+                     "category":  "Programming"
+                 },
+                 {
+                     "name":  "fontelico",
+                     "icons":  34,
+                     "license":  "CC-BY-SA-3.0",
+                     "height":  null,
+                     "category":  null
+                 },
+                 {
+                     "name":  "geo",
+                     "icons":  30,
+                     "license":  "MIT",
+                     "height":  null,
+                     "category":  "Location"
+                 }
+             ]
+}
