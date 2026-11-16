@@ -919,14 +919,16 @@
           }
           return uni ? inter / uni : 0;
         })();
+        // 矩形候选：面积用 bbox 计算，IoU 必须对"并集"分母算，否则矩形永远得 100 分
+        const rectArea = bw * bh;
         const rectIou = (function () {
-          let inter = 0, uni = 0;
+          let inter = 0;
           for (let yy = y0; yy <= y1; yy++) {
             for (let xx = x0; xx <= x1; xx++) {
-              const inH = !mask[yy * w + xx] && !seen[yy * w + xx];
-              if (inH) { inter++; uni++; }
+              if (!mask[yy * w + xx] && !seen[yy * w + xx]) inter++;
             }
           }
+          const uni = area + rectArea - inter;
           return uni ? inter / uni : 0;
         })();
         if (circleIou >= rectIou) {
@@ -2097,7 +2099,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222k",
+      version: "20260222l",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
