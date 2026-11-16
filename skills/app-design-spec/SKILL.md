@@ -9,7 +9,22 @@ description: '**App 界面规范 SKILL** — 做任何 App / 桌面端 / 网页�
 > 数值来源：Apple HIG、Material Design 3、Windows 11 / Fluent 2 官方文档（文末列链接）。
 > 标 ⚠️ 的是经验值/项目约定，不是官方硬性规定。
 
+## 在线版与参考文件（优先用这些）
+
+| 资源 | 位置 | 什么时候用 |
+|---|---|---|
+| 规范速查（24 章） | https://gsaecy.github.io/app-guidelines/ | 查具体数值、材质/动效实验室、术语 |
+| 设计原理 | https://gsaecy.github.io/app-guidelines/principles.html | 回答「为什么」、评审时找依据 |
+| 组件画廊（29 个） | https://gsaecy.github.io/app-guidelines/components.html | 对照实现、看密度/圆角/状态 |
+| 测试工具 | https://gsaecy.github.io/app-guidelines/testing.html | 对比度、色盲、热区、键盘、响应式、自测 |
+| 原理与定律 | `references/principles.md` | 格式塔、Fitts/Hick/Doherty、认知效应 |
+| 组件规格 | `references/components.md` | 高度/圆角/内边距/状态/常见错误 |
+| 测试与验收 | `references/testing.md` | 7 项检查、WCAG 2.2、性能预算 |
+| 术语表 | `references/glossary.md` | 中英对照、页面结构、特效术语 |
+| 平台数值 | `references/platforms.md` | Apple / M3 / Windows 对照表 |
+
 ---
+
 
 ## 0. 快速决策表（最常用的问题直接查这里）
 

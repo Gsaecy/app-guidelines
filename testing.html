@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>测试工具 — App Guidelines</title>
+<meta name="description" content="可用的 UI 测试工具：对比度、色盲模拟、触控热区、键盘可达性、响应式预览、可读性与设计知识自测。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+
+<header class="appbar">
+  <div class="brand">
+    <div class="brand__mark" aria-hidden="true">A</div>
+    <div class="brand__name">App Guidelines</div>
+    <div class="brand__tag">测试工具</div>
+  </div>
+  <div class="appbar__spacer"></div>
+  <nav class="topnav" aria-label="站点导航">
+    <a href="index.html">规范速查</a>
+    <a href="principles.html">设计原理</a>
+    <a href="components.html">组件画廊</a>
+    <a href="testing.html">测试工具</a>
+  </nav>
+  <div class="appbar__actions">
+    <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"></circle>
+        <path d="M12 2.8v2.1M12 19.1v2.1M4.5 4.5l1.5 1.5M18 18l1.5 1.5M2.8 12h2.1M19.1 12h2.1M4.5 19.5 6 18M18 6l1.5-1.5"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <main class="main" id="main">
+
+    <div class="page-head">
+      <div class="hero__eyebrow">Testing · 交付前自己先测一遍</div>
+      <h1>测试工具</h1>
+      <p>七个可直接使用的检查器：对比度、色盲模拟、触控热区、键盘可达性、响应式断点、可读性与知识自测。全部在浏览器里跑，不上传任何数据。</p>
+      <div class="subnav">
+        <a href="#contrast">对比度</a>
+        <a href="#cvd">色盲模拟</a>
+        <a href="#targets">热区检查</a>
+        <a href="#keyboard">键盘可达</a>
+        <a href="#responsive">响应式</a>
+        <a href="#readability">可读性</a>
+        <a href="#quiz">知识自测</a>
+      </div>
+    </div>
+
+    <!-- ============================================================ contrast -->
+    <section class="section" id="contrast">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">01</span>Contrast</div>
+        <h2>对比度检查</h2>
+        <p class="section__lead">WCAG 2.2 AA：正文 ≥ 4.5:1，大字号（≥ 24px 或 ≥ 18.66px Bold）与非文本 ≥ 3:1。AAA 分别是 7:1 / 4.5:1。</p>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-panel__body">
+          <div class="tool__row">
+            <label class="field"><span class="field__label">前景色</span><input type="color" id="fgColor" value="#1d1d1f"></label>
+            <label class="field"><span class="field__label">背景色</span><input type="color" id="bgColor" value="#f5f5f7"></label>
+            <label class="field"><span class="field__label">字号 px</span><input class="input" id="fgSize" type="number" value="14" min="8" max="120"></label>
+            <label class="field"><span class="field__label">字重</span>
+              <select class="input" id="fgWeight">
+                <option value="400">Regular 400</option>
+                <option value="500">Medium 500</option>
+                <option value="600">Semibold 600</option>
+                <option value="700">Bold 700</option>
+              </select>
+            </label>
+          </div>
+          <div class="tool__preview" id="contrastPreview" style="font-size:16px">壁纸已设为桌面背景 · 128 MB</div>
+          <div id="contrastResult" class="tool__result" aria-live="polite"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px" id="contrastPresets"></div>
+        </div>
+        <div class="demo-panel__foot">
+          <span>提示：灰色正文最容易翻车。#777 在纯白上只有 4.48:1，刚好不达标。</span>
+          <button class="btn btn--secondary btn--sm" type="button" id="contrastSwap">交换前景 / 背景</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ cvd -->
+    <section class="section" id="cvd">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">02</span>Color Vision</div>
+        <h2>色盲模拟</h2>
+        <p class="section__lead">8% 的男性有某种色觉障碍。只靠颜色区分的状态（红/绿）在他们眼里可能完全一样——所以要配图标与文字。</p>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-panel__body">
+          <div class="segmented" id="cvdSwitch" role="group" aria-label="色觉类型" style="margin-bottom:14px">
+            <button type="button" class="is-on" data-cvd="none">正常</button>
+            <button type="button" data-cvd="protanopia">红色盲</button>
+            <button type="button" data-cvd="deuteranopia">绿色盲</button>
+            <button type="button" data-cvd="tritanopia">蓝色盲</button>
+            <button type="button" data-cvd="achromatopsia">全色盲</button>
+          </div>
+          <div id="cvdTarget" style="filter:none">
+            <div class="cvd-grid">
+              <div class="cvd-cell">
+                <div class="cvd-demo">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:10px">壁纸状态</div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <span class="badge badge--ok">● 已安装</span>
+                    <span class="badge badge--warn">● 更新中</span>
+                    <span class="badge badge--bad">● 已失效</span>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:14px">
+                    <button class="btn btn--primary btn--sm" type="button">应用</button>
+                    <button class="btn btn--outline btn--sm" type="button">取消</button>
+                  </div>
+                </div>
+                <figcaption>状态若只用颜色区分，色盲用户无法分辨</figcaption>
+              </div>
+              <div class="cvd-cell">
+                <div class="cvd-demo">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:10px">图表配色</div>
+                  <div style="display:flex;align-items:flex-end;gap:10px;height:80px">
+                    <i style="width:22px;height:70%;background:#34c759;border-radius:4px;display:block"></i>
+                    <i style="width:22px;height:45%;background:#ff9f0a;border-radius:4px;display:block"></i>
+                    <i style="width:22px;height:60%;background:#ff453a;border-radius:4px;display:block"></i>
+                    <i style="width:22px;height:30%;background:#0a84ff;border-radius:4px;display:block"></i>
+                  </div>
+                  <div style="font-size:11px;color:var(--text-2);margin-top:10px">红绿相邻最容易出问题，改用明度差 + 图案</div>
+                </div>
+                <figcaption>图表：颜色之外还要有明度或图案差异</figcaption>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="demo-panel__foot">
+          <span>模拟用 SVG 颜色矩阵近似，仅用于发现问题，不能替代真实用户测试。</span>
+        </div>
+      </div>
+
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <filter id="protanopia"><feColorMatrix type="matrix" values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0"></feColorMatrix></filter>
+        <filter id="deuteranopia"><feColorMatrix type="matrix" values="0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0  0 0 0 1 0"></feColorMatrix></filter>
+        <filter id="tritanopia"><feColorMatrix type="matrix" values="0.95 0.05 0 0 0  0 0.433 0.567 0 0  0 0.475 0.525 0 0  0 0 0 1 0"></feColorMatrix></filter>
+        <filter id="achromatopsia"><feColorMatrix type="matrix" values="0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0"></feColorMatrix></filter>
+      </svg>
+    </section>
+
+    <!-- ============================================================ targets -->
+    <section class="section" id="targets">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">03</span>Hit Areas</div>
+        <h2>触控热区检查</h2>
+        <p class="section__lead">虚线框是 44×44 的最小触控目标。热区小于图标本身、或两个按钮贴得太近，都会导致误触。</p>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-panel__body">
+          <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+            <span class="hot-zone"><span class="hot-label">44×44</span>
+              <button class="btn btn--primary" type="button">合格按钮</button>
+            </span>
+            <span class="hot-zone"><span class="hot-label">仅 24×24</span>
+              <button class="btn btn--secondary" type="button" style="height:24px;padding:0 8px;font-size:11px">✕</button>
+            </span>
+            <span class="hot-zone"><span class="hot-label">贴太近</span>
+              <button class="btn btn--secondary" type="button" style="margin-right:0">A</button><button class="btn btn--secondary" type="button" style="margin-left:2px">B</button>
+            </span>
+            <label class="switch"><input type="checkbox" id="hotToggle" checked>显示热区</label>
+          </div>
+          <p class="card__hint" style="margin-top:14px">规则：视觉尺寸可以小，热区不能小。图标按钮用透明 padding 扩热区，而不是放大图标。</p>
+        </div>
+        <div class="demo-panel__foot">
+          <span>移动端 44–48，桌面鼠标 32×32 起；相邻可点元素间距 ≥ 8px。</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ keyboard -->
+    <section class="section" id="keyboard">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">04</span>Keyboard</div>
+        <h2>键盘可达性</h2>
+        <p class="section__lead">按 Tab 走一遍下面的表单。记录的顺序必须符合视觉顺序，且每一步都要有可见焦点环。</p>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-panel__body">
+          <div id="kbdDemo" style="display:grid;gap:12px;max-width:420px">
+            <label class="field"><span class="field__label">昵称</span><input class="input" placeholder="必填"></label>
+            <label class="field"><span class="field__label">邮箱</span><input class="input" type="email" placeholder="you@example.com"></label>
+            <label class="check"><input type="checkbox">接收上新通知</label>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn--primary" type="button">保存</button>
+              <button class="btn btn--secondary" type="button">取消</button>
+            </div>
+            <div id="kbdExtra" style="margin-top:4px"></div>
+          </div>
+          <div class="tool__result" id="kbdLog" aria-live="polite">按 Tab 开始记录焦点顺序…</div>
+        </div>
+        <div class="demo-panel__foot">
+          <span>检查点：顺序 = 视觉顺序 · 焦点环 2px 可见 · Esc 可关闭浮层 · Enter 触发主操作</span>
+          <button class="btn btn--secondary btn--sm" type="button" id="kbdReset">重置记录</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ responsive -->
+    <section class="section" id="responsive">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">05</span>Responsive</div>
+        <h2>响应式断点预览</h2>
+        <p class="section__lead">拖动滑杆改容器宽度，看卡片列数如何变化。断点不是「缩小」，而是换布局。</p>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-panel__body">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <label class="field" style="flex:1;min-width:220px">
+              <span class="field__label">容器宽度 <code id="respVal">1024px</code></span>
+              <input type="range" id="respRange" min="320" max="1440" step="8" value="1024">
+            </label>
+            <span class="badge" id="respClass">Expanded</span>
+          </div>
+          <div class="resp-frame" id="respFrame" style="width:100%;margin-top:14px">
+            <div class="resp-inner" id="respInner"></div>
+          </div>
+        </div>
+        <div class="demo-panel__foot">
+          <span>320 单列 · 600 双列 · 840 三列 · 1200 四列 · 内容最大宽 1120–1440</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ readability -->
+    <section class="section" id="readability">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">06</span>Readability</div>
+        <h2>可读性检查</h2>
+        <p class="section__lead">行长超过 90 字符、行高小于 1.4、字号小于 12px，阅读速度与理解率都会下降。</p>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-panel__body">
+          <div class="tool__row">
+            <label class="field" style="flex:1;min-width:180px"><span class="field__label">字号 <code id="rdSizeVal">15px</code></span>
+              <input type="range" id="rdSize" min="10" max="24" value="15"></label>
+            <label class="field" style="flex:1;min-width:180px"><span class="field__label">行高 <code id="rdLhVal">1.5</code></span>
+              <input type="range" id="rdLh" min="1" max="2.2" step="0.05" value="1.5"></label>
+            <label class="field" style="flex:1;min-width:180px"><span class="field__label">行宽 <code id="rdWidthVal">640px</code></span>
+              <input type="range" id="rdWidth" min="280" max="1100" step="10" value="640"></label>
+          </div>
+          <div id="rdSample" style="margin-top:16px;max-width:640px">
+            好的排版让眼睛几乎感觉不到它的存在。行宽控制在 45–75 个西文字符（中文约 25–40 字），行高约为字号的 1.4–1.6 倍；
+            段落之间用 0.75–1 行留白分隔。字号小于 12px、行高小于 1.4 时，长段落的阅读速度会明显下降。
+          </div>
+          <div class="tool__result" id="rdResult" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ quiz -->
+    <section class="section" id="quiz">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">07</span>Quiz</div>
+        <h2>设计知识自测</h2>
+        <p class="section__lead">12 道题，覆盖三平台数值、对比度、动效与状态。选完立即给解析。</p>
+      </div>
+
+      <div class="quiz-score">
+        <div><strong id="quizScore">0</strong><span style="font-size:12px;color:var(--text-2)"> / <span id="quizTotal">0</span> 正确</span></div>
+        <div style="flex:1;min-width:160px"><div class="progress"><i id="quizBar" style="width:0%"></i></div></div>
+        <button class="btn btn--secondary btn--sm" type="button" id="quizReset">重新开始</button>
+      </div>
+
+      <div class="quiz-list" id="quizList"></div>
+    </section>
+
+    <div class="footer">
+      <span>App Guidelines · 测试工具</span>
+      <span><a href="index.html">规范速查</a> · <a href="components.html">组件画廊</a></span>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/shell.js"></script>
+<script src="assets/testing.js"></script>
+</body>
+</html>

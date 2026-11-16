@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gsaecy.github.io/app-guidelines/sitemap.xml

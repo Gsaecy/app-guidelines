@@ -22,13 +22,18 @@
     <div class="brand__tag">v<span data-bind="version">1.0.0</span></div>
   </div>
   <div class="appbar__spacer"></div>
+  <nav class="topnav" aria-label="站点导航">
+    <a href="index.html">规范速查</a>
+    <a href="principles.html">设计原理</a>
+    <a href="components.html">组件画廊</a>
+    <a href="testing.html">测试工具</a>
+  </nav>
   <div class="appbar__actions">
     <button class="search-trigger" id="searchOpen" type="button" aria-label="搜索规范（Ctrl+K）">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4.2-4.2"></path></svg>
       <span>搜索</span>
       <kbd class="kbd">Ctrl K</kbd>
     </button>
-    <a class="ghost-btn" href="#lab-effects">效果实验室</a>
     <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色" title="切换深浅色">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
         <circle cx="12" cy="12" r="4.2"></circle>
@@ -91,10 +96,15 @@
       </div>
       <div class="hero__stats">
         <div class="stat"><div class="stat__value">180+</div><div class="stat__label">官方核对数值</div></div>
-        <div class="stat"><div class="stat__value">12</div><div class="stat__label">组件规范</div></div>
+        <div class="stat"><div class="stat__value">29</div><div class="stat__label">组件规范</div></div>
         <div class="stat"><div class="stat__value">16</div><div class="stat__label">页面类型</div></div>
         <div class="stat"><div class="stat__value">92</div><div class="stat__label">中英术语</div></div>
-        <div class="stat"><div class="stat__value">13</div><div class="stat__label">交互 / 工具</div></div>
+        <div class="stat"><div class="stat__value">23</div><div class="stat__label">交互 / 工具</div></div>
+      </div>
+      <div class="hero__platforms" style="margin-top:22px">
+        <a class="platform-pill" href="principles.html" style="text-decoration:none">📐 设计原理：13 条定律 + 3 个实验</a>
+        <a class="platform-pill" href="components.html" style="text-decoration:none">🧩 组件画廊：29 个组件</a>
+        <a class="platform-pill" href="testing.html" style="text-decoration:none">🔍 测试工具：7 个检查器</a>
       </div>
     </section>
 

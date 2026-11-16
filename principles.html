@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设计原理 — App Guidelines</title>
+<meta name="description" content="App UI 设计背后的原理：格式塔原则、Fitts/Hick/Doherty 定律、认知负荷、记忆效应、约定与心智模型，附可交互实验。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+
+<header class="appbar">
+  <div class="brand">
+    <div class="brand__mark" aria-hidden="true">A</div>
+    <div class="brand__name">App Guidelines</div>
+    <div class="brand__tag">设计原理</div>
+  </div>
+  <div class="appbar__spacer"></div>
+  <nav class="topnav" aria-label="站点导航">
+    <a href="index.html">规范速查</a>
+    <a href="principles.html">设计原理</a>
+    <a href="components.html">组件画廊</a>
+    <a href="testing.html">测试工具</a>
+  </nav>
+  <div class="appbar__actions">
+    <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"></circle>
+        <path d="M12 2.8v2.1M12 19.1v2.1M4.5 4.5l1.5 1.5M18 18l1.5 1.5M2.8 12h2.1M19.1 12h2.1M4.5 19.5 6 18M18 6l1.5-1.5"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <main class="main" id="main">
+
+    <div class="page-head">
+      <div class="hero__eyebrow">Principles · 为什么这样设计</div>
+      <h1>设计原理</h1>
+      <p>
+        规范回答「用多少」，原理回答「为什么」。这一页把感知、认知与交互的经典结论讲清楚，
+        并配三个可以动手做的实验（点击靶、选择反应、反馈等待），让你亲眼看到定律在工作。
+      </p>
+      <div class="subnav">
+        <a href="#gestalt">格式塔原则</a>
+        <a href="#laws">交互定律</a>
+        <a href="#cognition">认知与记忆</a>
+        <a href="#convention">约定与心智</a>
+        <a href="#mapping">原理 → 规范</a>
+      </div>
+    </div>
+
+    <!-- ============================================================ gestalt -->
+    <section class="section" id="gestalt">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">01</span>Gestalt</div>
+        <h2>格式塔原则：人眼先看「组」，再看「元素」</h2>
+        <p class="section__lead">界面里的分组不需要画线——间距、对齐、共同区域就足以让大脑自动归类。反过来，间距一乱，用户会读错层级。</p>
+      </div>
+
+      <div class="demo-panel" style="margin-bottom:16px">
+        <div class="demo-panel__body">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div>
+              <div class="card__title">接近性原则（Proximity）</div>
+              <p class="card__hint">同样的 12 个点，只改间距，就能分成 2 组、3 组或 1 组。</p>
+            </div>
+            <div class="segmented" id="gestaltSwitch" role="group" aria-label="分组示例">
+              <button type="button" class="is-on" data-gap="4">4px</button>
+              <button type="button" data-gap="16">16px</button>
+              <button type="button" data-gap="32">32px</button>
+            </div>
+          </div>
+          <div class="gestalt-stage" style="height:140px;margin-top:14px">
+            <div id="gestaltDots" style="display:flex;gap:4px;align-items:center"></div>
+          </div>
+          <p class="card__hint" style="margin-top:10px" id="gestaltNote">间距 4px：看起来是一个整体。</p>
+        </div>
+      </div>
+
+      <div class="grid cols-3" id="gestaltCards"></div>
+    </section>
+
+    <!-- ============================================================ laws -->
+    <section class="section" id="laws">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">02</span>Interaction Laws</div>
+        <h2>交互定律：三个能亲手验证的实验</h2>
+        <p class="section__lead">定律不是玄学。下面三个实验会记录你的真实用时——做过一次，你就再也不会把按钮做得又小又远。</p>
+      </div>
+
+      <div class="grid cols-2">
+        <!-- Fitts -->
+        <div class="demo-panel">
+          <div class="demo-panel__body">
+            <div class="card__title">Fitts 定律：目标越大越近，越快</div>
+            <p class="card__hint">点击高亮目标。试试「大而近」与「小而远」各 3 次，看平均耗时差多少。</p>
+            <div class="fitts-stage" id="fittsStage" style="margin-top:12px">
+              <div class="fitts-target" id="fittsTarget" style="width:64px;height:64px;left:40px;top:80px">点击</div>
+            </div>
+            <div class="metric-row" style="margin-top:12px">
+              <div><div class="metric__v" id="fittsNear">—</div><div class="metric__l">大目标 / 近（ms）</div></div>
+              <div><div class="metric__v" id="fittsFar">—</div><div class="metric__l">小目标 / 远（ms）</div></div>
+              <div><div class="metric__v" id="fittsCount">0</div><div class="metric__l">已完成次数</div></div>
+            </div>
+          </div>
+          <div class="demo-panel__foot">
+            <span>ID = log₂(2D / W)：距离翻倍 +1bit，宽度翻倍 −1bit</span>
+            <button class="btn btn--secondary btn--sm" type="button" id="fittsReset">重置</button>
+          </div>
+        </div>
+
+        <!-- Hick -->
+        <div class="demo-panel">
+          <div class="demo-panel__body">
+            <div class="card__title">Hick 定律：选项越多，决策越慢</div>
+            <p class="card__hint">目标按钮会随机高亮，尽快点它。菜单项从 2 增到 8，反应时会明显上升。</p>
+            <div class="segmented" id="hickLevels" role="group" aria-label="选项数量" style="margin-top:10px">
+              <button type="button" class="is-on" data-n="2">2 个</button>
+              <button type="button" data-n="4">4 个</button>
+              <button type="button" data-n="8">8 个</button>
+            </div>
+            <div class="hick-grid hick-grid--2" id="hickGrid" style="margin-top:12px"></div>
+            <div class="metric-row" style="margin-top:12px">
+              <div><div class="metric__v" id="hickMs">—</div><div class="metric__l">平均反应（ms）</div></div>
+              <div><div class="metric__v" id="hickN">0</div><div class="metric__l">样本</div></div>
+            </div>
+          </div>
+          <div class="demo-panel__foot">
+            <span>RT ≈ a + b·log₂(n+1)：8 个选项比 2 个多约 2 bit</span>
+            <button class="btn btn--secondary btn--sm" type="button" id="hickReset">重置</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doherty -->
+      <div class="demo-panel" style="margin-top:16px">
+        <div class="demo-panel__body">
+          <div class="card__title">Doherty 阈值：反馈必须赶上注意力</div>
+          <p class="card__hint">400ms 内必须有反馈，1s 内完成一次「感知 → 响应」；超过 10s 用户会去做别的事。</p>
+          <div class="doherty-bar" style="margin-top:14px">
+            <span style="width:8%;background:#34c759">≤400ms 即时</span>
+            <span style="width:22%;background:#30b0c7">1s 流畅</span>
+            <span style="width:40%;background:#ff9f0a">10s 极限</span>
+            <span style="width:30%;background:#ff453a">>10s 流失</span>
+          </div>
+          <div class="grid cols-3" style="margin-top:14px">
+            <div class="card" style="box-shadow:none"><div class="card__title">按钮反馈</div><p class="card__hint">按下必须在 100ms 内变色/缩放，否则像没点到。</p></div>
+            <div class="card" style="box-shadow:none"><div class="card__title">页面切换</div><p class="card__hint">240–320ms；超过 400ms 会感觉「卡」。</p></div>
+            <div class="card" style="box-shadow:none"><div class="card__title">长任务</div><p class="card__hint">超过 10s 必须给进度、剩余时间与取消。</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ cognition -->
+    <section class="section" id="cognition">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">03</span>Cognition</div>
+        <h2>认知与记忆：别让用户记东西</h2>
+        <p class="section__lead">工作记忆只有 4±1 个「块」。界面要做的不是塞信息，而是把信息分块、把选择变少、把状态留在屏幕上。</p>
+      </div>
+      <div class="law-grid" id="cognitionCards"></div>
+
+      <div class="demo-panel" style="margin-top:16px">
+        <div class="demo-panel__body">
+          <div class="card__title">分块（Chunking）实验</div>
+          <p class="card__hint">同样 12 位数字，分块后更容易记住。点「开始」看 2 秒后能否复述。</p>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px">
+            <button class="btn btn--primary btn--sm" type="button" id="chunkStart">开始</button>
+            <div class="segmented" id="chunkMode" role="group" aria-label="分块方式">
+              <button type="button" class="is-on" data-mode="block">分块 4-4-4</button>
+              <button type="button" data-mode="raw">连续 12 位</button>
+            </div>
+          </div>
+          <div id="chunkDisplay" style="font-family:var(--mono);font-size:30px;letter-spacing:.08em;margin-top:16px;min-height:44px;color:var(--accent)">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ convention -->
+    <section class="section" id="convention">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">04</span>Convention</div>
+        <h2>约定与心智：创新要花在刀刃上</h2>
+        <p class="section__lead">用户大部分时间在别的 App 上。沿用系统约定，学习成本为零；违背约定，就要用转化率来还。</p>
+      </div>
+      <div class="law-grid" id="conventionCards"></div>
+    </section>
+
+    <!-- ============================================================ mapping -->
+    <section class="section" id="mapping">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">05</span>Mapping</div>
+        <h2>从原理到规范：每条原理落在哪个数值上</h2>
+        <p class="section__lead">原理不是口号，它最终会变成一个具体的数字。下表是这张规范里最常用的映射。</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>原理</th><th>结论</th><th>落到规范</th></tr></thead>
+          <tbody id="mappingBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>App Guidelines · 设计原理</span>
+      <span><a href="index.html">返回规范速查</a> · <a href="testing.html">去做测试</a></span>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/shell.js"></script>
+<script src="assets/principles.js"></script>
+</body>
+</html>
