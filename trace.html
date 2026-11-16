@@ -6,7 +6,7 @@
 <title>切割草稿生成器 — App Guidelines</title>
 <meta name="description" content="上传图片，浏览器内自动二值化、提取轮廓、简化节点，生成带几何构造线的 Logo 切割草稿，并导出 SVG / AI（PDF 兼容）/ PNG。">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/style.css?v=20260209a">
 </head>
 <body>
 <a class="skip-link" href="#main">跳到正文</a>
@@ -27,9 +27,7 @@
     <a href="logo.html">Logo 规范</a>
     <a href="devices.html">设备示例</a>
     <a href="icons.html">图标库</a>
-    <a href="devices.html">设备示例</a>
     <a href="trace.html">切割生成器</a>
-    <a href="devices.html">设备示例</a>
     <a href="testing.html">测试工具</a>
   </nav>
   <div class="appbar__actions">
@@ -58,7 +56,12 @@
           <div style="font-size:22px">⇪</div>
           <div style="font-size:13px;font-weight:600;margin-top:6px">点击选择或拖入图片</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:4px">PNG / JPG / WebP · 建议主体清晰、背景干净</div>
-          <input type="file" id="traceFile" accept="image/*" hidden>
+          <input type="file" id="traceFile" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/svg+xml,image/avif" style="margin-top:10px;font-size:11px;color:var(--text-2);max-width:100%">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn btn--outline btn--sm" type="button" id="traceDemoLeaf">载入示例 · 叶片</button>
+          <button class="btn btn--outline btn--sm" type="button" id="traceDemoRing">载入示例 · 圆环</button>
+          <span class="card__hint" style="align-self:center">也可以直接 Ctrl/⌘+V 粘贴截图</span>
         </div>
 
         <label class="field" style="margin-top:16px">
@@ -72,6 +75,8 @@
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:14px">
           <label class="check"><input type="checkbox" id="traceInvert">反转前景 / 背景</label>
           <label class="check"><input type="checkbox" id="traceGuides" checked>叠加构造线</label>
+          <label class="check"><input type="checkbox" id="traceFit" checked>几何拟合（直线 + 圆弧）</label>
+          <label class="check"><input type="checkbox" id="traceConstruct" checked>构造圆（切线约束）</label>
         </div>
         <label class="field" style="margin-top:14px;max-width:200px">
           <span class="field__label">成品颜色</span>
@@ -93,12 +98,13 @@
               <div class="card__title">② 切割草稿预览</div>
               <span class="card__hint" id="traceInfo">尚未载入图片</span>
             </div>
+            <div id="traceFamily" style="margin-top:12px"><span class="card__hint">载入图片后，每条圆弧都会归入一个 R 族（短边 = 100 单位）。</span></div>
             <div class="logo-stage" id="traceStage" style="margin-top:12px;min-height:340px">
               <div style="font-size:12px;color:var(--text-3)">上传图片后在这里预览</div>
             </div>
           </div>
           <div class="demo-panel__foot">
-            <span>虚线框 = 画板边界；蓝色构造网格与同心圆用于后续手工对齐</span>
+            <span>绿色 = 切割线与构造圆（圆被限制在画板内，粗线是真正用到的弧段）；橙色 = 黄金分割辅助线；R 值以短边 = 100 为单位</span>
           </div>
         </div>
 
@@ -108,8 +114,9 @@
             <li><b>二值化</b>：转灰度按阈值切分前景（可反转）。</li>
             <li><b>轮廓提取</b>：marching squares 沿像素边界追踪闭合环，自动保留镂空。</li>
             <li><b>节点简化</b>：Ramer–Douglas–Peucker 减少锚点，得到可用路径。</li>
-            <li><b>叠加构造</b>：16 格网格 + 同心圆，作为切割/对齐参考。</li>
-            <li><b>导出</b>：SVG（可编辑）、AI/PDF（矢量）、PNG@4x（提案用）。</li>
+            <li><b>构造圆</b>：圆弧按半径归入 R 族（短边 = 100 单位），圆被裁剪在画板内，只有真正用到的那段弧画实线。</li>
+            <li><b>相切校验</b>：检查构造圆之间是否内切 / 外切，判断图形是否真的按几何制图法搭建。</li>
+            <li><b>导出</b>：SVG（含构造层，可编辑）、AI/PDF（矢量轮廓）、PNG@4x（提案用）。</li>
           </ol>
           <div class="note" style="margin-top:12px">
             <div><b>专业提醒：</b>自动描摹只适合作为草稿。定稿仍需按 <a href="logo.html#geometry">几何制图法</a> 把折线替换为相切圆弧（R 成族、切点共线），否则放大后会有折角。</div>
@@ -121,7 +128,6 @@
     <div class="footer">
       <span>App Guidelines · 切割生成器</span>
       <span><a href="logo.html">Logo 规范</a>
-    <a href="devices.html">设备示例</a>
     <a href="icons.html">图标库</a>
     <a href="devices.html">设备示例</a> · <a href="testing.html">测试工具</a></span>
     </div>
@@ -130,7 +136,7 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="assets/shell.js"></script>
-<script src="assets/trace.js"></script>
+<script src="assets/shell.js?v=20260209b"></script>
+<script src="assets/trace.js?v=20260210d"></script>
 </body>
 </html>

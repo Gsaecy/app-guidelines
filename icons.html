@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>图标库 — App Guidelines</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/style.css?v=20260209a">
 <style>
 .icon-bar{position:sticky;top:calc(var(--appbar-h) + 6px);z-index:20;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--sh-1);margin-bottom:14px}
 .icon-bar select{height:32px;border-radius:8px;border:1px solid var(--line-strong);background:var(--card);color:var(--text);font:inherit;font-size:12.5px;padding:0 8px;max-width:280px}
@@ -53,7 +53,7 @@
   <div class="footer"><span>App Guidelines · 图标库</span><span><a href="index.html">规范速查</a> · <a href="components.html">组件画廊</a></span></div>
 </main></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="assets/shell.js"></script>
+<script src="assets/shell.js?v=20260209a"></script>
 <script>
 (function(){
   var CURATED=[["lucide","Lucide"],["tabler","Tabler"],["mdi","Material Design Icons"],["material-symbols","Material Symbols"],["fluent","Fluent UI"],["ph","Phosphor"],["bi","Bootstrap Icons"],["heroicons","Heroicons"],["ri","Remix Icon"],["carbon","Carbon"],["iconoir","Iconoir"],["mingcute","MingCute"],["mage","Mage"],["solar","Solar"],["hugeicons","Hugeicons"],["ion","Ionicons"],["octicon","Octicons"],["fa6-solid","Font Awesome"],["simple-icons","Simple Icons"],["devicon","Devicon"]];
@@ -84,7 +84,7 @@
     var q=($("#iconSearch").value||"").trim().toLowerCase();
     var list=names.filter(function(n){return !q||n.indexOf(q)>=0}).slice(0,900);
     $("#iconGrid").innerHTML=list.map(function(n){
-      return '<div class="icon-cell'+(size>=56?" big":"")+'" data-name="'+n+'" title="点击复制 '+n+' 的 SVG"><img loading="lazy" alt="'+n+'" src="'+api("/"+cur+"/"+n+".svg?height="+size)+'" style="width:'+size+'px;height:'+size+'px"><span>'+n+'</span></div>';
+      return '<div class="icon-cell'+(size>=56?" big":"")+'" data-name="'+n+'" title="点击复制 '+n+' 的 SVG"><img loading="lazy" alt="'+n+'" src="'+api(cur+"/"+n+".svg?height="+size)+'" style="width:'+size+'px;height:'+size+'px"><span>'+n+'</span></div>';
     }).join("") || '<span class="card__hint">没有匹配的图标。</span>';
     $("#iconCount").textContent=list.length+" / "+names.length;
   }
@@ -99,7 +99,7 @@
   $("#iconGrid").addEventListener("click",function(e){
     var c=e.target.closest("[data-name]"); if(!c||!cur) return;
     var n=c.getAttribute("data-name");
-    fetch(api("/"+cur+"/"+n+".svg")).then(function(r){return r.text()}).then(function(svg){ if(window.AG) AG.copy(svg); });
+    fetch(api(cur+"/"+n+".svg")).then(function(r){return r.text()}).then(function(svg){ if(window.AG) AG.copy(svg); });
   });
 })();
 </script>
