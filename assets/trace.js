@@ -1388,23 +1388,40 @@
       const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
       const R = (r * scale).toFixed(2);
       const ua = "r" + (r / a).toFixed(1) + "a";
+      // 构造线 = 成品同色相，明度拉开：浅底取更深，深底取更淡（同色系，不突兀）
       const c0 = String(state.color || "#9AA0A6").replace("#", "");
       const cr = parseInt(c0.substr(0, 2), 16) || 0, cg = parseInt(c0.substr(2, 2), 16) || 0, cb = parseInt(c0.substr(4, 2), 16) || 0;
       const lum = (0.299 * cr + 0.587 * cg + 0.114 * cb) / 255;
-      // 构造线用与成品色互补的高亮色，再加白色描边光晕，任何底色上都跳出来
-      const mx = Math.max(cr, cg, cb), mn = Math.min(cr, cg, cb);
-      const sat = mx === 0 ? 0 : (mx - mn) / mx;
-      let HI;
-      if (sat < 0.18) {
-        HI = "#E8590C";                       // 灰/白/黑底 → 高饱和橙（灰没有补色，取对比最强的暖色）
-      } else if (cb >= cr && cb >= cg) {
-        HI = "#E8590C";                       // 蓝底 → 橙
-      } else if (cr >= cg) {
-        HI = "#0B7285";                       // 红/黄底 → 青
-      } else {
-        HI = "#C2255C";                       // 绿底 → 洋红
-      }
-      const HALO = lum > 0.55 ? "#FFFFFF" : "#101826";
+      const hsl = (function (r_, g_, b_) {
+        r_ /= 255; g_ /= 255; b_ /= 255;
+        const mx = Math.max(r_, g_, b_), mn = Math.min(r_, g_, b_);
+        let h = 0, s = 0; const l = (mx + mn) / 2;
+        const d = mx - mn;
+        if (d > 1e-6) {
+          s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+          if (mx === r_) h = ((g_ - b_) / d + (g_ < b_ ? 6 : 0)) / 6;
+          else if (mx === g_) h = ((b_ - r_) / d + 2) / 6;
+          else h = ((r_ - g_) / d + 4) / 6;
+        }
+        return { h: h, s: s, l: l };
+      })(cr, cg, cb);
+      const toHex = function (h, s, l) {
+        const f = function (p, q, x) {
+          if (x < 0) x += 1; if (x > 1) x -= 1;
+          if (x < 1 / 6) return p + (q - p) * 6 * x;
+          if (x < 1 / 2) return q;
+          if (x < 2 / 3) return p + (q - p) * (2 / 3 - x) * 6;
+          return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+        const r_ = Math.round(f(p, q, h + 1 / 3) * 255), g_ = Math.round(f(p, q, h) * 255), b_ = Math.round(f(p, q, h - 1 / 3) * 255);
+        const hx = function (v) { const k = v.toString(16); return k.length === 1 ? "0" + k : k; };
+        return "#" + hx(r_) + hx(g_) + hx(b_);
+      };
+      const HI = lum > 0.55
+        ? toHex(hsl.h, Math.min(1, hsl.s + 0.12), Math.max(0.26, hsl.l - 0.34))   // 浅底 → 同色相更深
+        : toHex(hsl.h, Math.min(1, hsl.s + 0.12), Math.min(0.82, hsl.l + 0.34));  // 深底 → 同色相更淡
+      const HALO = lum > 0.55 ? "#FFFFFF" : "#0E1116";
 
       // 同一条构造线画两遍：先粗光晕，再细高亮
       function layer(stroke, w, dash, opac) {
@@ -1927,7 +1944,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260221p",
+      version: "20260222a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
