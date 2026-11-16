@@ -1436,22 +1436,21 @@
           g.push('<circle cx="' + X(c.cx) + '" cy="' + Y(c.cy) + '" r="' + R + '"/>');
         });
         // ③ 成品轮廓：矩形边上的 4 段直边 + 4 个 1/4 弧，首尾落在切点
-        g.push('<path stroke-dasharray="none" stroke-width="' + (w + 0.9) + '" d="M' + X(bx0 + r) + " " + Y(by0) +
+        g.push('<path stroke-dasharray="none" stroke-width="' + (w + 0.6) + '" d="M' + X(bx0 + r) + " " + Y(by0) +
           "L" + X(bx1 - r) + " " + Y(by0) + "M" + X(bx1) + " " + Y(by0 + r) + "L" + X(bx1) + " " + Y(by1 - r) +
           "M" + X(bx1 - r) + " " + Y(by1) + "L" + X(bx0 + r) + " " + Y(by1) +
           "M" + X(bx0) + " " + Y(by1 - r) + "L" + X(bx0) + " " + Y(by0 + r) + '"/>');
         std.corners.forEach(function (c, i) {
           const a0 = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5][i];
           const a1 = a0 + Math.PI / 2;
-          g.push('<path stroke-dasharray="none" stroke-width="' + (w + 0.9) + '" d="M' + X(c.cx + r * Math.cos(a0)) + " " + Y(c.cy + r * Math.sin(a0)) +
+          g.push('<path stroke-dasharray="none" stroke-width="' + (w + 0.6) + '" d="M' + X(c.cx + r * Math.cos(a0)) + " " + Y(c.cy + r * Math.sin(a0)) +
             "A" + R + " " + R + " 0 0 1 " + X(c.cx + r * Math.cos(a1)) + " " + Y(c.cy + r * Math.sin(a1)) + '"/>');
         });
         g.push("</g>");
         return g.join("");
       }
 
-      s.push('<g id="construct-halo">' + layer(HALO, 4.2, "6 4", 0.5) + "</g>");
-      s.push('<g id="construct" stroke-linecap="round">' + layer(HI, 1.6, "6 4") + "</g>");
+      s.push('<g id="construct" stroke-linecap="round">' + layer(HI, 1, "5 4") + "</g>");
 
       // ④ 8 个切点：弧端点 = 直边端点
       s.push('<g id="tangents">');
@@ -1461,8 +1460,7 @@
           const k = q[0] + ":" + q[1];
           if (seenT[k]) return;
           seenT[k] = 1;
-          s.push('<circle cx="' + X(q[0]) + '" cy="' + Y(q[1]) + '" r="3.4" fill="' + HALO + '" opacity="0.55"/>');
-          s.push('<circle cx="' + X(q[0]) + '" cy="' + Y(q[1]) + '" r="2" fill="' + HI + '"/>');
+          s.push('<circle cx="' + X(q[0]) + '" cy="' + Y(q[1]) + '" r="1.5" fill="' + HI + '"/>');
         });
       });
       s.push("</g>");
@@ -1485,8 +1483,8 @@
 
       if (fontSize) {
         const dw = ((bx1 - bx0) / a).toFixed(1) + "a", dh = ((by1 - by0) / a).toFixed(1) + "a";
-        s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + (fontSize + 1) +
-          '" font-weight="600" fill="' + HI + '" text-anchor="middle" style="paint-order:stroke" stroke="' + HALO + '" stroke-width="3">');
+        s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
+          '" font-weight="500" fill="' + HI + '" text-anchor="middle">');
         s.push('<text x="' + ((X(bx0) + X(bx1)) / 2) + '" y="' + (wy - 5) + '">' + dw + "</text>");
         s.push('<text x="' + (hx - 7) + '" y="' + ((Y(by0) + Y(by1)) / 2) + '" dy="3" transform="rotate(-90 ' + (hx - 7) + " " + ((Y(by0) + Y(by1)) / 2) + ')">' + dh + "</text>");
         s.push("</g>");
@@ -1944,7 +1942,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222a",
+      version: "20260222b",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
