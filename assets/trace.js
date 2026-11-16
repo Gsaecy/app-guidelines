@@ -1620,20 +1620,40 @@
       }
       s.push("</g>");
 
+      // 孔的尺寸用引线引到图形外面（数字不压图案、不压边界）
+      const holeLabels = [];
+      if ((state.holes || []).length) {
+        s.push('<g id="leaders" fill="none" stroke="' + HI + '" stroke-width="0.55">');
+        (state.holes || []).forEach(function (h) {
+          if (h.kind !== "circle") return;
+          let dx = h.cx - cx, dy = h.cy - cy, L = Math.sqrt(dx * dx + dy * dy);
+          if (L < 1) { const ang = -Math.PI / 4; dx = Math.cos(ang); dy = Math.sin(ang); L = 1; }
+          dx /= L; dy /= L;
+          const ex = X(h.cx + h.r * dx), ey = Y(h.cy + h.r * dy);
+          // 引线一直引到图形外框之外，数字绝不压在图案/边界上
+          const outR = Math.max(bx1 - bx0, by1 - by0) / 2 + 20 / scale;
+          const px2 = X(cx + outR * dx), py2 = Y(cy + outR * dy);
+          s.push('<line x1="' + ex + '" y1="' + ey + '" x2="' + px2 + '" y2="' + py2 + '"/>');
+          holeLabels.push({ x: px2, y: py2, t: "⌀" + ((h.r * 2) / a).toFixed(1) });
+        });
+        s.push("</g>");
+      }
+
       if (fontSize) {
         const mask = ' style="paint-order:stroke" stroke="#FFFFFF" stroke-width="2.5"';
         s.push('<g id="dim-text" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
           '" font-weight="500" fill="' + HI + '" text-anchor="middle"' + mask + ">");
         if (std.kind === "circle") {
-          s.push('<text x="' + X(cx + rr0 * 0.62 * Math.cos(angR)) + '" y="' + Y(cy + rr0 * 0.62 * Math.sin(angR)) + '" dy="-3">R' +
+          // 数值放到弧外（引线再延长 16px），保证不压图案
+          const off = 16 / scale;
+          s.push('<text x="' + X(cx + (rr0 + off) * Math.cos(angR)) + '" y="' + Y(cy + (rr0 + off) * Math.sin(angR)) + '" dy="3">R' +
             (rr0 / a).toFixed(1) + "</text>");
         } else {
           s.push('<text x="' + ((X(bx0) + X(bx1)) / 2) + '" y="' + (wy - 4) + '">' + dwv + "</text>");
           s.push('<text x="' + (hx - 3) + '" y="' + ((Y(by0) + Y(by1)) / 2) + '" dy="3" text-anchor="end">' + dhv + "</text>");
         }
-        (state.holes || []).forEach(function (h) {
-          if (h.kind !== "circle") return;
-          s.push('<text x="' + X(h.cx) + '" y="' + (Y(h.cy) - 4) + '">⌀' + ((h.r * 2) / a).toFixed(1) + "</text>");
+        holeLabels.forEach(function (q) {
+          s.push('<text x="' + q.x + '" y="' + (q.y + 3) + '">' + q.t + "</text>");
         });
         s.push('<text x="' + X(bx0) + '" y="' + Y(by1) + '" dy="40" text-anchor="start">' +
           "单位：a（模数 = 短边 / " + n + "）" + ((state.holes || []).length ? "，内孔为差集图案（−）" : "") + "</text>");
@@ -2099,7 +2119,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222m",
+      version: "20260222o",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
