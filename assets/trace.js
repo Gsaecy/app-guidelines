@@ -876,7 +876,35 @@
     });
 
     // ② 圆角矩形：A = w·h − (4−π)r²  →  直接解出 r
-    const rEst = Math.sqrt(Math.max(0, (bw * bh - area) / (4 - Math.PI)));
+    let rEst = Math.sqrt(Math.max(0, (bw * bh - area) / (4 - Math.PI)));
+    // R 由"直边长度"反解：圆角矩形的直边被两个圆角各吃掉 R，
+    // 直边长度 = 该方向边长 − 2R  →  R = (边长 − 直边)/2。
+    // 直边判据：该列(行)的最外像素恰好落在全局最外位置上（同一条切线）。
+    (function () {
+      let minTop = 1e9;
+      const top = new Array(bw).fill(-1);
+      for (let i = 0; i < bw; i++) {
+        const x = x0 + i;
+        for (let y = y0; y <= y1; y++) {
+          if (mask[y * w + x]) { top[i] = y; if (y < minTop) minTop = y; break; }
+        }
+      }
+      let minLeft = 1e9;
+      const left = new Array(bh).fill(-1);
+      for (let i = 0; i < bh; i++) {
+        const y = y0 + i;
+        for (let x = x0; x <= x1; x++) {
+          if (mask[y * w + x]) { left[i] = x; if (x < minLeft) minLeft = x; break; }
+        }
+      }
+      let runTop = 0, runLeft = 0;
+      for (let i = 0; i < bw; i++) if (top[i] === minTop) runTop++;
+      for (let i = 0; i < bh; i++) if (left[i] === minLeft) runLeft++;
+      const rTop = (bw - runTop) / 2;
+      const rLeft = (bh - runLeft) / 2;
+      const est = (rTop + rLeft) / 2;
+      if (est > 1 && est < Math.min(bw, bh) / 2) rEst = (rEst + est) / 2;   // 面积法与直边法偏差方向相反，取均值
+    })();
     if (rEst > 1 && rEst < Math.min(bw, bh) / 2) {
       const r = rEst;
       cands.push({
@@ -1721,7 +1749,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260219a",
+      version: "20260219c",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
