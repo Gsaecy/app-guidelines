@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="utf-8">
@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="assets/style.css?v=20260213g">
 </head>
 <body>
-<script>if(window.AGTrace&&window.AGTrace.version!=="20260213g"){location.replace(location.pathname+"?b="+Date.now())}</script>
+<script>if(window.AGTrace&&window.AGTrace.version!=="20260213m"){location.replace(location.pathname+"?b="+Date.now())}</script>
 <a class="skip-link" href="#main">跳到正文</a>
 
 <header class="appbar">
@@ -106,18 +106,7 @@
           </div>
         </div>
 
-        <div class="card">
-          <div class="card__title">处理流程</div>
-          <ol style="margin:10px 0 0;padding-left:20px;font-size:12.5px;color:var(--text-2);line-height:1.85">
-            <li><b>二值化</b>：转灰度按阈值切分前景（可反转）。</li>
-            <li><b>轮廓提取</b>：marching squares 沿像素边界追踪闭合环，自动保留镂空。</li>
-            <li><b>节点简化</b>：Ramer–Douglas–Peucker 减少锚点，得到可用路径。</li>
-            <li><b>叠加构造</b>：16 格网格 + 同心圆，作为切割/对齐参考。</li>
-            <li><b>导出</b>：SVG（可编辑）、AI/PDF（矢量）、PNG@4x（提案用）。</li>
-          </ol>
-          <div class="note" style="margin-top:12px">
-            <div><b>专业提醒：</b>自动描摹只适合作为草稿。定稿仍需按 <a href="logo.html#geometry">几何制图法</a> 把折线替换为相切圆弧（R 成族、切点共线），否则放大后会有折角。</div>
-          </div>
+        
         </div>
       </div>
     </div>
@@ -132,6 +121,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/shell.js?v=20260213g"></script>
-<script src="assets/trace.js?v=20260213g"></script>
+<script src="assets/trace.js?v=20260213m"></script>
 </body>
 </html>
