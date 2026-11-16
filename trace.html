@@ -92,12 +92,12 @@
         </label>
 
         <div style="display:grid;gap:8px;margin-top:18px">
-          <button class="btn btn--primary" type="button" id="dlAiQuick">一键导出 AI 矢量草稿</button>
-          <button class="btn btn--secondary" type="button" id="dlAi">下载 AI（PDF 兼容）</button>
-          <button class="btn btn--secondary" type="button" id="dlSvg">下载 SVG</button>
+          <button class="btn btn--primary" type="button" id="dlAiQuick">一键导出 SVG 矢量（含构造层）</button>
+          <button class="btn btn--secondary" type="button" id="dlAi">下载 PDF（AI 里另存为 .ai）</button>
+          <button class="btn btn--secondary" type="button" id="dlSvg">下载 SVG（仅图形，无构造层）</button>
           <button class="btn btn--secondary" type="button" id="dlPng">下载 PNG @4x</button>
         </div>
-        <p class="card__hint" style="margin-top:10px">AI 文件为标准 PDF 1.4 矢量内容，Illustrator 可直接打开并另存为 .ai；如需可编辑的路径，请在 AI 里执行「释放复合路径」。</p>
+        <p class="card__hint" style="margin-top:10px">SVG 是标准矢量文件，Illustrator 可直接打开、路径可编辑（圆弧为真圆弧），需要原生 .ai 就在 AI 里「另存为」。PDF 为标准 1.4 矢量，同样可在 AI 打开后另存为 .ai。</p>
       </div>
 
       <div class="stack">
@@ -145,8 +145,8 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>if(window.AGTrace&&window.AGTrace.version!=="20260211g"){location.replace(location.pathname+"?b="+Date.now())}</script>
+<script>if(window.AGTrace&&window.AGTrace.version!=="20260211h"){location.replace(location.pathname+"?b="+Date.now())}</script>
 <script src="assets/shell.js?v=20260209b"></script>
-<script src="assets/trace.js?v=20260211g"></script>
+<script src="assets/trace.js?v=20260211h"></script>
 </body>
 </html>

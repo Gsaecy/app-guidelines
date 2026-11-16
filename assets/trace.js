@@ -762,7 +762,7 @@
   }
 
   // Minimal PDF (1.4) writer — vector paths, opens in Illustrator as PDF-compatible .ai
-  function pdfString(padding) {
+  function pdfString(padding, withArtboard) {
     const W = state.w + padding * 2;
     const H = state.h + padding * 2;
     const ops = [];
@@ -924,20 +924,20 @@
     const svgBtn = $("#dlSvg");
     if (svgBtn) svgBtn.addEventListener("click", function () {
       if (!state.loops.length) { fail("还没有可导出的轮廓，请先载入图片或点「载入示例」。"); return; }
-      download("logo-draft.svg", svgString(24, state.guides), "image/svg+xml");
+      download("logo-draft.svg", svgString(24, false), "image/svg+xml");
     });
 
     const oneClick = $("#dlAiQuick");
     if (oneClick) oneClick.addEventListener("click", function () {
       if (!state.fits.length) { fail("请先上传一张图片（或点「载入示例」）。"); return; }
-      download("logo-draft.ai", pdfString(24), "application/postscript");
-      if (window.AG) AG.toast("已导出 AI 矢量草稿");
+      download("logo-draft.svg", svgString(24, true), "image/svg+xml");
+      if (window.AG) AG.toast("已导出 SVG 矢量草稿（含制图构造层）");
     });
 
     const aiBtn = $("#dlAi");
     if (aiBtn) aiBtn.addEventListener("click", function () {
       if (!state.loops.length) { fail("还没有可导出的轮廓，请先载入图片或点「载入示例」。"); return; }
-      download("logo-draft.ai", pdfString(24), "application/postscript");
+      download("logo-draft.pdf", pdfString(24), "application/pdf");
     });
 
     const pngBtn = $("#dlPng");
@@ -966,7 +966,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260211g",
+      version: "20260211h",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
