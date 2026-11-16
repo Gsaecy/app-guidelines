@@ -170,6 +170,72 @@
       applyResponsive();
     }
 
+    /* ---------------- geometric construction views */
+    const geoSwitch = $("#geoSwitch");
+    const geoEls = {
+      grid: document.getElementById("geoGrid"),
+      circles: document.getElementById("geoCircles"),
+      labels: document.getElementById("geoLabels"),
+      mark: document.getElementById("geoMark"),
+      line: document.getElementById("geoMarkLine"),
+    };
+    const geoNotes = {
+      grid: "坐标网格：以 16 单位为格，把轮廓关键点逐格落位，适合硬边与字母形。",
+      circle: "圆切线稿：两个等径圆 R75、圆心距 50 → 交集形成叶片；再减去 R20 圆得到缺口。",
+      dims: "半径与切点：圆心、R75、圆心距 d=50、上下切点 T1/T2 全部可标注，别人可照着重画。",
+      final: "成品：轮廓来自圆的交集，因此任意放大都保持曲率一致。",
+    };
+    function showGeo(view) {
+      const show = function (el, on) { if (el) el.style.display = on ? "" : "none"; };
+      show(geoEls.grid, view === "grid");
+      show(geoEls.circles, view === "circle" || view === "dims");
+      show(geoEls.labels, view === "dims");
+      show(geoEls.line, view === "grid" || view === "circle" || view === "dims");
+      show(geoEls.mark, view === "final");
+      const note = $("#geoNote");
+      if (note) note.textContent = geoNotes[view];
+    }
+    if (geoSwitch) {
+      geoSwitch.addEventListener("click", function (e) {
+        const btn = e.target.closest("button[data-view]");
+        if (!btn) return;
+        $$("button", geoSwitch).forEach(function (b) { b.classList.toggle("is-on", b === btn); });
+        showGeo(btn.getAttribute("data-view"));
+      });
+    }
+    showGeo("circle");
+
+    /* ---------------- radius family checker */
+    const base = $("#radiusBase");
+    const check = $("#radiusCheck");
+    const result = $("#radiusResult");
+    function checkRadius() {
+      if (!base || !check || !result) return;
+      const R = Number(base.value) || 0;
+      const r = Number(check.value) || 0;
+      const allowed = [
+        [R, "R"],
+        [R / 2, "R / 2"],
+        [R / 3, "R / 3"],
+        [R * (2 / 3), "2R / 3"],
+        [R * 0.75, "3R / 4"],
+        [R * 1.5, "1.5R"],
+        [R * 2, "2R"],
+        [R * 3, "3R"],
+      ];
+      const hit = allowed.find(function (a) { return Math.abs(a[0] - r) <= 0.51; });
+      if (hit) {
+        result.innerHTML = '<span class="badge badge--ok">符合半径族</span><span>r = ' +
+          Number(r.toFixed(2)) + " ≈ " + hit[1] + "（基准 R = " + R + "）</span>";
+      } else {
+        result.innerHTML = '<span class="badge badge--bad">不在半径族</span><span>r = ' + Number(r.toFixed(2)) +
+          " 无法用 R 表达；可用值：" + allowed.map(function (a) { return a[1] + "=" + Number(a[0].toFixed(1)); }).join(" · ") + "</span>";
+      }
+    }
+    if (base) base.addEventListener("input", checkRadius);
+    if (check) check.addEventListener("input", checkRadius);
+    checkRadius();
+
     /* ---------------- checklist */
     const gridEl = $("#logoCheckGrid");
     const bar = $("#logoProgressBar");

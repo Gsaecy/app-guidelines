@@ -43,9 +43,10 @@
     <div class="page-head">
       <div class="hero__eyebrow">Logo · 几何构造与交付</div>
       <h1>Logo 设计规范</h1>
-      <p>Logo 不是「画一个图形」，而是<b>用几何规则切出来、并在所有尺寸下都不变形</b>的资产。本页覆盖：类型选择、构造网格、图案切割（布尔运算）、光学修正、安全区与最小尺寸、响应式标识、动效与 SVG 交付。</p>
+      <p>Logo 不是「画一个图形」，而是<b>用几何规则切出来、并在所有尺寸下都不变形</b>的资产。本页覆盖：类型选择、几何制图（圆切构造）、布尔运算、、光学修正、安全区与最小尺寸、响应式标识、动效与 SVG 交付。</p>
       <div class="subnav">
         <a href="#types">类型</a>
+        <a href="#geometry">圆切构造</a>
         <a href="#cut">图案切割</a>
         <a href="#optical">光学修正</a>
         <a href="#space">安全区</a>
@@ -96,10 +97,119 @@
       </div>
     </section>
 
+    <!-- ============================================================ geometry -->
+    <section class="section" id="geometry">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">02</span>Geometric Construction</div>
+        <h2>几何制图法：用圆相切「切」出标识</h2>
+        <p class="section__lead">标识制图有两种：<b>坐标制图法</b>（把图形画进方格，按格子定位）与<b>几何制图法</b>（用圆相切求出每段圆弧的圆心、半径与切点）。后者能证明「这个弧度为什么是这个弧度」，也是专业线稿的由来。</p>
+      </div>
+
+      <div class="split">
+        <div class="demo-panel">
+          <div class="demo-panel__body">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+              <div class="card__title">同一标识的四种制图视图</div>
+              <div class="segmented" id="geoSwitch" role="group" aria-label="制图视图">
+                <button type="button" data-view="grid">坐标网格</button>
+                <button type="button" data-view="circle" class="is-on">圆切线稿</button>
+                <button type="button" data-view="dims">半径与切点</button>
+                <button type="button" data-view="final">成品</button>
+              </div>
+            </div>
+            <div class="logo-stage" style="margin-top:12px;min-height:260px">
+              <svg viewBox="0 0 270 220" role="img" aria-label="圆切制图示意" style="width:100%">
+                <defs>
+                  <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#0A84FF"></stop>
+                    <stop offset="1" stop-color="#5AC8FA"></stop>
+                  </linearGradient>
+                  <mask id="notchMask">
+                    <rect x="0" y="0" width="270" height="220" fill="#fff"></rect>
+                    <circle cx="135" cy="176" r="20" fill="#000"></circle>
+                  </mask>
+                </defs>
+
+                <g id="geoGrid" stroke="var(--line-strong)" stroke-width="0.5" style="display:none">
+                  <path d="M10 10H260M10 26H260M10 42H260M10 58H260M10 74H260M10 90H260M10 106H260M10 122H260M10 138H260M10 154H260M10 170H260M10 186H260M10 202H260"></path>
+                  <path d="M10 10V210M26 10V210M42 10V210M58 10V210M74 10V210M90 10V210M106 10V210M122 10V210M138 10V210M154 10V210M170 10V210M186 10V210M202 10V210M218 10V210M234 10V210M250 10V210"></path>
+                </g>
+
+                <g id="geoCircles" fill="none">
+                  <circle cx="110" cy="110" r="75" stroke="var(--accent)" stroke-width="1.1" stroke-dasharray="5 4" opacity=".8"></circle>
+                  <circle cx="160" cy="110" r="75" stroke="#ff9f0a" stroke-width="1.1" stroke-dasharray="5 4" opacity=".8"></circle>
+                  <circle cx="135" cy="176" r="20" stroke="#34c759" stroke-width="1.1" stroke-dasharray="4 3" opacity=".9"></circle>
+                  <circle cx="110" cy="110" r="2.5" fill="var(--accent)"></circle>
+                  <circle cx="160" cy="110" r="2.5" fill="#ff9f0a"></circle>
+                  <path d="M110 110h75" stroke="var(--accent)" stroke-width="1"></path>
+                  <path d="M160 110h75" stroke="#ff9f0a" stroke-width="1"></path>
+                  <path d="M110 110h50" stroke="var(--text-3)" stroke-width="1" stroke-dasharray="3 3"></path>
+                </g>
+
+                <g id="geoLabels" font-family="monospace" font-size="10" fill="var(--text-2)" style="display:none">
+                  <text x="128" y="104">R 75</text>
+                  <text x="178" y="104">R 75</text>
+                  <text x="122" y="128" fill="var(--text-3)">d 50</text>
+                  <circle cx="135" cy="39" r="3" fill="var(--accent)"></circle>
+                  <circle cx="135" cy="181" r="3" fill="var(--accent)"></circle>
+                  <text x="142" y="36">T1 切点</text>
+                  <text x="142" y="194">T2 切点</text>
+                  <text x="12" y="206" fill="var(--text-3)">圆心距 d，两圆等径 R → 交点即叶片轮廓</text>
+                </g>
+
+                <g id="geoMark">
+                  <path mask="url(#notchMask)" fill="url(#leafGrad)" d="M135 39.3A75 75 0 0 1 135 180.7A75 75 0 0 1 135 39.3Z"></path>
+                </g>
+                <g id="geoMarkLine" fill="none" stroke="var(--accent)" stroke-width="1.6" style="display:none">
+                  <path d="M135 39.3A75 75 0 0 1 135 180.7A75 75 0 0 1 135 39.3Z"></path>
+                </g>
+              </svg>
+            </div>
+            <p class="card__hint" id="geoNote" style="margin-top:10px">圆切线稿：两个等径圆 R75、圆心距 50 → 交集形成叶片；再减去 R20 圆得到缺口。</p>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card__title">圆切四原则</div>
+            <ol style="margin:10px 0 0;padding-left:20px;font-size:12.5px;color:var(--text-2);line-height:1.85">
+              <li><b>等径优先</b>：同一条轮廓上的圆弧尽量同半径（如 R75 的两段）。</li>
+              <li><b>相切不交叉</b>：圆与圆只在切点相接，切点必须落在构造线或网格上。</li>
+              <li><b>半径成族</b>：所有半径取自 R、R/2、R/3、2R，禁止出现 R37.4。</li>
+              <li><b>可标注</b>：每个圆心、半径、切点都能在图上标出，别人能照着重画。</li>
+            </ol>
+            <div class="note" style="margin-top:12px">
+              <div><b>为什么圆切显得专业：</b>它把「我觉得这样好看」换成了「这些弧共圆、切点共线」，评审时能逐条核对，而不是争论审美。</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__title">半径族校验器</div>
+            <p class="card__hint">输入基准半径 R，再填一个待用半径，检查是否落在允许的半径族内。</p>
+            <div class="tool__row">
+              <label class="field"><span class="field__label">基准 R</span><input class="input" id="radiusBase" type="number" value="75" min="1"></label>
+              <label class="field"><span class="field__label">待校验 r</span><input class="input" id="radiusCheck" type="number" value="37.5" step="0.5" min="0"></label>
+            </div>
+            <div class="tool__result" id="radiusResult" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:16px">
+        <table>
+          <thead><tr><th>制图法</th><th>做法</th><th>优点</th><th>适用</th></tr></thead>
+          <tbody>
+            <tr><td>坐标制图法</td><td>方格定位（每格 4/8/16 单位），逐点描出轮廓</td><td>易复现、适合字体与几何硬边</td><td>字母标、像素感标识</td></tr>
+            <tr><td>几何制图法</td><td>用等径/相切圆求出圆心、半径、切点</td><td>曲线可证明、放大不失真</td><td>有机曲线、动物、抽象标</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- ============================================================ cut -->
     <section class="section" id="cut">
       <div class="section__head">
-        <div class="section__kicker"><span class="num">02</span>Pattern Cutting</div>
+        <div class="section__kicker"><span class="num">03</span>Pattern Cutting</div>
         <h2>图案切割：用布尔运算把形状「切」出来</h2>
         <p class="section__lead">专业标识几乎都是两个以上基础形的合并、相减、相交或排除。规则一旦确定，任何尺寸、任何设计师都能复现同一个形状。</p>
       </div>
@@ -188,7 +298,7 @@
     <!-- ============================================================ optical -->
     <section class="section" id="optical">
       <div class="section__head">
-        <div class="section__kicker"><span class="num">03</span>Optical Corrections</div>
+        <div class="section__kicker"><span class="num">04</span>Optical Corrections</div>
         <h2>光学修正：数学对齐 ≠ 视觉对齐</h2>
         <p class="section__lead">同样外接框的圆形看起来比方形小。专业做法是有意让圆形、三角形略微超出边界（overshoot），并把文字按视觉重心上提。</p>
       </div>
@@ -228,7 +338,7 @@
     <!-- ============================================================ space -->
     <section class="section" id="space">
       <div class="section__head">
-        <div class="section__kicker"><span class="num">04</span>Clear Space</div>
+        <div class="section__kicker"><span class="num">05</span>Clear Space</div>
         <h2>安全区与最小尺寸</h2>
         <p class="section__lead">安全区不是「看起来差不多」，而是用一个可测量的单位定义：常用标识高度（x）或字高（cap height）的 0.5–1 倍。</p>
       </div>
@@ -264,7 +374,7 @@
     <!-- ============================================================ responsive -->
     <section class="section" id="responsive">
       <div class="section__head">
-        <div class="section__kicker"><span class="num">05</span>Responsive &amp; Motion</div>
+        <div class="section__kicker"><span class="num">06</span>Responsive &amp; Motion</div>
         <h2>响应式标识与动效</h2>
         <p class="section__lead">一个 Logo 要准备 3 个形态：完整组合、紧凑版（去 tagline）、纯标识。宽度不够时按顺序降级，而不是等比缩小到看不清。</p>
       </div>
@@ -311,7 +421,7 @@
     <!-- ============================================================ delivery -->
     <section class="section" id="delivery">
       <div class="section__head">
-        <div class="section__kicker"><span class="num">06</span>Delivery</div>
+        <div class="section__kicker"><span class="num">07</span>Delivery</div>
         <h2>文件交付规范</h2>
         <p class="section__lead">交付的不是「一个 logo.svg」，而是一套能被工程直接使用的资产。SVG 里最常见的三个事故：带描边、viewBox 不统一、路径精度过高。</p>
       </div>
@@ -326,7 +436,7 @@
     <!-- ============================================================ checklist -->
     <section class="section" id="checklist">
       <div class="section__head">
-        <div class="section__kicker"><span class="num">07</span>Checklist</div>
+        <div class="section__kicker"><span class="num">08</span>Checklist</div>
         <h2>Logo 走查清单</h2>
         <p class="section__lead">提交前逐条过；任何一条「否」，都不算定稿。</p>
       </div>
