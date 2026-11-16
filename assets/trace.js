@@ -1402,32 +1402,26 @@
   // 布尔重构：把每轮廓的标准形转成实体（直线链 → 轴对齐矩形），并 / 差 合成，再与掩膜比对
   function reconstruct(pl, mask, w, h) {
     const r1 = function (v) { return Math.round(v * 10) / 10; };
-    const plus = [], minus = [], labels = [];
+    const plus = [], minus = [];
+    const tag = function (x) { return x; };
     pl.parts.forEach(function (part) {
       const lines = part.prims.filter(function (p) { return p.kind === "line"; });
       const rects = part.prims.filter(function (p) { return p.kind === "rect"; });
       const circles = part.prims.filter(function (p) { return p.kind === "circle"; });
       const bucket = part.hole ? minus : plus;
-      // 圆角矩形：实体 = 由 4 圆心 ± R 派生的圆角矩形（4 圆只是构造元素，不参与布尔）
       if (part.shape === "rrect" && circles.length === 4) {
-        const R = circles.reduce(function (a, c) { return a + c.r; }, 0) / 4;
+        const R = circles.reduce(function (acc, c) { return acc + c.r; }, 0) / 4;
         const xs = circles.map(function (c) { return c.cx; }), ys = circles.map(function (c) { return c.cy; });
-        const x0 = Math.min.apply(null, xs) - R, x1 = Math.max.apply(null, xs) + R;
-        const y0 = Math.min.apply(null, ys) - R, y1 = Math.max.apply(null, ys) + R;
-        bucket.push({ kind: "rrect", x0: x0, y0: y0, x1: x1, y1: y1, r: R });
-        labels.push((part.hole ? "-" : "+") + "圆角矩形 " + r1(x1 - x0) + "×" + r1(y1 - y0) + " R" + r1(R));
+        bucket.push({ kind: "rrect", x0: Math.min.apply(null, xs) - R, x1: Math.max.apply(null, xs) + R,
+          y0: Math.min.apply(null, ys) - R, y1: Math.max.apply(null, ys) + R, r: R });
         return;
       }
-      const sign = part.hole ? "-" : "+";
       rects.forEach(function (r) {
         bucket.push({ kind: "rect", x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1 });
-        labels.push(sign + "矩形 " + r1(r.x1 - r.x0) + "×" + r1(r.y1 - r.y0));
       });
       circles.forEach(function (c) {
         bucket.push({ kind: "circle", cx: c.cx, cy: c.cy, r: c.r });
-        labels.push(sign + "圆 R" + r1(c.r));
       });
-      // 直线链没有闭合边时（例如贴着别的实体的那一段），用坐标极值补成轴对齐矩形
       if (lines.length >= 2 && !rects.length) {
         let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
         lines.forEach(function (l) {
@@ -1438,41 +1432,73 @@
             if (p[1] > y1) y1 = p[1];
           });
         });
-        bucket.push({ kind: "rect", x0: x0, y0: y0, x1: x1, y1: y1 });
-        labels.push(sign + "矩形 " + r1(x1 - x0) + "×" + r1(y1 - y0) + "（" + lines.length + " 条直边闭合）");
+        bucket.push({ kind: "rect", x0: x0, y0: y0, x1: x1 + 1, y1: y1 + 1 });
       }
     });
 
     const hit = function (s, x, y) {
+      if (s.kind === "circle") return Math.hypot(x - s.cx, y - s.cy) <= s.r;
       if (s.kind === "rrect") {
         const dx = Math.max(s.x0 + s.r - x, 0, x - (s.x1 - s.r));
         const dy = Math.max(s.y0 + s.r - y, 0, y - (s.y1 - s.r));
         return dx * dx + dy * dy <= s.r * s.r;
       }
-      if (s.kind === "circle") return Math.hypot(x - s.cx, y - s.cy) <= s.r;
       return x >= s.x0 && x <= s.x1 && y >= s.y0 && y <= s.y1;
     };
-    let inter = 0, uni = 0, miss = 0, extra = 0;
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const px = x + 0.5, py = y + 0.5;
-        let v = false;
-        for (let i = 0; i < plus.length; i++) if (hit(plus[i], px, py)) { v = true; break; }
-        if (v) for (let i = 0; i < minus.length; i++) if (hit(minus[i], px, py)) { v = false; break; }
-        const m = !!mask[y * w + x];
-        if (v && m) inter++;
-        if (v || m) uni++;
-        if (m && !v) miss++;
-        if (v && !m) extra++;
+    const stats = function () {
+      let inter = 0, uni = 0, miss = 0, extra = 0;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const px = x + 0.5, py = y + 0.5;
+          let v = false;
+          for (let i = 0; i < plus.length; i++) if (hit(plus[i], px, py)) { v = true; break; }
+          if (v) for (let i = 0; i < minus.length; i++) if (hit(minus[i], px, py)) { v = false; break; }
+          const m = !!mask[y * w + x];
+          if (v && m) inter++;
+          if (v || m) uni++;
+          if (m && !v) miss++;
+          if (v && !m) extra++;
+        }
       }
-    }
-    return {
-      plus: plus, minus: minus,
-      expr: labels.join("  ∪  ").replace(/ ∪  \-/g, "  ∖  "),
-      iou: uni ? inter / uni : 0,
-      miss: miss, extra: extra,
-      overlap: inter
+      return { iou: uni ? inter / uni : 0, miss: miss, extra: extra, inter: inter, uni: uni };
     };
+
+    // 参数微调：逐实体、逐参数做坐标下降，最大化与掩膜的重合（收敛到亚像素最优）
+    let cur = stats();
+    const steps = [1, 0.5];
+    for (let iter = 0; iter < 4; iter++) {
+      let improved = false;
+      [plus, minus].forEach(function (bucket) {
+        bucket.forEach(function (sol) {
+          const keys = sol.kind === "circle" ? ["cx", "cy", "r"] : ["x0", "y0", "x1", "y1"];
+          keys.forEach(function (k) {
+            for (let si = 0; si < steps.length; si++) {
+              for (let sg = -1; sg <= 1; sg += 2) {
+                const d = steps[si] * sg;
+                sol[k] += d;
+                const v = stats();
+                if (v.iou > cur.iou + 1e-9) { cur = v; improved = true; }
+                else sol[k] -= d;
+              }
+            }
+          });
+        });
+      });
+      if (!improved) break;
+    }
+
+    const labels = [];
+    plus.forEach(function (s) {
+      if (s.kind === "circle") labels.push("+圆 R" + r1(s.r));
+      else if (s.kind === "rrect") labels.push("+圆角矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0) + " R" + r1(s.r));
+      else labels.push("+矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0));
+    });
+    minus.forEach(function (s) {
+      if (s.kind === "circle") labels.push("-圆 R" + r1(s.r));
+      else labels.push("-矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0));
+    });
+    return { plus: plus, minus: minus, expr: labels.join("  "),
+      iou: cur.iou, miss: cur.miss, extra: cur.extra, overlap: cur.inter };
   }
 
   // 法向定符号：沿每条标准形的法向两侧 D 距离采样掩膜，判断材料在 + 侧还是 − 侧
@@ -3017,7 +3043,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260307f",
+      version: "20260308a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
