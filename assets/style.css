@@ -1116,3 +1116,26 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .logo-dont figcaption { font-size: 11px; padding: 6px 10px; color: #c0281f; border-top: 1px solid var(--line); }
 
 .deliver-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+/* blueprint responsive fix */
+.module-grid { grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr)); }
+@media (max-width: 760px) {
+  .stage-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .logo-donts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .module-card { padding: 16px; }
+}
+@media (max-width: 420px) {
+  .stage-rail { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* mobile containment */
+@media (max-width: 900px) {
+  .appbar { overflow: hidden; }
+  .card > table { display: block; width: 100%; overflow-x: auto; }
+  .card > table thead, .card > table tbody { display: table; width: 100%; }
+}
+
+@media (max-width: 900px) {
+  .changelog__item { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .changelog__date { font-size: 11px; }
+}
