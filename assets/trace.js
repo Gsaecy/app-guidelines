@@ -1555,13 +1555,20 @@
         const c = Math.cos(ang), s_ = Math.sin(ang), bx = x - AR * c, by = y - AR * s_, px = -s_ * hwv, py = c * hwv;
         return '<path d="M' + x + " " + y + "L" + (bx + px) + " " + (by + py) + "L" + (bx - px) + " " + (by - py) + '" fill="' + HI + '" stroke="none"/>';
       };
-      // 构造线：外接矩形的对角线 + 半径构造线（虚线）——简单图形也要能看出"怎么定出来的"
-      s.push('<g id="construct" fill="none" stroke="' + HI + '" stroke-width="0.9" stroke-dasharray="5 4" opacity="0.95">');
-      s.push('<line x1="' + X(bx0) + '" y1="' + Y(by0) + '" x2="' + X(bx1) + '" y2="' + Y(by1) + '"/>');
-      s.push('<line x1="' + X(bx1) + '" y1="' + Y(by0) + '" x2="' + X(bx0) + '" y2="' + Y(by1) + '"/>');
-      // 半径构造线：从圆心到 45° 圆弧点（圆/椭圆/圆环都成立）
+      // 构造 = 最少的标准形本身（圆就一个圆、矩形就一个矩形），不多画任何派生线
       const rr0 = Math.min(bx1 - bx0, by1 - by0) / 2, angR = -Math.PI / 4;
-      s.push('<line x1="' + X(cx) + '" y1="' + Y(cy) + '" x2="' + X(cx + rr0 * Math.cos(angR)) + '" y2="' + Y(cy + rr0 * Math.sin(angR)) + '"/>');
+      s.push('<g id="construct" fill="none" stroke="' + HI + '" stroke-width="1" opacity="0.95">');
+      if (std.kind === "circle") {
+        s.push('<circle cx="' + X(cx) + '" cy="' + Y(cy) + '" r="' + (rr0 * scale).toFixed(2) + '" stroke-dasharray="6 4"/>');
+        // 半径：从圆心指向 45° 弧点（这条线就是 R 的尺寸线）
+        s.push('<line x1="' + X(cx) + '" y1="' + Y(cy) + '" x2="' + X(cx + rr0 * Math.cos(angR)) + '" y2="' + Y(cy + rr0 * Math.sin(angR)) + '"/>');
+      } else if (std.kind === "rect") {
+        s.push('<rect x="' + X(bx0) + '" y="' + Y(by0) + '" width="' + ((bx1 - bx0) * scale).toFixed(2) +
+          '" height="' + ((by1 - by0) * scale).toFixed(2) + '" stroke-dasharray="6 4"/>');
+      } else {
+        const ea = ((bx1 - bx0) / 2) * scale, eb = ((by1 - by0) / 2) * scale;
+        s.push('<ellipse cx="' + X(cx) + '" cy="' + Y(cy) + '" rx="' + ea.toFixed(2) + '" ry="' + eb.toFixed(2) + '" stroke-dasharray="6 4"/>');
+      }
       s.push("</g>");
 
       // 差集图案（孔）先画出来：虚线整圆 + 尺寸引线
@@ -1576,11 +1583,13 @@
       });
       s.push("</g>");
 
-      // 中心线：长划点线，伸出轮廓约 2~5mm
-      s.push('<g id="centrelines" stroke="' + HI + '" stroke-width="0.6" stroke-dasharray="14 3 1 3" opacity="0.9">');
-      s.push('<line x1="' + (X(bx0) - 8) + '" y1="' + Y(cy) + '" x2="' + (X(bx1) + 8) + '" y2="' + Y(cy) + '"/>');
-      s.push('<line x1="' + X(cx) + '" y1="' + (Y(by0) - 8) + '" x2="' + X(cx) + '" y2="' + (Y(by1) + 8) + '"/>');
-      s.push("</g>");
+      // 中心线：只有需要定位圆心时才画（圆 / 圆环）；矩形用 W/H 就够
+      if (std.kind === "circle") {
+        s.push('<g id="centrelines" stroke="' + HI + '" stroke-width="0.6" stroke-dasharray="14 3 1 3" opacity="0.9">');
+        s.push('<line x1="' + (X(bx0) - 8) + '" y1="' + Y(cy) + '" x2="' + (X(bx1) + 8) + '" y2="' + Y(cy) + '"/>');
+        s.push('<line x1="' + X(cx) + '" y1="' + (Y(by0) - 8) + '" x2="' + X(cx) + '" y2="' + (Y(by1) + 8) + '"/>');
+        s.push("</g>");
+      }
       s.push('<g id="centres" stroke="' + HI + '" stroke-width="0.6">');
       s.push('<line x1="' + (X(cx) - 5) + '" y1="' + Y(cy) + '" x2="' + (X(cx) + 5) + '" y2="' + Y(cy) + '"/>');
       s.push('<line x1="' + X(cx) + '" y1="' + (Y(cy) - 5) + '" x2="' + X(cx) + '" y2="' + (Y(cy) + 5) + '"/>');
@@ -1609,8 +1618,7 @@
         s.push('<g id="dim-text" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
           '" font-weight="500" fill="' + HI + '" text-anchor="middle"' + mask + ">");
         if (std.kind === "circle") {
-          s.push('<text x="' + X(cx) + '" y="' + (Y(cy) - 5) + '">⌀' + dwv + "</text>");
-          s.push('<text x="' + X(cx + rr0 * 0.55 * Math.cos(angR)) + '" y="' + Y(cy + rr0 * 0.55 * Math.sin(angR)) + '" dy="-3">R' +
+          s.push('<text x="' + X(cx + rr0 * 0.62 * Math.cos(angR)) + '" y="' + Y(cy + rr0 * 0.62 * Math.sin(angR)) + '" dy="-3">R' +
             (rr0 / a).toFixed(1) + "</text>");
         } else {
           s.push('<text x="' + ((X(bx0) + X(bx1)) / 2) + '" y="' + (wy - 4) + '">' + dwv + "</text>");
@@ -2084,7 +2092,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222h",
+      version: "20260222i",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
