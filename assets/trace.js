@@ -1579,7 +1579,7 @@
       s.push("</g>");
 
       // 差集图案（孔）先画出来：虚线整圆 + 尺寸引线
-      s.push('<g id="holes" fill="none" stroke="' + HI + '" stroke-width="1" stroke-dasharray="5 4" opacity="0.95">');
+      s.push('<g id="holes" fill="none" stroke="' + HI + '" stroke-width="1.6">');
       (state.holes || []).forEach(function (h) {
         if (h.kind === "circle") {
           s.push('<circle cx="' + X(h.cx) + '" cy="' + Y(h.cy) + '" r="' + (h.r * scale).toFixed(2) + '"/>');
@@ -2099,7 +2099,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222l",
+      version: "20260222m",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
