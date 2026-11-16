@@ -1,158 +1,141 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN" data-theme="light">
 <head>
-  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="pragma" content="no-cache">
-  <meta http-equiv="expires" content="0">
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
 <title>切割草稿生成器 — App Guidelines</title>
-<meta name="description" content="上传图片，浏览器内自动二值化、提取轮廓、简化节点，生成带几何构造线的 Logo 切割草稿，并导出 SVG / AI（PDF 兼容）/ PNG。">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/style.css?v=20260210e">
+<link rel="stylesheet" href="assets/style.css?v=20260212d">
+<style>
+  .tx-wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px 60px; }
+  .tx-head { padding: 28px 0 8px; }
+  .tx-head h1 { font-size: 26px; margin: 0 0 6px; }
+  .tx-head p { margin: 0; color: var(--text-2); font-size: 13px; }
+  .tx-grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; margin-top: 18px; }
+  @media (max-width: 860px) { .tx-grid { grid-template-columns: 1fr; } }
+  #traceDrop { border: 1.5px dashed var(--line-strong); border-radius: 12px; padding: 22px 16px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+  #traceDrop:hover, #traceDrop.is-over { border-color: var(--accent); background: var(--accent-soft); }
+  #traceDrop .tx-up { font-size: 12.5px; color: var(--text-2); }
+  #traceDrop .tx-up b { display: block; font-size: 14px; color: var(--text); margin-bottom: 4px; }
+  .trace-status { margin-top: 10px; font-size: 12px; padding: 7px 10px; border-radius: 8px; background: var(--line); color: var(--text-2); }
+  .trace-status.is-ok { background: rgba(14,159,110,.12); color: #0B7A55; }
+  .trace-status.is-err { background: rgba(215,0,21,.10); color: #B00020; }
+  .trace-thumb { display: block; max-width: 100%; max-height: 116px; margin: 0 auto 8px; border-radius: 8px; border: 1px solid var(--line-strong); background: #fff; object-fit: contain; }
+  .trace-progress { margin-top: 10px; }
+  .trace-progress__bar { height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .trace-progress__bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .18s ease; }
+  .trace-progress__label { margin-top: 6px; font-size: 11.5px; color: var(--text-2); }
+  .tx-actions { display: grid; gap: 8px; margin-top: 14px; }
+  .tx-actions .btn { width: 100%; }
+  .tx-actions .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; pointer-events: none; }
+  #traceStage { min-height: 300px; display: flex; align-items: center; justify-content: center; background: var(--bg-2, #f5f6f8); border-radius: 10px; padding: 10px; }
+  #traceStage svg { width: 100%; height: auto; display: block; }
+  #traceFamily { margin: 0 0 10px; }
+  .rfam { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+  .rfam__item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .rfam__lab { font: 600 11px/1.2 ui-monospace, monospace; color: var(--text-2); }
+  .rfam__lab b { display: block; font-weight: 400; color: var(--text-3); }
+  .tx-info { font-size: 12px; color: var(--text-2); }
+  details.tx-adv { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
+  details.tx-adv summary { font-size: 12.5px; color: var(--text-2); cursor: pointer; }
+  details.tx-adv .body { display: grid; gap: 10px; margin-top: 12px; }
+  .tx-field span { display: block; font-size: 11.5px; color: var(--text-2); margin-bottom: 4px; }
+</style>
 </head>
 <body>
-<a class="skip-link" href="#main">跳到正文</a>
+<a class="skip" href="#main">跳到正文</a>
 
 <header class="appbar">
-  <div class="brand">
-    <div class="brand__mark" aria-hidden="true">A</div>
-    <div class="brand__name">App Guidelines</div>
-    <div class="brand__tag">切割生成器</div>
-  </div>
+  <div class="brand"><div class="brand__mark" aria-hidden="true">A</div><div class="brand__name">App Guidelines</div><div class="brand__tag">切割生成器</div></div>
   <div class="appbar__spacer"></div>
   <nav class="topnav" aria-label="站点导航">
-    <a href="index.html">规范速查</a>
-    <a href="principles.html">设计原理</a>
-    <a href="elements.html">元素总览</a>
-    <a href="components.html">组件画廊</a>
-    <a href="blueprint.html">产品蓝图</a>
-    <a href="logo.html">Logo 规范</a>
-    <a href="devices.html">设备示例</a>
-    <a href="icons.html">图标库</a>
-    <a href="trace.html">切割生成器</a>
-    <a href="testing.html">测试工具</a>
+    <a href="index.html">规范速查</a><a href="principles.html">设计原理</a><a href="elements.html">元素总览</a>
+    <a href="components.html">组件画廊</a><a href="blueprint.html">产品蓝图</a><a href="logo.html">Logo 规范</a>
+    <a href="icons.html">图标库</a><a href="devices.html">设备示例</a><a href="trace.html" class="is-on">切割生成器</a><a href="testing.html">测试工具</a>
   </nav>
-  <div class="appbar__actions">
-    <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="4.2"></circle>
-        <path d="M12 2.8v2.1M12 19.1v2.1M4.5 4.5l1.5 1.5M18 18l1.5 1.5M2.8 12h2.1M19.1 12h2.1M4.5 19.5 6 18M18 6l1.5-1.5"></path>
-      </svg>
-    </button>
-  </div>
+  <div class="appbar__actions"><button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色">◐</button></div>
 </header>
 
-<div class="wrap">
-  <main class="main" id="main">
+<main id="main" class="tx-wrap">
+  <div class="tx-head">
+    <h1>切割草稿生成器</h1>
+    <p>上传图形 → 处理 → 导出矢量。图片只在本地处理，不上传服务器。</p>
+  </div>
 
-    <div class="page-head">
-      <div class="hero__eyebrow">Trace · 图片 → 切割草稿</div>
-      <h1>切割草稿生成器</h1>
-      <p>上传一张图片（手绘扫描、位图 Logo、截图都可以），在浏览器本地完成：<b>二值化 → 轮廓提取 → 节点简化 → 叠加几何构造线</b>，得到可继续加工的切割草稿，并导出 <b>SVG / AI（PDF 兼容）/ PNG@4x</b>。图片不会上传到任何服务器。</p>
-    </div>
+  <div class="tx-grid">
+    <div class="card">
+      <div id="traceDrop">
+        <div class="tx-up"><b>选择图片</b>点击或拖入 · Ctrl/⌘+V 粘贴</div>
+      </div>
+      <input type="file" id="traceFile" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/svg+xml,image/avif" hidden>
+      <div id="traceStatus" class="trace-status" role="status" aria-live="polite">还没有选择图片</div>
 
-    <div class="split" style="align-items:start">
-      <div class="card">
-        <div class="card__title">① 上传与参数</div>
-        <div id="traceDrop" style="margin-top:12px;border:1.5px dashed var(--line-strong);border-radius:12px;padding:26px 18px;text-align:center;cursor:pointer">
-          <div style="font-size:22px">⇪</div>
-          <div style="font-size:13px;font-weight:600;margin-top:6px">点击选择或拖入图片</div>
-          <div style="font-size:11px;color:var(--text-2);margin-top:4px">PNG / JPG / WebP · 建议主体清晰、背景干净</div>
+      <div class="tx-actions">
+        <button class="btn btn--primary" type="button" id="traceRun" disabled>开始处理</button>
+        <button class="btn btn--primary" type="button" id="dlAiQuick" disabled>导出 SVG（含构造层）</button>
+        <div class="row">
+          <button class="btn btn--secondary" type="button" id="dlSvg" disabled>SVG</button>
+          <button class="btn btn--secondary" type="button" id="dlAi" disabled>PDF</button>
+          <button class="btn btn--secondary" type="button" id="dlPng" disabled>PNG</button>
         </div>
-        <input type="file" id="traceFile" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/svg+xml,image/avif" hidden>
-        <div id="traceStatus" class="trace-status" role="status" aria-live="polite">还没有选择图片</div>
-        <button class="btn btn--primary" type="button" id="traceRun" disabled style="margin-top:10px;width:100%">开始处理</button>
-        <div id="traceProgressWrap" class="trace-progress" hidden>
-          <div class="trace-progress__bar"><i id="traceProgressFill"></i></div>
-          <div class="trace-progress__label" id="traceProgressLabel">准备中…</div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-          <button class="btn btn--outline btn--sm" type="button" id="traceDemoLeaf">载入示例 · 叶片</button>
-          <button class="btn btn--outline btn--sm" type="button" id="traceDemoRing">载入示例 · 圆环</button>
-          <span class="card__hint" style="align-self:center">也可以直接 Ctrl/⌘+V 粘贴截图</span>
-        </div>
+      </div>
 
-        <label class="field" style="margin-top:16px">
-          <span class="field__label">颜色容差 <code id="thVal">128</code> · 越小越敏感（抓更淡的图形）</span>
-          <input type="range" id="traceThreshold" min="20" max="240" value="128">
-        </label>
-        <label class="field" style="margin-top:12px">
-          <span class="field__label">节点简化 <code id="spVal">2.2</code> · 越大节点越少、线条越硬</span>
-          <input type="range" id="traceSimplify" min="0.4" max="8" step="0.2" value="2.2">
-        </label>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:14px">
+      <div id="traceProgressWrap" class="trace-progress" hidden>
+        <div class="trace-progress__bar"><i id="traceProgressFill"></i></div>
+        <div class="trace-progress__label" id="traceProgressLabel"></div>
+      </div>
+
+      <details class="tx-adv">
+        <summary>高级参数</summary>
+        <div class="body">
+          <label class="tx-field">
+            <span>颜色容差 <code id="thVal">128</code></span>
+            <input type="range" id="traceThreshold" min="20" max="240" value="128" style="width:100%">
+          </label>
+          <label class="tx-field">
+            <span>节点简化 <code id="spVal">2.2</code></span>
+            <input type="range" id="traceSimplify" min="0.4" max="8" step="0.2" value="2.2" style="width:100%">
+          </label>
           <label class="check"><input type="checkbox" id="traceInvert">反转前景 / 背景</label>
-          <label class="check"><input type="checkbox" id="traceGuides" checked>叠加构造线</label>
-          <label class="check"><input type="checkbox" id="traceFit" checked>几何拟合（直线 + 圆弧）</label>
-          <label class="check"><input type="checkbox" id="traceConstruct">构造圆（切线约束）</label>
-          <label class="check" style="gap:6px">模数网格
-            <select id="traceGrid" style="font-size:12px;padding:2px 6px;border-radius:6px;border:1px solid var(--line-strong);background:var(--card);color:inherit">
+          <label class="check"><input type="checkbox" id="traceGuides" checked>网格辅助线</label>
+          <label class="check"><input type="checkbox" id="traceFit" checked>直线 / 圆弧拟合</label>
+          <label class="check"><input type="checkbox" id="traceConstruct">构造圆</label>
+          <label class="tx-field">
+            <span>模数网格</span>
+            <select id="traceGrid" style="width:100%;padding:4px 8px;border-radius:6px;border:1px solid var(--line-strong);background:var(--card);color:inherit">
               <option value="8">8a</option><option value="12" selected>12a</option><option value="16">16a</option><option value="24">24a</option>
             </select>
           </label>
+          <label class="tx-field">
+            <span>成品颜色</span>
+            <input type="color" id="traceColor" value="#0071E3" style="width:100%;height:32px;border:1px solid var(--line-strong);border-radius:8px;background:var(--card)">
+          </label>
+          <button class="btn btn--secondary btn--sm" type="button" id="traceDemoLeaf">示例 · 叶片</button>
+          <button class="btn btn--secondary btn--sm" type="button" id="traceDemoRing">示例 · 圆环</button>
         </div>
-        <label class="field" style="margin-top:14px;max-width:200px">
-          <span class="field__label">成品颜色</span>
-          <input type="color" id="traceColor" value="#0071E3" style="width:100%;height:34px;border:1px solid var(--line-strong);border-radius:8px;background:var(--card)">
-        </label>
-
-        <div style="display:grid;gap:8px;margin-top:18px">
-          <button class="btn btn--primary" type="button" id="dlAiQuick">一键导出 SVG 矢量（含构造层）</button>
-          <button class="btn btn--secondary" type="button" id="dlAi">下载 PDF（AI 里另存为 .ai）</button>
-          <button class="btn btn--secondary" type="button" id="dlSvg">下载 SVG（仅图形，无构造层）</button>
-          <button class="btn btn--secondary" type="button" id="dlPng">下载 PNG @4x</button>
-        </div>
-        <p class="card__hint" style="margin-top:10px">SVG 是标准矢量文件，Illustrator 可直接打开、路径可编辑（圆弧为真圆弧），需要原生 .ai 就在 AI 里「另存为」。PDF 为标准 1.4 矢量，同样可在 AI 打开后另存为 .ai。</p>
-      </div>
-
-      <div class="stack">
-        <div class="demo-panel">
-          <div class="demo-panel__body">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-              <div class="card__title">② 切割草稿预览</div>
-              <span class="card__hint" id="traceInfo">尚未载入图片</span>
-            </div>
-            <div id="traceFamily" style="margin-top:12px"><span class="card__hint">载入图片后，每条圆弧都会归入一个 R 族（短边 = 100 单位）。</span></div>
-            <div class="logo-stage" id="traceStage" style="margin-top:12px;min-height:340px">
-              <div style="font-size:12px;color:var(--text-3)">上传图片后在这里预览</div>
-            </div>
-          </div>
-          <div class="demo-panel__foot">
-            <span>灰色 = 图形 · 浅灰 = 模数网格 a · 蓝虚线 = 构造圆（裁剪在画板内，粗蓝弧是切割线真正用到的段）· 品红 = 过圆心的中心轴 · 半径标注 = 以模数 a 为单位 · 外部尺寸线 = 整体宽高</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card__title">处理流程</div>
-          <ol style="margin:10px 0 0;padding-left:20px;font-size:12.5px;color:var(--text-2);line-height:1.85">
-            <li><b>二值化</b>：转灰度按阈值切分前景（可反转）。</li>
-            <li><b>轮廓提取</b>：marching squares 沿像素边界追踪闭合环，自动保留镂空。</li>
-            <li><b>节点简化</b>：Ramer–Douglas–Peucker 减少锚点，得到可用路径。</li>
-            <li><b>构造圆</b>：圆弧按半径归入 R 族（短边 = 100 单位），圆被裁剪在画板内，只有真正用到的那段弧画实线。</li>
-            <li><b>相切校验</b>：检查构造圆之间是否内切 / 外切，判断图形是否真的按几何制图法搭建。</li>
-            <li><b>导出</b>：SVG（含构造层，可编辑）、AI/PDF（矢量轮廓）、PNG@4x（提案用）。</li>
-          </ol>
-          <div class="note" style="margin-top:12px">
-            <div><b>专业提醒：</b>自动描摹只适合作为草稿。定稿仍需按 <a href="logo.html#geometry">几何制图法</a> 把折线替换为相切圆弧（R 成族、切点共线），否则放大后会有折角。</div>
-          </div>
-        </div>
-      </div>
+      </details>
     </div>
 
-    <div class="footer">
-      <span>App Guidelines · 切割生成器</span>
-      <span><a href="logo.html">Logo 规范</a>
-    <a href="icons.html">图标库</a>
-    <a href="devices.html">设备示例</a> · <a href="testing.html">测试工具</a></span>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+        <b style="font-size:14px">预览</b>
+        <span class="tx-info" id="traceInfo">尚未处理</span>
+      </div>
+      <div id="traceFamily"></div>
+      <div id="traceStage"><span style="font-size:12px;color:var(--text-3)">处理后在这里显示矢量草稿</span></div>
     </div>
+  </div>
 
-  </main>
-</div>
+  <div class="footer" style="margin-top:26px">
+    <span>App Guidelines · 切割生成器</span>
+    <span><a href="logo.html">Logo 规范</a> · <a href="icons.html">图标库</a> · <a href="testing.html">测试工具</a></span>
+  </div>
+</main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>if(window.AGTrace&&window.AGTrace.version!=="20260212c"){location.replace(location.pathname+"?b="+Date.now())}</script>
+<script>if(window.AGTrace&&window.AGTrace.version!=="20260212d"){location.replace(location.pathname+"?b="+Date.now())}</script>
 <script src="assets/shell.js?v=20260209b"></script>
-<script src="assets/trace.js?v=20260212c"></script>
+<script src="assets/trace.js?v=20260212d"></script>
 </body>
 </html>
