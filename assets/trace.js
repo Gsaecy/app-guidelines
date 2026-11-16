@@ -1465,34 +1465,63 @@
       });
       s.push("</g>");
 
-      // ⑤ 尺寸线：延长线 + 45° 刻度 + 数值（工程制图惯例）
-      const dOff = 15;
+      // ⑤ 尺寸标注：ISO 129-1 / GB-T 4458 三要素（尺寸界线 + 尺寸线 + 数字）
+      const dOff = 16, gap = 1.5, over = 5, AR = 6;
+      const arrow = function (x, y, ang) {
+        // x,y = 箭头尖端；ang = 指向（弧度）
+        const c = Math.cos(ang), s_ = Math.sin(ang);
+        const bx = x - AR * c, by = y - AR * s_, px = -s_ * 1.1, py = c * 1.1;
+        return '<path d="M' + x + " " + y + "L" + (bx + px) + " " + (by + py) + "L" + (bx - px) + " " + (by - py) +
+          'Z" fill="' + HI + '" stroke="none"/>';
+      };
       const wy = Y(by1) + dOff, hx = X(bx0) - dOff;
-      s.push('<g id="dims" fill="none" stroke="' + HI + '" stroke-width="0.8" opacity="0.95">');
-      s.push('<line x1="' + X(bx0) + '" y1="' + Y(by1) + '" x2="' + X(bx0) + '" y2="' + (wy + 5) + '"/>');
-      s.push('<line x1="' + X(bx1) + '" y1="' + Y(by1) + '" x2="' + X(bx1) + '" y2="' + (wy + 5) + '"/>');
-      s.push('<line x1="' + X(bx0) + '" y1="' + wy + '" x2="' + X(bx1) + '" y2="' + wy + '"/>');
-      s.push('<line x1="' + (X(bx0) - 3) + '" y1="' + (wy + 3) + '" x2="' + (X(bx0) + 3) + '" y2="' + (wy - 3) + '"/>');
-      s.push('<line x1="' + (X(bx1) - 3) + '" y1="' + (wy + 3) + '" x2="' + (X(bx1) + 3) + '" y2="' + (wy - 3) + '"/>');
-      s.push('<line x1="' + X(bx0) + '" y1="' + Y(by0) + '" x2="' + (hx - 5) + '" y2="' + Y(by0) + '"/>');
-      s.push('<line x1="' + X(bx0) + '" y1="' + Y(by1) + '" x2="' + (hx - 5) + '" y2="' + Y(by1) + '"/>');
-      s.push('<line x1="' + hx + '" y1="' + Y(by0) + '" x2="' + hx + '" y2="' + Y(by1) + '"/>');
-      s.push('<line x1="' + (hx - 3) + '" y1="' + (Y(by0) + 3) + '" x2="' + (hx + 3) + '" y2="' + (Y(by0) - 3) + '"/>');
-      s.push('<line x1="' + (hx - 3) + '" y1="' + (Y(by1) + 3) + '" x2="' + (hx + 3) + '" y2="' + (Y(by1) - 3) + '"/>');
+      s.push('<g id="dims" fill="none" stroke="' + HI + '" stroke-width="0.7">');
+      // 宽度：尺寸界线（与被注线段留间隙，超出尺寸线 5）
+      s.push('<line x1="' + X(bx0) + '" y1="' + (Y(by1) + gap) + '" x2="' + X(bx0) + '" y2="' + (wy + over) + '"/>');
+      s.push('<line x1="' + X(bx1) + '" y1="' + (Y(by1) + gap) + '" x2="' + X(bx1) + '" y2="' + (wy + over) + '"/>');
+      s.push('<line x1="' + (X(bx0) + AR) + '" y1="' + wy + '" x2="' + (X(bx1) - AR) + '" y2="' + wy + '"/>');
+      s.push(arrow(X(bx0), wy, 0), arrow(X(bx1), wy, Math.PI));
+      // 高度
+      s.push('<line x1="' + (X(bx0) - gap) + '" y1="' + Y(by0) + '" x2="' + (hx - over) + '" y2="' + Y(by0) + '"/>');
+      s.push('<line x1="' + (X(bx0) - gap) + '" y1="' + Y(by1) + '" x2="' + (hx - over) + '" y2="' + Y(by1) + '"/>');
+      s.push('<line x1="' + hx + '" y1="' + (Y(by0) + AR) + '" x2="' + hx + '" y2="' + (Y(by1) - AR) + '"/>');
+      s.push(arrow(hx, Y(by0), Math.PI / 2), arrow(hx, Y(by1), -Math.PI / 2));
+      // 半径：尺寸线过圆心，单箭头指向圆弧
+      const dirs = [-3 * Math.PI / 4, -Math.PI / 4, Math.PI / 4, 3 * Math.PI / 4];
+      const rAnchors = [];
+      std.corners.forEach(function (c, i) {
+        const ang = dirs[i];
+        const cx = X(c.cx), cy = Y(c.cy), rr = r * scale;
+        const px = cx + rr * Math.cos(ang), py = cy + rr * Math.sin(ang);
+        s.push('<line x1="' + (cx - 4 * Math.cos(ang)) + '" y1="' + (cy - 4 * Math.sin(ang)) + '" x2="' + px + '" y2="' + py + '"/>');
+        s.push(arrow(px, py, ang));
+        rAnchors.push({ x: px + 12 * Math.cos(ang), y: py + 12 * Math.sin(ang) });
+      });
+      s.push("</g>");
+      // 圆心标记：细点画线十字（中心线伸出轮廓）
+      s.push('<g id="centres" stroke="' + HI + '" stroke-width="0.5" opacity="0.85">');
+      std.corners.forEach(function (c) {
+        const cx = X(c.cx), cy = Y(c.cy), L = 7;
+        s.push('<line x1="' + (cx - L) + '" y1="' + cy + '" x2="' + (cx + L) + '" y2="' + cy + '" stroke-dasharray="4 1.5 1 1.5"/>');
+        s.push('<line x1="' + cx + '" y1="' + (cy - L) + '" x2="' + cx + '" y2="' + (cy + L) + '" stroke-dasharray="4 1.5 1 1.5"/>');
+        s.push('<circle cx="' + cx + '" cy="' + cy + '" r="0.9" fill="' + HI + '" stroke="none"/>');
+      });
       s.push("</g>");
 
       if (fontSize) {
         const dw = ((bx1 - bx0) / a).toFixed(1) + "a", dh = ((by1 - by0) / a).toFixed(1) + "a";
+        // 数字不得被图线穿过：文字加与背景同色的遮罩（制图标准要求，视觉上不是描边）
+        const mask = ' style="paint-order:stroke" stroke="' + (state.construct ? "#FFFFFF" : "#FFFFFF") + '" stroke-width="2.5"';
+        s.push('<g id="dim-text" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
+          '" font-weight="500" fill="' + HI + '" text-anchor="middle"' + mask + ">");
+        s.push('<text x="' + ((X(bx0) + X(bx1)) / 2) + '" y="' + (wy - 4) + '">' + dw + "</text>");
+        s.push('<text x="' + (hx - 5) + '" y="' + ((Y(by0) + Y(by1)) / 2) + '" dy="3" transform="rotate(-90 ' + (hx - 5) + " " + ((Y(by0) + Y(by1)) / 2) + ')">' + dh + "</text>");
+        rAnchors.forEach(function (q) {
+          s.push('<text x="' + q.x + '" y="' + q.y + '" dy="3">' + ua + "</text>");
+        });
+        s.push("</g>");
         s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
           '" font-weight="500" fill="' + HI + '" text-anchor="middle">');
-        s.push('<text x="' + ((X(bx0) + X(bx1)) / 2) + '" y="' + (wy - 5) + '">' + dw + "</text>");
-        s.push('<text x="' + (hx - 7) + '" y="' + ((Y(by0) + Y(by1)) / 2) + '" dy="3" transform="rotate(-90 ' + (hx - 7) + " " + ((Y(by0) + Y(by1)) / 2) + ')">' + dh + "</text>");
-        s.push("</g>");
-        s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + (fontSize + 1) +
-          '" font-weight="600" fill="' + HI + '" text-anchor="middle">');
-        std.corners.forEach(function (c) {
-          s.push('<text x="' + X(c.cx) + '" y="' + Y(c.cy + 3) + '">' + ua + "</text>");
-        });
         s.push('<text x="' + X((bx0 + bx1) / 2) + '" y="' + Y(by1) + '" dy="34">' +
           "4 圆 ∪ 相切矩形 → 1 个圆角矩形</text>");
         s.push("</g>");
@@ -1942,7 +1971,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222b",
+      version: "20260222c",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
