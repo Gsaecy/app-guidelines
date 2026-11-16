@@ -1422,6 +1422,19 @@
       circles.forEach(function (c) {
         bucket.push({ kind: "circle", cx: c.cx, cy: c.cy, r: c.r });
       });
+      const axis = lines.every(function (l) {
+        const c = Math.abs(Math.cos(l.th)), si = Math.abs(Math.sin(l.th));
+        return c > 0.97 || si > 0.97;
+      });
+      let closed = lines.length >= 3;
+      for (let i = 0; i < lines.length && closed; i++) {
+        const a = lines[i].p1, b = lines[(i + 1) % lines.length].p0;
+        if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 5) closed = false;
+      }
+      if (closed && !rects.length && !axis) {
+        bucket.push({ kind: "poly", pts: lines.map(function (l) { return [l.p0[0], l.p0[1]]; }) });
+        return;
+      }
       if (lines.length >= 2 && !rects.length) {
         let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
         lines.forEach(function (l) {
@@ -1442,6 +1455,15 @@
         const dx = Math.max(s.x0 + s.r - x, 0, x - (s.x1 - s.r));
         const dy = Math.max(s.y0 + s.r - y, 0, y - (s.y1 - s.r));
         return dx * dx + dy * dy <= s.r * s.r;
+      }
+      if (s.kind === "poly") {
+        let c = false;
+        const pts = s.pts;
+        for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+          const xi = pts[i][0], yi = pts[i][1], xj = pts[j][0], yj = pts[j][1];
+          if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) c = !c;
+        }
+        return c;
       }
       return x >= s.x0 && x <= s.x1 && y >= s.y0 && y <= s.y1;
     };
@@ -1470,6 +1492,7 @@
       let improved = false;
       [plus, minus].forEach(function (bucket) {
         bucket.forEach(function (sol) {
+          if (sol.kind === "poly") return;
           const keys = sol.kind === "circle" ? ["cx", "cy", "r"] : ["x0", "y0", "x1", "y1"];
           keys.forEach(function (k) {
             for (let si = 0; si < steps.length; si++) {
@@ -1489,7 +1512,8 @@
 
     const labels = [];
     plus.forEach(function (s) {
-      if (s.kind === "circle") labels.push("+圆 R" + r1(s.r));
+      if (s.kind === "poly") labels.push("+多边形 " + s.pts.length + " 边");
+      else if (s.kind === "circle") labels.push("+圆 R" + r1(s.r));
       else if (s.kind === "rrect") labels.push("+圆角矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0) + " R" + r1(s.r));
       else labels.push("+矩形 " + r1(s.x1 - s.x0) + "×" + r1(s.y1 - s.y0));
     });
@@ -3043,7 +3067,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260308a",
+      version: "20260308c",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
