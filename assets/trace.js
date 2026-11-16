@@ -3077,7 +3077,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260309b",
+      version: "20260310a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -3107,6 +3107,36 @@
       },
       holes: function () { return state.holes || []; },
       boolFit: function () { return { iou: state.biou, steps: state.bsteps || [], label: bsetLabel(), n: (state.bset || []).length, small: state.bsmall && { w: state.bsmall.w, h: state.bsmall.h } }; },
+      // 从标准形直接产出干净 SVG：一个 path，孔用 evenodd 减法，不夹带任何构造圆
+      svgPlan: function () {
+        const p = this.plan();
+        if (!p) return null;
+        const c = reconstruct(p, state._bm, state._bw, state._bh);
+        const f1 = function (v) { return Math.round(v * 100) / 100; };
+        const parts = [];
+        const ring = function (x, y, r) {
+          return "M " + f1(x - r) + " " + f1(y) + " a " + f1(r) + " " + f1(r) + " 0 1 0 " + f1(2 * r) + " 0" +
+                 " a " + f1(r) + " " + f1(r) + " 0 1 0 " + f1(-2 * r) + " 0 Z";
+        };
+        const rr = function (s2) {
+          const r = s2.r, x0 = s2.x0, y0 = s2.y0, x1 = s2.x1, y1 = s2.y1;
+          return "M " + f1(x0 + r) + " " + f1(y0) + " H " + f1(x1 - r) +
+                 " A " + f1(r) + " " + f1(r) + " 0 0 1 " + f1(x1) + " " + f1(y0 + r) +
+                 " V " + f1(y1 - r) + " A " + f1(r) + " " + f1(r) + " 0 0 1 " + f1(x1 - r) + " " + f1(y1) +
+                 " H " + f1(x0 + r) + " A " + f1(r) + " " + f1(r) + " 0 0 1 " + f1(x0) + " " + f1(y1 - r) +
+                 " V " + f1(y0 + r) + " A " + f1(r) + " " + f1(r) + " 0 0 1 " + f1(x0 + r) + " " + f1(y0) + " Z";
+        };
+        [c.plus, c.minus].forEach(function (bucket) {
+          bucket.forEach(function (s2) {
+            if (s2.kind === "circle") parts.push(ring(s2.cx, s2.cy, s2.r));
+            else if (s2.kind === "rrect") parts.push(rr(s2));
+            else if (s2.kind === "rect") parts.push("M " + f1(s2.x0) + " " + f1(s2.y0) + " H " + f1(s2.x1) + " V " + f1(s2.y1) + " H " + f1(s2.x0) + " Z");
+            else if (s2.kind === "poly") parts.push("M " + s2.pts.map(function (q) { return f1(q[0]) + " " + f1(q[1]); }).join(" L ") + " Z");
+          });
+        });
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + state._bw + " " + state._bh + '" width="' + state._bw + '" height="' + state._bh + '">' +
+          '<path fill="#1a1a1a" fill-rule="evenodd" d="' + parts.join(" ") + '"/></svg>';
+      },
       recon: function () {
         const p = this.plan();
         if (!p) return null;
