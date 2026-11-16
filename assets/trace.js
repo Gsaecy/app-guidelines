@@ -368,6 +368,7 @@
     const built = buildMask(state.img);
     if (state.construct) buildDisks(built.mask, built.w, built.h);
     snapStandardShape(built.mask, built.w, built.h);
+    detectHoles(built.mask, built.w, built.h);
     let loops = contours(built.mask, built.w, built.h);
     const minArea = Math.max(4, built.w * built.h * 0.00002);
     loops = loops
@@ -852,6 +853,79 @@
     return uni ? inter / uni : 0;
   }
 
+  // 布尔角色：正形（并）与洞（差）。每个被画出来的图案都必须属于其中之一。
+  function detectHoles(mask, w, h) {
+    const seen = new Uint8Array(w * h);
+    const stack = [];
+    for (let x = 0; x < w; x++) { stack.push([x, 0], [x, h - 1]); }
+    for (let y = 0; y < h; y++) { stack.push([0, y], [w - 1, y]); }
+    while (stack.length) {
+      const p0 = stack.pop();
+      const x = p0[0], y = p0[1];
+      if (x < 0 || y < 0 || x >= w || y >= h) continue;
+      const i = y * w + x;
+      if (seen[i] || mask[i]) continue;
+      seen[i] = 1;
+      stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+    }
+    // 未被访问到的背景像素 = 洞
+    const holes = [];
+    const done = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (mask[i] || seen[i] || done[i]) continue;
+        const q = [[x, y]];
+        let area = 0, x0 = x, x1 = x, y0 = y, y1 = y;
+        while (q.length) {
+          const c = q.pop();
+          const cx = c[0], cy = c[1];
+          if (cx < 0 || cy < 0 || cx >= w || cy >= h) continue;
+          const k = cy * w + cx;
+          if (done[k] || mask[k] || seen[k]) continue;
+          done[k] = 1;
+          area++;
+          if (cx < x0) x0 = cx; if (cx > x1) x1 = cx;
+          if (cy < y0) y0 = cy; if (cy > y1) y1 = cy;
+          q.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
+        }
+        if (area < 12) continue;
+        const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+        const rc = Math.sqrt(area / Math.PI);
+        const cx = (x0 + x1 + 1) / 2, cy = (y0 + y1 + 1) / 2;
+        const circleIou = (function () {
+          let inter = 0, uni = 0;
+          for (let yy = y0; yy <= y1; yy++) {
+            for (let xx = x0; xx <= x1; xx++) {
+              const inH = !mask[yy * w + xx] && !seen[yy * w + xx];
+              const inC = Math.hypot(xx + 0.5 - cx, yy + 0.5 - cy) <= rc;
+              if (inH && inC) inter++;
+              if (inH || inC) uni++;
+            }
+          }
+          return uni ? inter / uni : 0;
+        })();
+        const rectIou = (function () {
+          let inter = 0, uni = 0;
+          for (let yy = y0; yy <= y1; yy++) {
+            for (let xx = x0; xx <= x1; xx++) {
+              const inH = !mask[yy * w + xx] && !seen[yy * w + xx];
+              if (inH) { inter++; uni++; }
+            }
+          }
+          return uni ? inter / uni : 0;
+        })();
+        if (circleIou >= rectIou) {
+          holes.push({ kind: "circle", label: "圆", cx: cx, cy: cy, r: rc, iou: Math.round(circleIou * 1000) / 10 });
+        } else {
+          holes.push({ kind: "rect", label: "矩形", x0: x0, y0: y0, x1: x1, y1: y1, w: bw, h: bh, iou: Math.round(rectIou * 1000) / 10 });
+        }
+      }
+    }
+    state.holes = holes;
+    return holes;
+  }
+
   function snapStandardShape(mask, w, h) {
     state._mask = mask;
     let x0 = w, y0 = h, x1 = -1, y1 = -1, area = 0;
@@ -1248,6 +1322,23 @@
 
   // Construction circles are clipped to the artboard, so no circle ever floats
   // outside the shape; the arc actually used by the cutting line is drawn solid.
+  // 模数网格只作为背景定向线：画在图形下面，不切进图形内部
+  function rrectGridMarkup(scale, ox, oy) {
+    const std = state.standard;
+    if (!std || std.kind !== "rrect") return "";
+    const X = function (v) { return +(v * scale + ox).toFixed(2); };
+    const Y = function (v) { return +(v * scale + oy).toFixed(2); };
+    const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
+    const gx = (bx1 - bx0) / 6, gy = (by1 - by0) / 6;
+    const s = ['<g id="grid" stroke="#D8D8D8" stroke-width="0.5">'];
+    for (let i = 0; i <= 6; i++) {
+      s.push('<line x1="' + X(bx0 + i * gx) + '" y1="' + Y(by0) + '" x2="' + X(bx0 + i * gx) + '" y2="' + Y(by1) + '"/>');
+      s.push('<line x1="' + X(bx0) + '" y1="' + Y(by0 + i * gy) + '" x2="' + X(bx1) + '" y2="' + Y(by0 + i * gy) + '"/>');
+    }
+    s.push("</g>");
+    return s.join("");
+  }
+
   function constructionMarkup(scale, ox, oy, fontSize) {
     const X = function (v) { return +(v * scale + ox).toFixed(2); };
     const Y = function (v) { return +(v * scale + oy).toFixed(2); };
@@ -1266,7 +1357,9 @@
     }
     s.push("</g>");
 
+    const stdMode = state.standard && state.standard.kind === "rrect";
     // ---- centre axes of every construction circle (制图学：辅助线穿过圆心)
+    if (!stdMode) {
     s.push('<g id="axes" stroke="#C2185B" stroke-width="0.4" opacity="0.55">');
     const seen = {};
     (state.groups || []).forEach(function (g) {
@@ -1278,6 +1371,7 @@
       s.push('<line x1="' + X(0) + '" y1="' + Y(p.cy) + '" x2="' + X(state.w) + '" y2="' + Y(p.cy) + '"/>');
     });
     s.push("</g>");
+    }
 
     // ---- construction circles: dashed full circle clipped to artboard, used arc solid
     const std = state.standard;
@@ -1286,12 +1380,6 @@
       const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
       // 网格锁到图形外框：以 bbox 为原点，按 6 等分（6.0a）铺格
       const gx = (bx1 - bx0) / 6, gy = (by1 - by0) / 6;
-      s.push('<g id="grid" stroke="#D8D8D8" stroke-width="0.5">');
-      for (let i = 0; i <= 6; i++) {
-        s.push('<line x1="' + X(bx0 + i * gx) + '" y1="' + Y(by0) + '" x2="' + X(bx0 + i * gx) + '" y2="' + Y(by1) + '"/>');
-        s.push('<line x1="' + X(bx0) + '" y1="' + Y(by0 + i * gy) + '" x2="' + X(bx1) + '" y2="' + Y(by0 + i * gy) + '"/>');
-      }
-      s.push("</g>");
       s.push('<g id="primitive" fill="none" stroke="#2F6BFF" stroke-width="0.8" opacity="0.9">');
       s.push('<rect x="' + X(bx0) + '" y="' + Y(by0) + '" width="' + ((bx1 - bx0) * scale).toFixed(2) +
         '" height="' + ((by1 - by0) * scale).toFixed(2) + '" stroke-dasharray="5 4"/>');
@@ -1448,7 +1536,8 @@
     const oy = (H - state.h * scale) / 2;
     const s = [];
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="切割草稿预览">');
-    if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-rule="evenodd" opacity="0.9"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
+    if (state.construct) s.push(rrectGridMarkup(scale, ox, oy));
+    if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-rule="evenodd"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
     if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
     s.push('<rect x="6" y="6" width="' + (W - 12) + '" height="' + (H - 12) + '" fill="none" stroke="rgba(0,0,0,.16)" stroke-dasharray="3 4"/>');
     s.push("</svg>");
@@ -1760,13 +1849,25 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260220a",
+      version: "20260221c",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
       fits: function () { return state.fits; },
       stats: function () { return fitStats(); },
       disks: function () { return { disks: state.disks || [], cover: state.cover }; },
+      boolExpr: function () {
+        const parts = [];
+        if (state.standard) {
+          const s = state.standard;
+          parts.push("+ " + s.label + (s.kind === "rrect" ? "（R " + (Math.round(s.r * 10) / 10) + "）" : ""));
+        }
+        (state.holes || []).forEach(function (h) {
+          parts.push("- " + h.label + (h.kind === "circle" ? "（r " + (Math.round(h.r * 10) / 10) + "）" : ""));
+        });
+        return parts;
+      },
+      holes: function () { return state.holes || []; },
       standard: function () {
         const s = state.standard;
         if (!s) return null;
