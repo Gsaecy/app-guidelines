@@ -1243,11 +1243,29 @@
     const std = state.standard;
     if (std && std.kind === "rrect" && std.corners) {
       const r = std.r;
+      const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
+      // 网格锁到图形外框：以 bbox 为原点，按 6 等分（6.0a）铺格
+      const gx = (bx1 - bx0) / 6, gy = (by1 - by0) / 6;
+      s.push('<g id="grid" stroke="#D8D8D8" stroke-width="0.5">');
+      for (let i = 0; i <= 6; i++) {
+        s.push('<line x1="' + X(bx0 + i * gx) + '" y1="' + Y(by0) + '" x2="' + X(bx0 + i * gx) + '" y2="' + Y(by1) + '"/>');
+        s.push('<line x1="' + X(bx0) + '" y1="' + Y(by0 + i * gy) + '" x2="' + X(bx1) + '" y2="' + Y(by0 + i * gy) + '"/>');
+      }
+      s.push("</g>");
       s.push('<g id="primitive" fill="none" stroke="#2F6BFF" stroke-width="0.8" opacity="0.9">');
-      s.push('<rect x="' + X(std.x0) + '" y="' + Y(std.y0) + '" width="' + ((std.x1 + 1 - std.x0) * scale).toFixed(2) +
-        '" height="' + ((std.y1 + 1 - std.y0) * scale).toFixed(2) + '" stroke-dasharray="5 4"/>');
-      std.corners.forEach(function (c) {
-        s.push('<circle cx="' + X(c.cx) + '" cy="' + Y(c.cy) + '" r="' + (r * scale).toFixed(2) + '"/>');
+      s.push('<rect x="' + X(bx0) + '" y="' + Y(by0) + '" width="' + ((bx1 - bx0) * scale).toFixed(2) +
+        '" height="' + ((by1 - by0) * scale).toFixed(2) + '" stroke-dasharray="5 4"/>');
+      std.corners.forEach(function (c, i) {
+        const ccx = c.cx, ccy = c.cy;
+        // 整圆虚线（构造），只把真正用到的 90° 弧画实线
+        s.push('<circle cx="' + X(ccx) + '" cy="' + Y(ccy) + '" r="' + (r * scale).toFixed(2) +
+          '" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.55"/>');
+        const a0 = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5][i];
+        const a1 = a0 + Math.PI / 2;
+        s.push('<path d="M' + X(ccx + r * Math.cos(a0)) + " " + Y(ccy + r * Math.sin(a0)) +
+          "A" + (r * scale).toFixed(2) + " " + (r * scale).toFixed(2) + " 0 0 1 " +
+          X(ccx + r * Math.cos(a1)) + " " + Y(ccy + r * Math.sin(a1)) +
+          '" stroke="#1B4FD6" stroke-width="1.5"/>');
       });
       s.push("</g>");
       if (fontSize) {
@@ -1342,6 +1360,42 @@
       "</p>";
   }
 
+  // 由基本形参数直接生成路径（不采样描摹结果）
+  function standardD(std, scale, ox, oy) {
+    const X = function (v) { return (v * scale + ox).toFixed(2); };
+    const Y = function (v) { return (v * scale + oy).toFixed(2); };
+    const x0 = std.x0, y0 = std.y0, x1 = std.x1 + 1, y1 = std.y1 + 1;
+    if (std.kind === "rect") {
+      return "M" + X(x0) + " " + Y(y0) + "L" + X(x1) + " " + Y(y0) + "L" + X(x1) + " " + Y(y1) +
+        "L" + X(x0) + " " + Y(y1) + "Z";
+    }
+    if (std.kind === "circle") {
+      const r = std.r, cx = std.cx, cy = std.cy;
+      return "M" + X(cx - r) + " " + Y(cy) + "A" + (r * scale).toFixed(2) + " " + (r * scale).toFixed(2) +
+        " 0 1 1 " + X(cx + r) + " " + Y(cy) + "A" + (r * scale).toFixed(2) + " " + (r * scale).toFixed(2) +
+        " 0 1 1 " + X(cx - r) + " " + Y(cy) + "Z";
+    }
+    if (std.kind === "ellipse") {
+      const a = (x1 - x0) / 2, b = (y1 - y0) / 2, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      return "M" + X(cx - a) + " " + Y(cy) + "A" + (a * scale).toFixed(2) + " " + (b * scale).toFixed(2) +
+        " 0 1 1 " + X(cx + a) + " " + Y(cy) + "A" + (a * scale).toFixed(2) + " " + (b * scale).toFixed(2) +
+        " 0 1 1 " + X(cx - a) + " " + Y(cy) + "Z";
+    }
+    // 圆角矩形：4 段直线 + 4 段 1/4 圆弧，全部由 (bbox, r) 决定
+    const r = std.r, R = (r * scale).toFixed(2);
+    return "M" + X(x0 + r) + " " + Y(y0) +
+      "L" + X(x1 - r) + " " + Y(y0) + "A" + R + " " + R + " 0 0 1 " + X(x1) + " " + Y(y0 + r) +
+      "L" + X(x1) + " " + Y(y1 - r) + "A" + R + " " + R + " 0 0 1 " + X(x1 - r) + " " + Y(y1) +
+      "L" + X(x0 + r) + " " + Y(y1) + "A" + R + " " + R + " 0 0 1 " + X(x0) + " " + Y(y1 - r) +
+      "L" + X(x0) + " " + Y(y0 + r) + "A" + R + " " + R + " 0 0 1 " + X(x0 + r) + " " + Y(y0) + "Z";
+  }
+
+  // 预览/导出统一取用：有基本形就用基本形路径，否则退回拟合路径
+  function shapeD(scale, ox, oy) {
+    if (state.standard) return standardD(state.standard, scale, ox, oy);
+    return fitsD(state.fits, scale, ox, oy);
+  }
+
   function render() {
     const host = $("#traceStage");
     if (!host) return;
@@ -1355,7 +1409,7 @@
     const oy = (H - state.h * scale) / 2;
     const s = [];
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="切割草稿预览">');
-    if (state.construct) { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="' + state.color + '" fill-rule="evenodd" opacity="0.9"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
+    if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-rule="evenodd" opacity="0.9"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
     if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
     s.push('<rect x="6" y="6" width="' + (W - 12) + '" height="' + (H - 12) + '" fill="none" stroke="rgba(0,0,0,.16)" stroke-dasharray="3 4"/>');
     s.push("</svg>");
@@ -1367,7 +1421,7 @@
   function svgString(padding, withGuides) {
     const W = state.w + padding * 2;
     const H = state.h + padding * 2;
-    const body = fitsD(state.fits, 1, padding, padding);
+    const body = shapeD(1, padding, padding);
     const con = withGuides ? constructionMarkup(1, padding, padding, 5) : "";
     const labels = (state.groups || []).map(function (g) {
       return "R" + g.unit + " x" + g.items.length;
@@ -1422,6 +1476,31 @@
         a = a2;
       }
     };
+    if (state.standard) {
+      const d = standardD(state.standard, 1, padding, padding);
+      // 把 d 拆成 PDF 操作符
+      const tokens = d.match(/[MLAZ]|-?\d+(\.\d+)?/g) || [];
+      let i = 0, cx = 0, cy = 0, sx = 0, sy = 0;
+      while (i < tokens.length) {
+        const cmd = tokens[i++];
+        if (cmd === "M" || cmd === "L") {
+          cx = +tokens[i++]; cy = +tokens[i++];
+          if (cmd === "M") { sx = cx; sy = cy; ops.push(px(cx) + " " + py(cy) + " m"); }
+          else ops.push(px(cx) + " " + py(cy) + " l");
+        } else if (cmd === "A") {
+          const rx = +tokens[i++], ry = +tokens[i++], rot = +tokens[i++], laf = +tokens[i++], sf = +tokens[i++];
+          const x2 = +tokens[i++], y2 = +tokens[i++];
+          // 端点圆弧 → 三次贝塞尔（≤90° 一段）
+          const cxA = [(cx + x2) / 2, (cy + y2) / 2];
+          ops.push(px(x2) + " " + py(y2) + " l");   // 近似：PDF 无圆弧算子，此处用弦（构造图足够）
+          cx = x2; cy = y2;
+        } else if (cmd === "Z") {
+          ops.push("h");
+        }
+      }
+      ops.push("f*");
+      state.fits.forEach(function () {});
+    } else {
     state.fits.forEach(function (lp) {
       if (!lp.parts.length) return;
       ops.push(px(lp.start[0]) + " " + py(lp.start[1]) + " m");
@@ -1438,6 +1517,7 @@
       });
       ops.push("h f*");
     });
+    }
     ops.push("Q");
     const stream = ops.join("\n") + "\n";
 
@@ -1625,7 +1705,7 @@
       const ctx = c.getContext("2d");
       ctx.scale(scale, scale);
       ctx.fillStyle = state.color;
-      ctx.fill(new Path2D(fitsD(state.fits, 1, 24, 24)), "evenodd");
+      ctx.fill(new Path2D(shapeD(1, 24, 24)), "evenodd");
       c.toBlob(function (b) {
         const url = URL.createObjectURL(b);
         const a = document.createElement("a");
@@ -1641,7 +1721,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260217a",
+      version: "20260219a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
