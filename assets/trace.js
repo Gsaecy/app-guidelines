@@ -391,14 +391,9 @@
     setExports(false);
     setExports(true);
     const st = fitStats();
-    status(loops.length + " 条轮廓 · " + built.w + "×" + built.h + " px" +
-      (state.name ? " · " + state.name : "") +
-      (state.autoFlipped ? " · 已自动反转前景" : "") +
-      (loops.length
-        ? " · 圆弧 " + st.arcs + " · 直线 " + st.lines +
-          (st.polys ? " · 曲线 " + st.polys : "") +
-          (st.radii.length ? " · R " + st.radii.join(" / ") : "")
-        : "（检测不到前景：这张图可能白底/深底、或主体太细。换一张主体清晰的图，或拖动阈值、勾选「反转前景 / 背景」）"));
+    status(loops.length
+      ? "线稿已生成"
+      : "检测不到图形：换一张主体清晰的图，或调小颜色容差 / 勾选「反转前景 / 背景」");
   }
 
   /* ------------------------------------------- geometry fitting: line / arc / cubic */
@@ -1017,7 +1012,7 @@
     const oy = (H - state.h * scale) / 2;
     const s = [];
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="切割草稿预览">');
-    s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="' + (state.construct ? "#9AA0A6" : state.color) + '" fill-rule="evenodd" opacity="' + (state.construct ? "0.85" : "0.92") + '"/>');
+    s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="' + (state.construct ? "none" : "none") + '" stroke="' + (state.construct ? "#6B7280" : state.color) + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>');
     if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
     s.push('<rect x="6" y="6" width="' + (W - 12) + '" height="' + (H - 12) + '" fill="none" stroke="rgba(0,0,0,.16)" stroke-dasharray="3 4"/>');
     s.push("</svg>");
@@ -1303,7 +1298,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260213c",
+      version: "20260213g",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
