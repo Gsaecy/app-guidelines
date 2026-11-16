@@ -1198,16 +1198,126 @@
     const r1 = function (v) { return Math.round(v * 10) / 10; };
     const out = segs.map(function (s) {
       const m = s.model, g = s.g;
+      const p0 = [r1(g[0][0]), r1(g[0][1])];
+      const p1 = [r1(g[g.length - 1][0]), r1(g[g.length - 1][1])];
       if (m.type === "arc") {
         return { type: "arc", cx: r1(m.cx), cy: r1(m.cy), r: r1(m.r),
-          res: Math.round(s.res * 100) / 100, n: g.length };
+          res: Math.round(s.res * 100) / 100, n: g.length, p0: p0, p1: p1 };
       }
       return { type: "line", th: Math.round(m.th * 100) / 100, res: Math.round(s.res * 100) / 100,
-        n: g.length, len: r1(Math.hypot(g[g.length - 1][0] - g[0][0], g[g.length - 1][1] - g[0][1])) };
+        n: g.length, p0: p0, p1: p1,
+        len: r1(Math.hypot(g[g.length - 1][0] - g[0][0], g[g.length - 1][1] - g[0][1])) };
     });
     state.segs = out;
     state.boundaryPts = pts;
     return { segments: out, points: n };
+  }
+
+  // ── 标准形归约：分段 → 标准图元（圆/直线/矩形/圆角矩形），并把参数约束成精确值 ──
+  function consolidate(segs) {
+    const r1 = function (v) { return Math.round(v * 10) / 10; };
+    const circles = [];
+    segs.filter(function (s) { return s.type === "arc"; }).forEach(function (a) {
+      const tolR = Math.max(1.5, 0.03 * a.r), tolC = Math.max(2, 0.05 * a.r);
+      let c = null;
+      for (let k = 0; k < circles.length; k++) {
+        if (Math.abs(circles[k].r - a.r) <= tolR && Math.hypot(circles[k].cx - a.cx, circles[k].cy - a.cy) <= tolC) { c = circles[k]; break; }
+      }
+      if (!c) { c = { cx: a.cx, cy: a.cy, r: a.r, w: 0, n: 0 }; circles.push(c); }
+      const tot = c.w + a.n;
+      c.cx = (c.cx * c.w + a.cx * a.n) / tot;
+      c.cy = (c.cy * c.w + a.cy * a.n) / tot;
+      c.r = (c.r * c.w + a.r * a.n) / tot;
+      c.w = tot; c.n += 1;
+    });
+
+    circles.forEach(function (c) { c.r += 0.5; });
+
+    const lines = segs.filter(function (s) { return s.type === "line"; }).map(function (s) {
+      // 法向统一取「指向 +x / +y」，于是 off 就是该直线的坐标（竖线= x，横线= y）
+      let nx = -Math.sin(s.th), ny = Math.cos(s.th);
+      if (Math.abs(ny) >= Math.abs(nx)) { if (ny < 0) { nx = -nx; ny = -ny; } }
+      else if (nx < 0) { nx = -nx; ny = -ny; }
+      return { th: s.th, off: nx * (s.p0[0] + s.p1[0]) / 2 + ny * (s.p0[1] + s.p1[1]) / 2, p0: s.p0, p1: s.p1, len: s.len, n: s.n,
+        horiz: Math.abs(Math.cos(s.th)) > 0.97, vert: Math.abs(Math.sin(s.th)) > 0.97 };
+    });
+
+    const cluster = function (vals, tol) {
+      const out = [];
+      vals.forEach(function (v) {
+        let g = null;
+        for (let k = 0; k < out.length; k++) if (Math.abs(out[k].v - v) <= tol) { g = out[k]; break; }
+        if (!g) { g = { v: v, cnt: 0, sum: 0 }; out.push(g); }
+        g.cnt++; g.sum += v;
+      });
+      return out.map(function (g) { return { v: g.sum / g.cnt, cnt: g.cnt }; });
+    };
+
+    const hLines = lines.filter(function (l) { return l.horiz && !l.vert; });
+    const vLines = lines.filter(function (l) { return l.vert && !l.horiz; });
+    const hOff = cluster(hLines.map(function (l) { return l.off; }), 2);
+    const vOff = cluster(vLines.map(function (l) { return l.off; }), 2);
+
+    let shape = "lines", params = {};
+    const prims = [];
+
+    // 矩形：恰好 2 条水平 + 2 条竖直，且 4 个角闭合
+    if (hOff.length === 2 && vOff.length === 2 && hLines.length === 2 && vLines.length === 2) {
+      const ys = hOff.map(function (g) { return g.v; }).sort(function (a, b) { return a - b; });
+      const xs = vOff.map(function (g) { return g.v; }).sort(function (a, b) { return a - b; });
+      const PX = 0.5;
+      xs[0] -= PX; xs[1] += PX; ys[0] -= PX; ys[1] += PX;
+      const W = xs[1] - xs[0], H = ys[1] - ys[0];
+      const rs = circles.map(function (c) { return c.r; });
+      const rMean = rs.length ? rs.reduce(function (a, b) { return a + b; }, 0) / rs.length : 0;
+      const sameR = rs.length >= 2 && rs.every(function (v) { return Math.abs(v - rMean) <= Math.max(1.5, 0.05 * rMean); });
+      if (sameR && circles.length === 4) {
+        // 圆角矩形：4 个圆 = 4 个角；圆心由「矩形 + r」派生（位置不可能偏）
+        const near = circles.every(function (c) {
+          const onX = Math.abs(Math.abs(c.cx - xs[0]) - rMean) <= 3 || Math.abs(Math.abs(c.cx - xs[1]) - rMean) <= 3;
+          const onY = Math.abs(Math.abs(c.cy - ys[0]) - rMean) <= 3 || Math.abs(Math.abs(c.cy - ys[1]) - rMean) <= 3;
+          return onX && onY;
+        });
+        if (near) {
+          shape = "rrect";
+          const r = rMean;
+          circles.forEach(function (c) {
+            c.cx = (c.cx < (xs[0] + xs[1]) / 2) ? xs[0] + r : xs[1] - r;
+            c.cy = (c.cy < (ys[0] + ys[1]) / 2) ? ys[0] + r : ys[1] - r;
+          });
+          params = { W: r1(W), H: r1(H), r: r1(r), R: r1(r), nR: 4 };
+          prims.push({ kind: "rect", x0: r1(xs[0]), y0: r1(ys[0]), x1: r1(xs[1]), y1: r1(ys[1]), role: "+" });
+        }
+      }
+      if (shape !== "rrect") {
+        shape = "rect";
+        params = { W: r1(W), H: r1(H) };
+        prims.push({ kind: "rect", x0: r1(xs[0]), y0: r1(ys[0]), x1: r1(xs[1]), y1: r1(ys[1]), role: "+" });
+      }
+    }
+
+    if (shape === "lines") {
+      lines.forEach(function (l) { prims.push({ kind: "line", p0: l.p0, p1: l.p1, role: "+" }); });
+      if (circles.length === 1 && lines.length === 0) { shape = "circle"; params = { r: r1(circles[0].r) }; }
+      else if (circles.length > 0) shape = "compound";
+    }
+    circles.forEach(function (c) {
+      prims.push({ kind: "circle", cx: r1(c.cx), cy: r1(c.cy), r: r1(c.r), role: "+", arcs: c.n });
+    });
+
+    // 同径归并：同一半径只标注一次（4×R）
+    const radii = [];
+    circles.forEach(function (c) {
+      for (let k = 0; k < radii.length; k++) {
+        if (Math.abs(radii[k].r - c.r) <= Math.max(1.5, 0.04 * c.r)) { radii[k].n++; radii[k].r = (radii[k].r * (radii[k].n - 1) + c.r) / radii[k].n; return; }
+      }
+      radii.push({ r: c.r, n: 1 });
+    });
+    radii.forEach(function (g) { g.r = r1(g.r); });
+
+    return { shape: shape, params: params, prims: prims, radii: radii,
+      circles: circles.map(function (c) { return { cx: r1(c.cx), cy: r1(c.cy), r: r1(c.r), arcs: c.n }; }),
+      counts: { crc: circles.length, line: lines.length } };
   }
 
   function boolCandidates(mask, w, h) {
@@ -2702,7 +2812,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260301b",
+      version: "20260303b",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -2732,6 +2842,10 @@
       },
       holes: function () { return state.holes || []; },
       boolFit: function () { return { iou: state.biou, steps: state.bsteps || [], label: bsetLabel(), n: (state.bset || []).length, small: state.bsmall && { w: state.bsmall.w, h: state.bsmall.h } }; },
+      plan: function () {
+        if (!state._bm) return null;
+        return consolidate(segFit(state._bm, state._bw, state._bh).segments);
+      },
       segFit: function () {
         if (!state._bm) return { segments: [], note: "先处理一张图" };
         return segFit(state._bm, state._bw, state._bh);
