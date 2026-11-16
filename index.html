@@ -23,7 +23,11 @@
   </div>
   <div class="appbar__spacer"></div>
   <div class="appbar__actions">
-    <a class="ghost-btn" href="#glossary">术语表</a>
+    <button class="search-trigger" id="searchOpen" type="button" aria-label="搜索规范（Ctrl+K）">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4.2-4.2"></path></svg>
+      <span>搜索</span>
+      <kbd class="kbd">Ctrl K</kbd>
+    </button>
     <a class="ghost-btn" href="#lab-effects">效果实验室</a>
     <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色" title="切换深浅色">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
@@ -41,24 +45,31 @@
       <a class="nav__link" href="#overview"><span class="nav__num">01</span>概览</a>
       <a class="nav__link" href="#quick"><span class="nav__num">02</span>快速决策</a>
       <a class="nav__link" href="#radius"><span class="nav__num">03</span>圆角</a>
-      <a class="nav__link" href="#spacing"><span class="nav__num">04</span>间距</a>
-      <a class="nav__link" href="#type"><span class="nav__num">05</span>字号</a>
-      <a class="nav__link" href="#icons"><span class="nav__num">06</span>图标</a>
+      <a class="nav__link" href="#spacing"><span class="nav__num">04</span>间距与栅格</a>
+      <a class="nav__link" href="#layout"><span class="nav__num">05</span>布局与响应式</a>
+      <a class="nav__link" href="#type"><span class="nav__num">06</span>字号</a>
+      <a class="nav__link" href="#icons"><span class="nav__num">07</span>图标</a>
       <div class="nav__group">组件</div>
-      <a class="nav__link" href="#controls"><span class="nav__num">07</span>控件与组件</a>
-      <a class="nav__link" href="#color"><span class="nav__num">08</span>颜色</a>
-      <a class="nav__link" href="#material"><span class="nav__num">09</span>材质</a>
-      <a class="nav__link" href="#elevation"><span class="nav__num">10</span>阴影</a>
+      <a class="nav__link" href="#controls"><span class="nav__num">08</span>控件与组件</a>
+      <a class="nav__link" href="#color"><span class="nav__num">09</span>颜色</a>
+      <a class="nav__link" href="#states"><span class="nav__num">10</span>状态与反馈</a>
+      <a class="nav__link" href="#material"><span class="nav__num">11</span>材质</a>
+      <a class="nav__link" href="#elevation"><span class="nav__num">12</span>阴影</a>
       <div class="nav__group">动效</div>
-      <a class="nav__link" href="#motion"><span class="nav__num">11</span>动效</a>
-      <a class="nav__link" href="#lab-effects"><span class="nav__num">12</span>效果实验室</a>
+      <a class="nav__link" href="#motion"><span class="nav__num">13</span>动效</a>
+      <a class="nav__link" href="#lab-effects"><span class="nav__num">14</span>效果实验室</a>
       <div class="nav__group">内容</div>
-      <a class="nav__link" href="#pages"><span class="nav__num">13</span>页面结构</a>
-      <a class="nav__link" href="#glossary"><span class="nav__num">14</span>术语表</a>
+      <a class="nav__link" href="#copy"><span class="nav__num">15</span>文案规范</a>
+      <a class="nav__link" href="#pages"><span class="nav__num">16</span>页面结构</a>
+      <a class="nav__link" href="#glossary"><span class="nav__num">17</span>术语表</a>
       <div class="nav__group">工程</div>
-      <a class="nav__link" href="#tokens"><span class="nav__num">15</span>设计令牌</a>
-      <a class="nav__link" href="#checklist"><span class="nav__num">16</span>自检清单</a>
-      <a class="nav__link" href="#sources"><span class="nav__num">17</span>来源</a>
+      <a class="nav__link" href="#tools"><span class="nav__num">18</span>工具集</a>
+      <a class="nav__link" href="#tokens"><span class="nav__num">19</span>设计令牌</a>
+      <a class="nav__link" href="#performance"><span class="nav__num">20</span>性能预算</a>
+      <a class="nav__link" href="#checklist"><span class="nav__num">21</span>自检清单</a>
+      <a class="nav__link" href="#traps"><span class="nav__num">22</span>平台差异</a>
+      <a class="nav__link" href="#changelog"><span class="nav__num">23</span>变更记录</a>
+      <a class="nav__link" href="#sources"><span class="nav__num">24</span>来源</a>
     </nav>
   </aside>
 
@@ -79,11 +90,11 @@
         <span class="platform-pill"><i style="background:#34c759"></i>WCAG 2.2</span>
       </div>
       <div class="hero__stats">
-        <div class="stat"><div class="stat__value">120+</div><div class="stat__label">官方核对数值</div></div>
+        <div class="stat"><div class="stat__value">180+</div><div class="stat__label">官方核对数值</div></div>
         <div class="stat"><div class="stat__value">12</div><div class="stat__label">组件规范</div></div>
         <div class="stat"><div class="stat__value">16</div><div class="stat__label">页面类型</div></div>
-        <div class="stat"><div class="stat__value">66</div><div class="stat__label">中英术语</div></div>
-        <div class="stat"><div class="stat__value">9</div><div class="stat__label">可交互效果</div></div>
+        <div class="stat"><div class="stat__value">92</div><div class="stat__label">中英术语</div></div>
+        <div class="stat"><div class="stat__value">13</div><div class="stat__label">交互 / 工具</div></div>
       </div>
     </section>
 
@@ -169,6 +180,69 @@
       </div>
     </section>
 
+    <!-- ============================================================ layout -->
+    <section class="section" id="layout">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">05</span>Layout &amp; Breakpoints</div>
+        <h2>布局与响应式</h2>
+        <p class="section__lead">先定窗口与断点，再谈组件。响应式不是「缩小字号」，而是换布局：列数、边距、导航形态一起变。</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>窗口类</th><th>宽度</th><th>典型设备</th><th>栅格 / 边距</th><th>布局动作</th></tr></thead>
+          <tbody id="breakpointBody"></tbody>
+        </table>
+      </div>
+
+      <div class="split" style="margin-top:16px">
+        <div class="card">
+          <div class="card__title">窗口与容器尺寸</div>
+          <table style="margin-top:10px"><tbody id="layoutSpecBody"></tbody></table>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <div class="card__title">密度模式</div>
+            <p class="card__hint">行高决定信息密度，不要用 fontSize 压缩。</p>
+            <table style="margin-top:10px">
+              <thead><tr><th>模式</th><th>行高</th><th>适用</th></tr></thead>
+              <tbody id="densityBody"></tbody>
+            </table>
+          </div>
+          <div class="note">
+            <div><b>硬规则：</b>最小窗口下必须重新排布，而不是出现横向滚动。≥ 1200px 时限制内容最大宽（文字 680–760），否则行长超过 90 字符会显著降低可读性。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-3" style="margin-top:16px">
+        <div class="card">
+          <div class="card__title">导航形态</div>
+          <p class="card__hint" style="line-height:1.9">
+            Compact：底部标签 3–5 个<br>
+            Medium：侧栏折叠为图标条<br>
+            Expanded 以上：侧栏常驻 216–280
+          </p>
+        </div>
+        <div class="card">
+          <div class="card__title">内容栅格</div>
+          <p class="card__hint" style="line-height:1.9">
+            4 / 8 / 12 列，列间距 16–24<br>
+            卡片最小宽 240（桌面）/ 160（移动）<br>
+            同行卡片高度对齐到内容最高者
+          </p>
+        </div>
+        <div class="card">
+          <div class="card__title">安全区</div>
+          <p class="card__hint" style="line-height:1.9">
+            移动端避开刘海与手势条（safe-area）<br>
+            桌面端避开窗口圆角与标题栏按钮<br>
+            固定底栏需为内容预留同高 padding
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================================================ type -->
     <section class="section" id="type">
       <div class="section__head">
@@ -199,6 +273,16 @@
           <table class="table-wrap--tight">
             <thead><tr><th>样式</th><th>字号</th><th>行高</th><th>字重</th></tr></thead>
             <tbody id="typeAppleBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card card--flush" style="margin-top:16px">
+        <div style="padding:18px 20px 0"><div class="card__title">Windows 11 官方字阶（px / 行高 / 字重）</div></div>
+        <div class="table-wrap" style="border:0;box-shadow:none">
+          <table class="table-wrap--tight">
+            <thead><tr><th>样式</th><th>字号</th><th>行高</th><th>字重</th><th>用途</th></tr></thead>
+            <tbody id="typeWinBody"></tbody>
           </table>
         </div>
       </div>
@@ -284,6 +368,63 @@
       <div class="grid cols-3" id="colorGrid"></div>
       <div class="note" style="margin-top:16px">
         <div><b>中性色最稳的一套：</b>页面底 #F5F5F7、卡片 #FFFFFF、主文字 #1D1D1F、次文字 black α .55、分隔线 black α .08。深色模式用 #000 / #1C1C1E，文字改 white α .94 / .62。</div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card__title">状态色派生规则</div>
+        <p class="card__hint">只定义主色，其余状态靠叠加透明度派生——这样深浅色主题都能自动适配，不需要维护两套色板。</p>
+        <div class="table-wrap" style="margin-top:12px;border:0;box-shadow:none">
+          <table class="table-wrap--tight">
+            <thead><tr><th>状态</th><th>派生方式</th></tr></thead>
+            <tbody id="colorStateBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ states -->
+    <section class="section" id="states">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">10</span>States &amp; Feedback</div>
+        <h2>状态与反馈</h2>
+        <p class="section__lead">界面 80% 的时间不在「正常态」。空、加载、错误、成功、禁用、离线——每种状态都要有出口，不能只写「暂无数据」。</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>状态</th><th>触发时机</th><th>视觉</th><th>文案示例</th><th>禁止</th></tr></thead>
+          <tbody id="stateBody"></tbody>
+        </table>
+      </div>
+
+      <div class="grid cols-3" style="margin-top:16px">
+        <div class="card">
+          <div class="card__title">反馈时长</div>
+          <p class="card__hint" style="line-height:1.9">
+            Toast：2–4s 自动消失（成功类）<br>
+            错误提示：不自动消失，需用户处理<br>
+            行内校验：失焦后 200ms 再提示<br>
+            进度：&lt; 1s 不显示
+          </p>
+        </div>
+        <div class="card">
+          <div class="card__title">加载形态选择</div>
+          <p class="card__hint" style="line-height:1.9">
+            已知结构 → 骨架屏<br>
+            未知内容 → spinner（≥ 1s 才出现）<br>
+            局部更新 → 行内 spinner / 半透明遮罩<br>
+            可估算 → 进度条 + 剩余时间
+          </p>
+        </div>
+        <div class="card">
+          <div class="card__title">错误提示位置</div>
+          <p class="card__hint" style="line-height:1.9">
+            字段级 → 紧贴字段下方，红边框 + 文案<br>
+            表单级 → 表单顶部汇总 + 锚点跳转<br>
+            页面级 → 内容区中央，含「重试」<br>
+            网络级 → 顶部条，保留缓存内容
+          </p>
+        </div>
       </div>
     </section>
 
@@ -380,6 +521,22 @@
           <tbody id="elevationBody"></tbody>
         </table>
       </div>
+
+      <div class="split" style="margin-top:16px">
+        <div class="card">
+          <div class="card__title">可直接复制的多层阴影</div>
+          <p class="card__hint">近距离小阴影 + 远距离大扩散，比单层大阴影真实得多。点按复制。</p>
+          <div class="stack" style="margin-top:12px" id="shadowRecipeList"></div>
+        </div>
+        <div class="card">
+          <div class="card__title">三条经验</div>
+          <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;color:var(--text-2);line-height:1.9">
+            <li>阴影不要用纯黑，用 <code>rgba(0,0,0,.06–.22)</code>，深色模式还要更低。</li>
+            <li>同一屏只保留 2–3 个层级；满屏浮起等于没有层级。</li>
+            <li>Windows 用 1px 描边代替阴影；Apple 才用大扩散柔影。</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
     <!-- ============================================================ motion -->
@@ -465,6 +622,13 @@
       </div>
 
       <ul style="margin:16px 0 0;padding-left:18px;font-size:13px;color:var(--text-2);line-height:1.9" id="motionRules"></ul>
+
+      <div class="table-wrap" style="margin-top:16px">
+        <table>
+          <thead><tr><th>Material 3 缓动令牌</th><th>时长</th><th>曲线</th><th>用途</th></tr></thead>
+          <tbody id="m3EasingBody"></tbody>
+        </table>
+      </div>
     </section>
 
     <!-- ============================================================ effects -->
@@ -509,6 +673,58 @@
       <div class="grid cols-4" style="margin-top:16px" id="effectCardGrid"></div>
     </section>
 
+    <!-- ============================================================ copy -->
+    <section class="section" id="copy">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">15</span>Microcopy</div>
+        <h2>文案规范</h2>
+        <p class="section__lead">文案是界面的一部分，不是填充物。按钮、错误、空状态各有一套写法，长度也有硬上限。</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>场景</th><th>写法</th><th>推荐</th><th>避免</th></tr></thead>
+          <tbody id="copyRuleBody"></tbody>
+        </table>
+      </div>
+
+      <div class="split" style="margin-top:16px">
+        <div class="card">
+          <div class="card__title">长度上限</div>
+          <table style="margin-top:10px">
+            <thead><tr><th>元素</th><th>上限</th><th>超出处理</th></tr></thead>
+            <tbody id="copyLimitBody"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card__title">大小写规则（Casing）</div>
+          <table style="margin-top:10px">
+            <thead><tr><th>平台</th><th>规则</th><th>正例</th><th>反例</th></tr></thead>
+            <tbody id="casingBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:16px">
+        <div class="card" style="border-color:rgba(52,199,89,.35)">
+          <div class="card__title" style="color:#1a7f37">✓ 推荐</div>
+          <p style="font-size:13px;line-height:1.9;margin-top:8px">
+            「壁纸已设为桌面背景」<br>
+            「网络不可用，检查连接后重试」<br>
+            「还没有收藏，去画廊看看」
+          </p>
+        </div>
+        <div class="card" style="border-color:rgba(255,69,58,.3)">
+          <div class="card__title" style="color:#c0281f">✗ 避免</div>
+          <p style="font-size:13px;line-height:1.9;margin-top:8px">
+            「操作成功！！」<br>
+            「出错了」<br>
+            「暂无数据」
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================================================ pages -->
     <section class="section" id="pages">
       <div class="section__head">
@@ -540,6 +756,95 @@
       <div class="term-list" id="termList"></div>
     </section>
 
+    <!-- ============================================================ tools -->
+    <section class="section" id="tools">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">19</span>Tools</div>
+        <h2>工具集</h2>
+        <p class="section__lead">四个每天都会用到的计算器：对比度、同心圆角、阴影、缓动。结果可直接复制进代码。</p>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card tool">
+          <div class="card__title">对比度检查器</div>
+          <p class="card__hint">小字需 ≥ 4.5:1，大字号（≥ 24px 或 ≥ 18.66px Bold）需 ≥ 3:1。</p>
+          <div class="tool__row">
+            <label class="field"><span class="field__label">前景</span><input type="color" id="fgColor" value="#1d1d1f"></label>
+            <label class="field"><span class="field__label">背景</span><input type="color" id="bgColor" value="#f5f5f7"></label>
+            <label class="field"><span class="field__label">字号 px</span><input class="input" id="fgSize" type="number" value="14" min="8" max="96"></label>
+          </div>
+          <div class="tool__preview" id="contrastPreview" style="color:#1d1d1f;background:#f5f5f7">壁纸已设为桌面背景</div>
+          <div id="contrastResult" class="tool__result" aria-live="polite"></div>
+        </div>
+
+        <div class="card tool">
+          <div class="card__title">同心圆角计算器</div>
+          <p class="card__hint">内圆角 = max(0, 外圆角 − 内边距)。差值 &lt; 4px 会看起来「没对齐」。</p>
+          <div class="tool__row">
+            <label class="field"><span class="field__label">外圆角 R</span><input class="input" id="outerRadius" type="number" value="18" min="0" max="60"></label>
+            <label class="field"><span class="field__label">内边距 p</span><input class="input" id="innerPadding" type="number" value="8" min="0" max="40"></label>
+            <label class="field"><span class="field__label">内圆角</span><input class="input" id="innerRadius" type="number" readonly value="10"></label>
+          </div>
+          <div class="nested-demo" id="nestedDemo">
+            <div class="nested-demo__inner"></div>
+          </div>
+          <div class="tool__result" id="nestedHint" aria-live="polite"></div>
+        </div>
+
+        <div class="card tool">
+          <div class="card__title">阴影生成器</div>
+          <p class="card__hint">调完直接复制 <code>box-shadow</code>。记住：阴影用半透明黑，不用纯黑。</p>
+          <div class="tool__row">
+            <label class="field" style="flex:1"><span class="field__label">y 偏移 <code id="shadowYVal">6</code></span>
+              <input type="range" id="shadowY" min="0" max="40" value="6"></label>
+            <label class="field" style="flex:1"><span class="field__label">模糊 <code id="shadowBVal">14</code></span>
+              <input type="range" id="shadowB" min="0" max="80" value="14"></label>
+            <label class="field" style="flex:1"><span class="field__label">透明度 <code id="shadowAVal">0.10</code></span>
+              <input type="range" id="shadowA" min="0" max="40" value="10"></label>
+          </div>
+          <div class="shadow-preview"><div id="shadowBox">Card</div></div>
+          <div class="tool__result"><button class="copy-chip" type="button" id="shadowCopy">复制 box-shadow</button> <code id="shadowCode"></code></div>
+        </div>
+
+        <div class="card tool">
+          <div class="card__title">缓动曲线编辑器</div>
+          <p class="card__hint">拖滑杆改两个控制点，立即得到 <code>cubic-bezier()</code> 与曲线。超出 0–1 的 y 值会产生回弹。</p>
+          <div class="tool__row">
+            <label class="field" style="flex:1"><span class="field__label">x1 <code id="x1v">0.22</code></span><input type="range" id="easeX1" min="0" max="1" step="0.01" value="0.22"></label>
+            <label class="field" style="flex:1"><span class="field__label">y1 <code id="y1v">1.00</code></span><input type="range" id="easeY1" min="-0.5" max="1.5" step="0.01" value="1"></label>
+            <label class="field" style="flex:1"><span class="field__label">x2 <code id="x2v">0.36</code></span><input type="range" id="easeX2" min="0" max="1" step="0.01" value="0.36"></label>
+            <label class="field" style="flex:1"><span class="field__label">y2 <code id="y2v">1.00</code></span><input type="range" id="easeY2" min="-0.5" max="1.5" step="0.01" value="1"></label>
+          </div>
+          <div class="split" style="align-items:center">
+            <svg class="curve-svg" id="toolCurveSvg" viewBox="0 0 220 180" aria-hidden="true" style="height:150px">
+              <path class="grid" d="M20 160H210M20 160V20"></path>
+              <path class="curve" id="toolCurvePath" d=""></path>
+              <circle id="toolCurveDot" r="4" cx="20" cy="160" fill="var(--accent)"></circle>
+            </svg>
+            <div>
+              <div class="track" id="toolTrack"><div class="track__dot" id="toolDot"></div></div>
+              <button class="btn btn--primary btn--sm" id="toolPlay" type="button" style="margin-top:10px">播放</button>
+              <div class="tool__result" style="margin-top:10px"><button class="copy-chip" type="button" id="easeCopy">复制</button> <code id="easeCode"></code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <div class="card__title">令牌导出</div>
+            <p class="card__hint">把本页的颜色 / 圆角 / 字号 / 时长导出成 JSON 或 CSS 变量，直接放进工程。</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn--secondary" type="button" id="exportJson">下载 tokens.json</button>
+            <button class="btn btn--secondary" type="button" id="exportCss">下载 tokens.css</button>
+          </div>
+        </div>
+        <pre class="code-block" id="tokenPreview"></pre>
+      </div>
+    </section>
+
     <!-- ============================================================ tokens -->
     <section class="section" id="tokens">
       <div class="section__head">
@@ -552,6 +857,48 @@
           <thead><tr><th>Token</th><th>值</th><th>语义</th></tr></thead>
           <tbody id="tokenBody"></tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ performance -->
+    <section class="section" id="performance">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">20</span>Performance Budget</div>
+        <h2>性能预算</h2>
+        <p class="section__lead">好看的前提是不卡。先给指标，再谈优化——没有数字的「优化过」等于没做。</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>指标</th><th>目标</th><th>怎么测</th></tr></thead>
+          <tbody id="perfBody"></tbody>
+        </table>
+      </div>
+
+      <div class="split" style="margin-top:16px">
+        <div class="card">
+          <div class="card__title">列表页三宗罪（真实案例）</div>
+          <p class="card__hint">299 张壁纸卡片，内存 4.4GB、UI 假死。定位与修复过程：</p>
+          <ol style="margin:10px 0 0;padding-left:20px;font-size:13px;color:var(--text-2);line-height:1.9">
+            <li><b>事件不按 URL 过滤</b>：每张缩略图落盘都让全部卡片重解码，299² ≈ 9 万次。</li>
+            <li><b>无差别重建</b>：属性变化就整表重建，299 个卡片对象反复创建。</li>
+            <li><b>UI 线程批量解码</b>：所有缩略图同步解码，主线程被占满。</li>
+          </ol>
+          <p class="card__hint" style="margin-top:8px">修复：URL 过滤 + 集合签名 diff + 分批解码（每帧 3 张）+ 420 条 LRU 缓存 + 250ms 防抖 → 内存 389MB，窗口恢复响应。</p>
+        </div>
+        <div class="card">
+          <div class="card__title">测量工具</div>
+          <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;color:var(--text-2);line-height:2">
+            <li>Chrome DevTools → Performance / Rendering / Memory</li>
+            <li>React DevTools Profiler / why-did-you-render</li>
+            <li>WPF：Timeline、PerfView、<code>dotnet-counters</code></li>
+            <li>macOS：Instruments（Time Profiler / Allocations）</li>
+            <li>真实设备弱网：Lighthouse mobile + 4× CPU 降速</li>
+          </ul>
+          <div class="note note--warn" style="margin-top:12px">
+            <div><b>先量化再改：</b>抓不到调用栈就先抓，别凭直觉重写架构。</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -568,6 +915,33 @@
         </div>
         <div class="progress"><i id="checkProgressBar" style="width:0%"></i></div>
         <div class="grid cols-2" id="checklistGrid" style="margin-top:18px"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ traps -->
+    <section class="section" id="traps">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">22</span>Platform Traps</div>
+        <h2>平台差异陷阱</h2>
+        <p class="section__lead">把 macOS 的设计稿直接搬到 Windows，或者反过来，一定会翻车。这些是最常见的 12 个坑。</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>陷阱</th><th>说明与做法</th></tr></thead>
+          <tbody id="trapBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ changelog -->
+    <section class="section" id="changelog">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">23</span>Changelog</div>
+        <h2>变更记录</h2>
+        <p class="section__lead">规范是活的。每次改数值或新增章节都记一笔，避免团队里出现多个「版本」。 </p>
+      </div>
+      <div class="card">
+        <div id="changelogList"></div>
       </div>
     </section>
 
@@ -591,6 +965,18 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="palette" id="palette" hidden>
+  <div class="palette__backdrop" data-close></div>
+  <div class="palette__panel" role="dialog" aria-modal="true" aria-label="搜索规范">
+    <div class="palette__head">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4.2-4.2"></path></svg>
+      <input class="palette__input" id="paletteInput" type="search" placeholder="搜索章节 / 数值 / 术语：圆角 · glass · 状态 · 焦点" autocomplete="off" aria-label="搜索">
+    </div>
+    <div class="palette__list" id="paletteList" role="listbox"></div>
+    <div class="palette__foot"><span>↑ ↓ 选择</span><span>Enter 跳转</span><span>Esc 关闭</span></div>
+  </div>
+</div>
 
 <script src="assets/data.js"></script>
 <script src="assets/app.js"></script>

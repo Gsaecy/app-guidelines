@@ -1134,6 +1134,387 @@
     ).join("");
   })();
 
+  /* ------------------------------------------------------------- numbering */
+
+  (function autoNumber() {
+    const sections = $$("main section[id]");
+    sections.forEach((s, i) => {
+      const n = String(i + 1).padStart(2, "0");
+      const numEl = $(".section__kicker .num", s);
+      if (numEl) numEl.textContent = n;
+      const link = $('.nav__link[href="#' + s.id + '"]');
+      if (link) {
+        const ln = $(".nav__num", link);
+        if (ln) ln.textContent = n;
+      }
+    });
+  })();
+
+  /* ------------------------------------------------------------- new tables */
+
+  tableRows($("#breakpointBody"), D.breakpoints);
+  tableRows($("#layoutSpecBody"), D.layoutSpecs);
+  tableRows($("#densityBody"), D.densityModes);
+  tableRows($("#colorStateBody"), D.colorStates);
+  tableRows($("#stateBody"), D.uiStates);
+  tableRows($("#m3EasingBody"), D.m3Easing);
+  tableRows($("#copyRuleBody"), D.copyRules);
+  tableRows($("#copyLimitBody"), D.copyLimits);
+  tableRows($("#casingBody"), D.casing);
+  tableRows($("#perfBody"), D.perfBudget);
+  tableRows($("#trapBody"), D.traps);
+
+  (function typeWin() {
+    const tbody = $("#typeWinBody");
+    if (!tbody) return;
+    tbody.innerHTML = D.typeWin.map((r) =>
+      '<tr><td>' + r[0] + '</td><td class="mono">' + r[1] + '</td><td class="mono">' + r[2] +
+      "</td><td>" + r[3] + "</td><td>" + r[4] + "</td></tr>"
+    ).join("");
+  })();
+
+  (function shadowRecipes() {
+    const host = $("#shadowRecipeList");
+    if (!host) return;
+    host.innerHTML = D.shadowRecipes.map(([name, css]) =>
+      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+        '<span style="font-size:12.5px;min-width:110px">' + name + "</span>" +
+        '<button class="copy-chip" type="button" data-copy="box-shadow: ' + css + '">box-shadow</button>' +
+      "</div>"
+    ).join("");
+    host.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-copy]");
+      if (btn) copy(btn.getAttribute("data-copy"));
+    });
+  })();
+
+  (function changelog() {
+    const host = $("#changelogList");
+    if (!host) return;
+    host.innerHTML = D.changelog.map(([ver, date, note]) =>
+      '<div class="changelog__item">' +
+        '<div class="changelog__ver">v' + ver + "</div>" +
+        '<div class="changelog__date">' + date + "</div>" +
+        '<div class="changelog__note">' + note + "</div>" +
+      "</div>"
+    ).join("");
+  })();
+
+  /* ------------------------------------------------------------- tools */
+
+  (function contrastTool() {
+    const fg = $("#fgColor");
+    const bg = $("#bgColor");
+    const size = $("#fgSize");
+    const preview = $("#contrastPreview");
+    const out = $("#contrastResult");
+    if (!fg || !bg || !out) return;
+
+    function update() {
+      const f = fg.value;
+      const b = bg.value;
+      const px = Number(size.value) || 14;
+      preview.style.color = f;
+      preview.style.background = b;
+      const ratio = contrast(f, b);
+      const isLarge = px >= 24 || px >= 18.66;
+      const need = isLarge ? 3 : 4.5;
+      const pass = ratio >= need;
+      const aaa = ratio >= (isLarge ? 4.5 : 7);
+      out.innerHTML =
+        '<span class="badge ' + (pass ? "badge--ok" : "badge--bad") + '">' + ratio.toFixed(2) + ":1</span>" +
+        "<span>" + (isLarge ? "大字号" : "正文") + "需 ≥ " + need + ":1 · " + (pass ? "通过" : "不通过") +
+        (aaa ? " · AAA" : " · 未达 AAA") + "</span>";
+    }
+    [fg, bg, size].forEach((el) => el.addEventListener("input", update));
+    update();
+  })();
+
+  (function radiusTool() {
+    const outer = $("#outerRadius");
+    const pad = $("#innerPadding");
+    const inner = $("#innerRadius");
+    const demo = $("#nestedDemo");
+    const hint = $("#nestedHint");
+    if (!outer || !pad) return;
+
+    function update() {
+      const R = Math.max(0, Number(outer.value) || 0);
+      const P = Math.max(0, Number(pad.value) || 0);
+      const value = Math.max(0, R - P);
+      if (inner) inner.value = value;
+      if (demo) {
+        demo.style.setProperty("--outer", R + "px");
+        demo.style.setProperty("--pad", Math.min(P, 40) + "px");
+        demo.style.setProperty("--inner", value + "px");
+      }
+      if (hint) {
+        const diff = R - P;
+        hint.innerHTML = diff >= 4
+          ? '<span class="badge badge--ok">差值 ' + diff + 'px</span><span>内外同心，视觉上对齐</span>'
+          : '<span class="badge badge--warn">差值 ' + Math.max(0, diff) + 'px</span><span>差值 &lt; 4px，会显得「没对齐」</span>';
+      }
+    }
+    [outer, pad].forEach((el) => el.addEventListener("input", update));
+    update();
+  })();
+
+  (function shadowTool() {
+    const y = $("#shadowY");
+    const b = $("#shadowB");
+    const a = $("#shadowA");
+    const box = $("#shadowBox");
+    const code = $("#shadowCode");
+    if (!y || !box) return;
+
+    function update() {
+      const yy = Number(y.value);
+      const bb = Number(b.value);
+      const aa = Number(a.value) / 100;
+      const css = "0 " + yy + "px " + bb + "px rgba(0,0,0," + aa.toFixed(2) + ")";
+      box.style.boxShadow = css;
+      code.textContent = "box-shadow: " + css + ";";
+      $("#shadowYVal").textContent = yy;
+      $("#shadowBVal").textContent = bb;
+      $("#shadowAVal").textContent = aa.toFixed(2);
+    }
+    [y, b, a].forEach((el) => el.addEventListener("input", update));
+
+    const copyBtn = $("#shadowCopy");
+    if (copyBtn) copyBtn.addEventListener("click", () => copy(code.textContent));
+    update();
+  })();
+
+  (function easeTool() {
+    const ids = ["easeX1", "easeY1", "easeX2", "easeY2"];
+    const els = ids.map((id) => document.getElementById(id));
+    const path = $("#toolCurvePath");
+    const dot = $("#toolCurveDot");
+    const track = $("#toolTrack");
+    const ball = $("#toolDot");
+    const code = $("#easeCode");
+    if (!path) return;
+
+    const labels = { easeX1: "x1v", easeY1: "y1v", easeX2: "x2v", easeY2: "y2v" };
+
+    function point(t) {
+      const [x1, y1, x2, y2] = els.map((e) => Number(e.value));
+      const cx = 3 * x1;
+      const bx = 3 * (x2 - x1) - cx;
+      const ax = 1 - cx - bx;
+      const cy = 3 * y1;
+      const by = 3 * (y2 - y1) - cy;
+      const ay = 1 - cy - by;
+      return { x: ((ax * t + bx) * t + cx) * t, y: ((ay * t + by) * t + cy) * t };
+    }
+
+    function css() {
+      return "cubic-bezier(" + els.map((e) => Number(e.value).toFixed(2)).join(", ") + ")";
+    }
+
+    function draw() {
+      const pts = [];
+      for (let i = 0; i <= 60; i++) {
+        const p = point(i / 60);
+        pts.push((20 + p.x * 190).toFixed(1) + "," + (160 - p.y * 140).toFixed(1));
+      }
+      path.setAttribute("d", "M" + pts.join(" L"));
+      if (dot) {
+        const p = point(0.62);
+        dot.setAttribute("cx", (20 + p.x * 190).toFixed(1));
+        dot.setAttribute("cy", (160 - p.y * 140).toFixed(1));
+      }
+      els.forEach((el) => {
+        const lb = document.getElementById(labels[el.id]);
+        if (lb) lb.textContent = Number(el.value).toFixed(2);
+      });
+      code.textContent = css();
+    }
+
+    function play() {
+      if (!track || !ball) return;
+      const max = track.clientWidth - 34 - 12;
+      ball.animate(
+        [{ transform: "translateX(0)" }, { transform: "translateX(" + max + "px)" }],
+        { duration: 500, easing: css(), fill: "both" }
+      );
+    }
+
+    els.forEach((el) => el.addEventListener("input", draw));
+    const playBtn = $("#toolPlay");
+    if (playBtn) playBtn.addEventListener("click", play);
+    const copyBtn = $("#easeCopy");
+    if (copyBtn) copyBtn.addEventListener("click", () => copy("transition-timing-function: " + css() + ";"));
+    draw();
+  })();
+
+  /* ------------------------------------------------------------- token export */
+
+  const TOKENS_EXPORT = {
+    color: {
+      accent: "#0071E3",
+      accentDark: "#0A84FF",
+      bgBase: "#F5F5F7",
+      bgCard: "#FFFFFF",
+      bgSecondary: "#EDEDF0",
+      textPrimary: "#1D1D1F",
+      success: "#34C759",
+      warning: "#FF9F0A",
+      danger: "#FF453A",
+    },
+    radius: { control: "8px", row: "10px", form: "14px", card: "18px", panel: "20px", hero: "24px", pill: "999px" },
+    spacing: { s1: "4px", s2: "8px", s3: "12px", s4: "16px", s5: "20px", s6: "24px", s8: "32px", s10: "40px", s12: "48px", s16: "64px" },
+    type: { page: "30px", section: "20px", card: "16px", body: "14px", callout: "13px", caption: "12px", meta: "11px" },
+    motion: {
+      fast: "180ms",
+      base: "240ms",
+      slow: "320ms",
+      easeOut: "cubic-bezier(0.22, 1, 0.36, 1)",
+      easeStandard: "cubic-bezier(0.2, 0, 0, 1)",
+    },
+  };
+
+  function download(name, text, mime) {
+    const blob = new Blob([text], { type: mime || "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    toast("已下载 " + name);
+  }
+
+  function cssFromTokens() {
+    const lines = [":root {"];
+    Object.entries(TOKENS_EXPORT.color).forEach(([k, v]) => lines.push("  --color-" + k.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()) + ": " + v + ";"));
+    Object.entries(TOKENS_EXPORT.radius).forEach(([k, v]) => lines.push("  --radius-" + k + ": " + v + ";"));
+    Object.entries(TOKENS_EXPORT.spacing).forEach(([k, v]) => lines.push("  --space-" + k.replace("s", "") + ": " + v + ";"));
+    Object.entries(TOKENS_EXPORT.type).forEach(([k, v]) => lines.push("  --font-" + k + ": " + v + ";"));
+    Object.entries(TOKENS_EXPORT.motion).forEach(([k, v]) => lines.push("  --motion-" + k.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()) + ": " + v + ";"));
+    lines.push("}");
+    return lines.join("\n");
+  }
+
+  (function exportUi() {
+    const preview = $("#tokenPreview");
+    if (!preview) return;
+    const json = JSON.stringify(TOKENS_EXPORT, null, 2);
+    preview.textContent = json;
+
+    const j = $("#exportJson");
+    const c = $("#exportCss");
+    if (j) j.addEventListener("click", () => download("tokens.json", json, "application/json"));
+    if (c) c.addEventListener("click", () => download("tokens.css", cssFromTokens(), "text/css"));
+  })();
+
+  /* ------------------------------------------------------------- search palette */
+
+  (function palette() {
+    const overlay = $("#palette");
+    const input = $("#paletteInput");
+    const list = $("#paletteList");
+    const openBtn = $("#searchOpen");
+    if (!overlay || !input || !list) return;
+
+    const items = [];
+    $$("main section[id]").forEach((s) => {
+      const head = s.querySelector("h1, h2");
+      const kicker = s.querySelector(".section__kicker");
+      if (!head) return;
+      items.push({
+        label: head.textContent.trim(),
+        sub: kicker ? kicker.textContent.replace(/\s+/g, " ").trim() : "概览",
+        target: s.id,
+        kind: "chapter",
+        group: "章节",
+      });
+    });
+    D.terms.forEach((g) =>
+      g.items.forEach(([zh, en, desc]) => items.push({ label: zh + " · " + en, sub: desc, target: "glossary", kind: "term", group: g.cat, query: zh }))
+    );
+    D.effects.forEach((g) =>
+      g.items.forEach(([zh, en, desc]) => items.push({ label: zh + " · " + en, sub: desc, target: "glossary", kind: "effect", group: g.cat, query: zh }))
+    );
+
+    let filtered = items;
+    let sel = 0;
+
+    function render() {
+      if (!filtered.length) {
+        list.innerHTML = '<div class="palette__empty">没有匹配结果，换个关键词试试</div>';
+        return;
+      }
+      list.innerHTML = filtered.slice(0, 40).map((it, i) =>
+        '<div class="palette__item' + (i === sel ? " is-sel" : "") + '" data-i="' + i + '" role="option">' +
+          "<span>" + it.label + "</span>" +
+          "<small>" + it.group + "</small>" +
+        "</div>"
+      ).join("");
+    }
+
+    function update() {
+      const q = input.value.trim().toLowerCase();
+      filtered = !q ? items : items.filter((it) =>
+        (it.label + " " + it.sub + " " + it.group).toLowerCase().includes(q)
+      );
+      sel = 0;
+      render();
+    }
+
+    function open() {
+      overlay.hidden = false;
+      input.value = "";
+      update();
+      setTimeout(() => input.focus(), 20);
+    }
+    function close() {
+      overlay.hidden = true;
+      if (openBtn) openBtn.focus();
+    }
+
+    function go(it) {
+      close();
+      const target = document.getElementById(it.target);
+      if (target) target.scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth", block: "start" });
+      if (it.kind === "term" || it.kind === "effect") {
+        const tabs = $("#glossaryTabs");
+        const tabBtn = tabs && tabs.querySelector('button[data-tab="' + (it.kind === "term" ? "design" : "effect") + '"]');
+        if (tabBtn) tabBtn.click();
+        const search = $("#glossarySearch");
+        if (search) {
+          search.value = it.query;
+          search.dispatchEvent(new Event("input"));
+        }
+      }
+    }
+
+    if (openBtn) openBtn.addEventListener("click", open);
+    overlay.addEventListener("click", (e) => {
+      if (e.target.hasAttribute("data-close")) close();
+    });
+    input.addEventListener("input", update);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") { e.preventDefault(); sel = Math.min(sel + 1, Math.min(filtered.length, 40) - 1); render(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); sel = Math.max(sel - 1, 0); render(); }
+      else if (e.key === "Enter") { e.preventDefault(); if (filtered[sel]) go(filtered[sel]); }
+      else if (e.key === "Escape") { e.preventDefault(); close(); }
+    });
+    list.addEventListener("click", (e) => {
+      const row = e.target.closest(".palette__item");
+      if (!row) return;
+      const it = filtered[Number(row.getAttribute("data-i"))];
+      if (it) go(it);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); open(); }
+      else if (e.key === "Escape" && !overlay.hidden) close();
+    });
+  })();
+
   /* ------------------------------------------------------------- scrollspy */
 
   (function scrollspy() {
