@@ -181,24 +181,57 @@
     ctx.drawImage(img, 0, 0, w, h);
     const data = ctx.getImageData(0, 0, w, h).data;
 
+    // 1) 取边框像素估计背景色（白底、深底、纯色底都适用）
+    let br = 0, bg = 0, bb = 0, bn = 0;
+    const sample = function (x, y) {
+      const i = (y * w + x) * 4;
+      br += data[i]; bg += data[i + 1]; bb += data[i + 2]; bn++;
+    };
+    for (let x = 0; x < w; x++) { sample(x, 0); sample(x, h - 1); }
+    for (let y = 0; y < h; y++) { sample(0, y); sample(w - 1, y); }
+    br /= bn; bg /= bn; bb /= bn;
+
+    // 2) 与背景色的最大通道差 > 容差 即视为前景（阈值滑杆映射到 18–108）
+    const tol = 18 + (state.threshold / 255) * 90;
     const mask = new Uint8Array(w * h);
-    const t = state.threshold;
-    let onCount = 0;
-    for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+    let on = 0;
+    for (let i = 0, q = 0; i < data.length; i += 4, q++) {
       const a = data[i + 3] / 255;
-      const lum = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) * a + 255 * (1 - a);
-      const on = lum < t ? 1 : 0;
-      mask[p] = on;
-      onCount += on;
+      if (a < 0.45) { mask[q] = 0; continue; }              // 透明 = 背景
+      const dr = Math.abs(data[i] - br);
+      const dg = Math.abs(data[i + 1] - bg);
+      const db = Math.abs(data[i + 2] - bb);
+      const diff = Math.max(dr, dg, db);
+      const isFg = diff > tol ? 1 : 0;
+      mask[q] = isFg;
+      on += isFg;
     }
-    // 自动判断前景/背景：深底截图、黑底 logo 会让“前景”占满画布
-    const coverage = onCount / (w * h);
-    const flip = state.invert ? coverage < 0.5 : coverage > 0.55;
+
+    // 3) 深底图（前景占满画布）自动反转
+    const coverage = on / (w * h);
+    const flip = state.invert ? coverage < 0.5 : coverage > 0.7;
     if (flip) {
-      for (let i = 0; i < mask.length; i++) mask[i] = 1 - mask[i];
-      state.autoFlipped = coverage > 0.55;
+      for (let k = 0; k < mask.length; k++) mask[k] = 1 - mask[k];
+      state.autoFlipped = !state.invert;
     } else {
       state.autoFlipped = false;
+    }
+
+    // 4) 颜色法一无所获时退回亮度阈值（灰度图、手绘扫描）
+    if (on === 0 || on === w * h) {
+      const lt = state.threshold;
+      let on2 = 0;
+      for (let i = 0, q = 0; i < data.length; i += 4, q++) {
+        const a = data[i + 3] / 255;
+        const lum = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) * a + 255 * (1 - a);
+        const v = lum < lt ? 1 : 0;
+        mask[q] = v;
+        on2 += v;
+      }
+      if (on2 / (w * h) > 0.7) {
+        for (let k = 0; k < mask.length; k++) mask[k] = 1 - mask[k];
+        state.autoFlipped = true;
+      }
     }
     return { mask, w, h };
   }
@@ -1080,7 +1113,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260212b",
+      version: "20260212c",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },

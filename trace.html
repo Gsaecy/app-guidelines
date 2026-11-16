@@ -74,7 +74,7 @@
         </div>
 
         <label class="field" style="margin-top:16px">
-          <span class="field__label">二值化阈值 <code id="thVal">128</code> · 越小保留越多细节</span>
+          <span class="field__label">颜色容差 <code id="thVal">128</code> · 越小越敏感（抓更淡的图形）</span>
           <input type="range" id="traceThreshold" min="20" max="240" value="128">
         </label>
         <label class="field" style="margin-top:12px">
@@ -151,8 +151,8 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>if(window.AGTrace&&window.AGTrace.version!=="20260212b"){location.replace(location.pathname+"?b="+Date.now())}</script>
+<script>if(window.AGTrace&&window.AGTrace.version!=="20260212c"){location.replace(location.pathname+"?b="+Date.now())}</script>
 <script src="assets/shell.js?v=20260209b"></script>
-<script src="assets/trace.js?v=20260212b"></script>
+<script src="assets/trace.js?v=20260212c"></script>
 </body>
 </html>
