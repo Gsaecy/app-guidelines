@@ -18,7 +18,7 @@
     loops: [],
     fits: [],
     fit: true,
-    construct: true,
+    construct: false,
     gridN: 12,
     unify: true,
     standard: true,
@@ -1421,7 +1421,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260214e",
+      version: "20260214f",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
