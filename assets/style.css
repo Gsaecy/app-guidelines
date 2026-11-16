@@ -1139,3 +1139,24 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   .changelog__item { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .changelog__date { font-size: 11px; }
 }
+
+/* ==========================================================================
+   Elements catalog
+   ========================================================================== */
+.el-toolbar {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+  padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-card);
+  background: var(--card); margin-bottom: 8px; box-shadow: var(--sh-1);
+}
+.el-family { margin-top: 26px; }
+.el-family__head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.el-family__head h3 { font-size: 18px; letter-spacing: -0.01em; }
+.el-family__head span { font-size: 11px; color: var(--text-3); font-family: var(--mono); }
+.el-family__head .badge { margin-left: auto; }
+.el-table td { font-size: 12.5px; }
+.el-table td:first-child { min-width: 150px; }
+.el-table .el-en { display: block; font-size: 10.5px; color: var(--text-3); font-family: var(--mono); font-weight: 400; margin-top: 1px; }
+.el-table td:nth-child(3) { color: var(--text-2); }
+.el-table .el-links a { font-size: 11px; color: var(--accent); white-space: nowrap; }
+.el-anatomy { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.el-anatomy__demo { background: var(--card-2); border-radius: 12px; padding: 20px; display: grid; place-items: center; min-height: 110px; }
