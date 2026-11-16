@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App Guidelines — APP UI 设计规范与效果参考</title>
+<meta name="description" content="Apple HIG、Material Design 3、Windows 11 Fluent 三平台 APP UI 设计规范速查：圆角、间距、字号、图标、控件、颜色、材质、阴影、动效、无障碍，以及可交互的材质/动效/粒子效果实验室与中英术语表。">
+<meta name="theme-color" content="#f5f5f7">
+<meta property="og:title" content="App Guidelines — APP UI 设计规范与效果参考">
+<meta property="og:description" content="三平台设计规范速查 + 可交互效果实验室 + 中英术语表。">
+<meta property="og:type" content="website">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+
+<header class="appbar">
+  <div class="brand">
+    <div class="brand__mark" aria-hidden="true">A</div>
+    <div class="brand__name">App Guidelines</div>
+    <div class="brand__tag">v<span data-bind="version">1.0.0</span></div>
+  </div>
+  <div class="appbar__spacer"></div>
+  <div class="appbar__actions">
+    <a class="ghost-btn" href="#glossary">术语表</a>
+    <a class="ghost-btn" href="#lab-effects">效果实验室</a>
+    <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色" title="切换深浅色">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"></circle>
+        <path d="M12 2.8v2.1M12 19.1v2.1M4.5 4.5l1.5 1.5M18 18l1.5 1.5M2.8 12h2.1M19.1 12h2.1M4.5 19.5 6 18M18 6l1.5-1.5"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="sidebar">
+    <nav class="nav" id="nav" aria-label="章节导航">
+      <div class="nav__group">基础</div>
+      <a class="nav__link" href="#overview"><span class="nav__num">01</span>概览</a>
+      <a class="nav__link" href="#quick"><span class="nav__num">02</span>快速决策</a>
+      <a class="nav__link" href="#radius"><span class="nav__num">03</span>圆角</a>
+      <a class="nav__link" href="#spacing"><span class="nav__num">04</span>间距</a>
+      <a class="nav__link" href="#type"><span class="nav__num">05</span>字号</a>
+      <a class="nav__link" href="#icons"><span class="nav__num">06</span>图标</a>
+      <div class="nav__group">组件</div>
+      <a class="nav__link" href="#controls"><span class="nav__num">07</span>控件与组件</a>
+      <a class="nav__link" href="#color"><span class="nav__num">08</span>颜色</a>
+      <a class="nav__link" href="#material"><span class="nav__num">09</span>材质</a>
+      <a class="nav__link" href="#elevation"><span class="nav__num">10</span>阴影</a>
+      <div class="nav__group">动效</div>
+      <a class="nav__link" href="#motion"><span class="nav__num">11</span>动效</a>
+      <a class="nav__link" href="#lab-effects"><span class="nav__num">12</span>效果实验室</a>
+      <div class="nav__group">内容</div>
+      <a class="nav__link" href="#pages"><span class="nav__num">13</span>页面结构</a>
+      <a class="nav__link" href="#glossary"><span class="nav__num">14</span>术语表</a>
+      <div class="nav__group">工程</div>
+      <a class="nav__link" href="#tokens"><span class="nav__num">15</span>设计令牌</a>
+      <a class="nav__link" href="#checklist"><span class="nav__num">16</span>自检清单</a>
+      <a class="nav__link" href="#sources"><span class="nav__num">17</span>来源</a>
+    </nav>
+  </aside>
+
+  <main class="main" id="main">
+
+    <!-- ============================================================ hero -->
+    <section class="hero" id="overview">
+      <div class="hero__eyebrow">APP UI · 设计规范与效果参考</div>
+      <h1>先把规范定下来，<br>再谈<em>好不好看</em>。</h1>
+      <p class="hero__lead">
+        圆角、间距、字号、图标、控件、材质、阴影、动效、无障碍——三平台官方数值全部整理在一页，
+        并配可交互的效果实验室：拖动滑杆就能看清玻璃材质、缓动曲线、流场粒子到底在做什么。
+      </p>
+      <div class="hero__platforms">
+        <span class="platform-pill"><i style="background:#0071e3"></i>Apple HIG</span>
+        <span class="platform-pill"><i style="background:#6750a4"></i>Material Design 3</span>
+        <span class="platform-pill"><i style="background:#0067c0"></i>Windows 11 / Fluent 2</span>
+        <span class="platform-pill"><i style="background:#34c759"></i>WCAG 2.2</span>
+      </div>
+      <div class="hero__stats">
+        <div class="stat"><div class="stat__value">120+</div><div class="stat__label">官方核对数值</div></div>
+        <div class="stat"><div class="stat__value">12</div><div class="stat__label">组件规范</div></div>
+        <div class="stat"><div class="stat__value">16</div><div class="stat__label">页面类型</div></div>
+        <div class="stat"><div class="stat__value">66</div><div class="stat__label">中英术语</div></div>
+        <div class="stat"><div class="stat__value">9</div><div class="stat__label">可交互效果</div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ quick -->
+    <section class="section" id="quick">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">02</span>Quick Reference</div>
+        <h2>快速决策表</h2>
+        <p class="section__lead">最常被问到的十几个「到底用多少」，先看这张表。⚠️ 标记的是项目经验值，其余为官方文档数值。</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>问题</th><th>Apple</th><th>Material 3</th><th>Windows 11</th></tr>
+          </thead>
+          <tbody id="decisionBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ radius -->
+    <section class="section" id="radius">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">03</span>Corner Radius</div>
+        <h2>圆角</h2>
+        <p class="section__lead">圆角是最容易「凭感觉」的参数。Windows 只有 4 / 8 两档，Apple 更自由但有嵌套规则，Material 用固定形状刻度。</p>
+      </div>
+
+      <div class="swatch-grid" id="radiusSwatches"></div>
+
+      <div class="grid cols-3" style="margin-top:16px">
+        <div class="card">
+          <div class="card__title" id="radiusWinTitle"></div>
+          <table class="table-wrap--tight" style="margin-top:10px">
+            <tbody id="radiusWinBody"></tbody>
+          </table>
+          <p class="card__hint" id="radiusWinNote" style="margin-top:10px"></p>
+        </div>
+        <div class="card">
+          <div class="card__title" id="radiusAppleTitle"></div>
+          <table style="margin-top:10px"><tbody id="radiusAppleBody"></tbody></table>
+          <p class="card__hint" id="radiusAppleNote" style="margin-top:10px"></p>
+        </div>
+        <div class="card">
+          <div class="card__title" id="radiusM3Title"></div>
+          <table style="margin-top:10px"><tbody id="radiusM3Body"></tbody></table>
+          <p class="card__hint" id="radiusM3Note" style="margin-top:10px"></p>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top:16px">
+        <div><b>嵌套规则：</b>外 16 ➜ 内 ≤ 12 ➜ 再内 ≤ 8，相邻圆角差 ≥ 4px，否则看起来像没对齐。同一页面最多 3 种圆角。</div>
+      </div>
+    </section>
+
+    <!-- ============================================================ spacing -->
+    <section class="section" id="spacing">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">04</span>Spacing &amp; Grid</div>
+        <h2>间距与栅格</h2>
+        <p class="section__lead">所有间距都是 4 的倍数；用倍数关系（4 / 8 / 16 / 24 / 32）建立层级，而不是随手写 13px。</p>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <div class="card__title">间距刻度</div>
+          <div id="spacingRuler"></div>
+        </div>
+        <div class="card card--flush">
+          <div class="table-wrap" style="border:0;box-shadow:none">
+            <table>
+              <thead><tr><th>场景</th><th>值（px）</th></tr></thead>
+              <tbody id="spacingUseBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-3" style="margin-top:16px">
+        <div class="card"><div class="card__title">Apple</div><p class="card__hint">4pt 基准，布局边距常用 16 / 20，控件内 8 的倍数。</p></div>
+        <div class="card"><div class="card__title">Material 3</div><p class="card__hint">8dp 主栅格，允许 4dp 半格；组件内 16dp，屏幕边 16dp。</p></div>
+        <div class="card"><div class="card__title">Windows 11</div><p class="card__hint">4px 基准；控件间 4 / 8，区块间 12 / 16 / 24。</p></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ type -->
+    <section class="section" id="type">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">05</span>Typography</div>
+        <h2>字号、字重、行高</h2>
+        <p class="section__lead">行高 ≈ 字号 × 1.4–1.5（大标题 1.2，小字 1.5），中文再加 0.05 ⚠️。Windows 一律 sentence case，不用 Title Case。</p>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <div class="card__title">桌面 App 实用字阶（可直接套用 ⚠️）</div>
+          <div id="typeSpecimens" style="margin-top:8px"></div>
+        </div>
+        <div class="card card--flush">
+          <div style="padding:18px 20px 0"><div class="card__title">Material 3 字阶（sp / 行高）</div></div>
+          <div class="table-wrap" style="border:0;box-shadow:none;max-height:420px;overflow:auto">
+            <table class="table-wrap--tight">
+              <thead><tr><th>角色</th><th>字号</th><th>行高</th></tr></thead>
+              <tbody id="typeM3Body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card--flush" style="margin-top:16px">
+        <div style="padding:18px 20px 0"><div class="card__title">Apple 动态字号（pt / 行高 / 字重）</div></div>
+        <div class="table-wrap" style="border:0;box-shadow:none">
+          <table class="table-wrap--tight">
+            <thead><tr><th>样式</th><th>字号</th><th>行高</th><th>字重</th></tr></thead>
+            <tbody id="typeAppleBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="note note--warn" style="margin-top:16px">
+        <div><b>硬指标：</b>Windows 正文 14px / 最小 12px；iOS 默认 17pt / 最小 11pt；macOS 默认 13pt / 最小 10pt。一页 ≤ 2 个字重、≤ 3 个字号档。</div>
+      </div>
+    </section>
+
+    <!-- ============================================================ icons -->
+    <section class="section" id="icons">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">06</span>Iconography</div>
+        <h2>图标</h2>
+        <p class="section__lead">同组图标必须同源、同描边、同端点。尺寸只用 16 / 20 / 24 / 28，描边随尺寸缩放。</p>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <div class="card__title">24px 画板 · 2px 描边 · 2px 安全内边距</div>
+          <div style="display:flex;gap:16px;margin-top:14px;align-items:flex-start">
+            <div class="icon-board" style="width:120px;flex:none">
+              <div class="icon-board__pad"></div>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"></path></svg>
+            </div>
+            <div class="icon-board" style="width:120px;flex:none">
+              <div class="icon-board__pad"></div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"></path></svg>
+            </div>
+            <div style="min-width:0">
+              <p class="card__hint" style="line-height:1.8">
+                左：24px 画板 / 2px 描边。<br>
+                右：同路径缩小到 20px，描边降到 1.5px。<br>
+                虚线为 12% 安全区。
+              </p>
+            </div>
+          </div>
+          <div class="icon-grid" id="iconGrid" style="margin-top:16px"></div>
+        </div>
+
+        <div class="stack">
+          <div class="card card--flush">
+            <div class="table-wrap" style="border:0;box-shadow:none">
+              <table class="table-wrap--tight">
+                <thead><tr><th>图标体系</th><th>画板</th><th>描边</th></tr></thead>
+                <tbody id="iconSystemBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__title">使用规则</div>
+            <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;color:var(--text-2);line-height:1.9" id="iconRules"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ controls -->
+    <section class="section" id="controls">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">07</span>Components</div>
+        <h2>控件尺寸与组件规范</h2>
+        <p class="section__lead">按钮文字必须完整包在按钮内——溢出就是不合格。下面是可直接点、可聚焦的真实样例。</p>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:16px">
+        <table>
+          <thead><tr><th>控件</th><th>Apple</th><th>Material 3</th><th>Windows 11</th><th>本项目</th></tr></thead>
+          <tbody id="controlsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="grid cols-2" id="componentGrid"></div>
+    </section>
+
+    <!-- ============================================================ color -->
+    <section class="section" id="color">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">08</span>Color</div>
+        <h2>颜色与对比度</h2>
+        <p class="section__lead">对比度实时计算：正文 ≥ 4.5:1，大字号与非文本 ≥ 3:1。点击色值可复制。</p>
+      </div>
+      <div class="grid cols-3" id="colorGrid"></div>
+      <div class="note" style="margin-top:16px">
+        <div><b>中性色最稳的一套：</b>页面底 #F5F5F7、卡片 #FFFFFF、主文字 #1D1D1F、次文字 black α .55、分隔线 black α .08。深色模式用 #000 / #1C1C1E，文字改 white α .94 / .62。</div>
+      </div>
+    </section>
+
+    <!-- ============================================================ material -->
+    <section class="section" id="material">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">09</span>Materials · Lab</div>
+        <h2>材质（可交互实验室）</h2>
+        <p class="section__lead">材质只用于「临时/浮起」的层——弹窗、侧栏、工具栏；正文内容用实色。拖动指针看镜面高光，调滑杆看模糊与色调。</p>
+      </div>
+
+      <div class="lab">
+        <div class="lab__body" style="padding:0">
+          <div class="stage" id="glassStage" style="border-radius:0;min-height:360px">
+            <div class="stage__content">
+              <div class="glass" id="glassCard">
+                <h3 id="glassTitle">Liquid Glass</h3>
+                <p id="glassDesc">指针移动时镜面高光跟随，边缘保留 1px 高光制造厚度。</p>
+                <div class="glass-row">
+                  <button class="btn btn--primary btn--sm" type="button">立即体验</button>
+                  <button class="btn btn--outline btn--sm" type="button" style="color:#fff;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.12)">了解更多</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="lab__controls">
+          <div class="segmented" id="glassPreset" role="group" aria-label="材质预设">
+            <button type="button" class="is-on" data-preset="liquid">Liquid Glass</button>
+            <button type="button" data-preset="acrylic">Acrylic</button>
+            <button type="button" data-preset="vibrancy">Vibrancy</button>
+            <button type="button" data-preset="plain">实色</button>
+          </div>
+          <label class="check"><input type="checkbox" id="glassSpec" checked>镜面高光</label>
+          <label class="check"><input type="checkbox" id="glassRim" checked>边缘高光</label>
+          <label class="check"><input type="checkbox" id="glassNoise">噪点</label>
+        </div>
+        <div class="lab__controls">
+          <label class="field" style="min-width:180px;flex:1">
+            <span class="field__label">背景模糊 <code id="blurVal">22px</code></span>
+            <input type="range" id="glassBlur" min="0" max="60" value="22">
+          </label>
+          <label class="field" style="min-width:180px;flex:1">
+            <span class="field__label">底色透明度 <code id="tintVal">0.16</code></span>
+            <input type="range" id="glassTint" min="0" max="60" value="16">
+          </label>
+          <label class="field" style="min-width:180px;flex:1">
+            <span class="field__label">饱和度 <code id="satVal">170%</code></span>
+            <input type="range" id="glassSat" min="100" max="260" value="170">
+          </label>
+        </div>
+      </div>
+
+      <div class="grid cols-3" style="margin-top:16px" id="materialCards"></div>
+
+      <div class="split" style="margin-top:16px">
+        <div class="card">
+          <div class="card__title">滚动边缘效果（Scroll Edge Effect）</div>
+          <p class="card__hint">内容滚到工具栏下方渐隐。滚动试试 ↓</p>
+          <div class="edge-host" style="margin-top:12px">
+            <div class="edge-header">壁纸库</div>
+            <div class="edge-fade"></div>
+            <div class="edge-scroll">
+              <p>01 · 每日推荐 · 晨雾山谷</p><p>02 · 深空星轨</p><p>03 · 液态金属</p>
+              <p>04 · 枯山水</p><p>05 · 霓虹雨夜</p><p>06 · 极光</p>
+              <p>07 · 森林光斑</p><p>08 · 沙丘</p><p>09 · 玻璃折射</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card__title">渐变遮罩（Scrim）</div>
+          <p class="card__hint">图上文字必须有遮罩，保证对比度 ≥ 4.5:1。</p>
+          <div class="scrim-card" style="margin-top:12px">
+            <div class="scrim-card__text" id="scrimText">
+              <b>晨雾山谷</b><span>4K · 动态壁纸 · 128 MB</span>
+            </div>
+          </div>
+          <label class="switch" style="margin-top:12px"><input type="checkbox" id="scrimToggle" checked>显示渐变遮罩</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ elevation -->
+    <section class="section" id="elevation">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">10</span>Elevation</div>
+        <h2>阴影 / 层级</h2>
+        <p class="section__lead">Apple 偏柔和 + 大扩散；Material 短距离多层叠加；Windows 几乎无阴影，靠 1px 描边分层。悬停卡片看层级 2。</p>
+      </div>
+      <div class="elev-grid" id="elevationGrid"></div>
+      <div class="table-wrap" style="margin-top:16px">
+        <table>
+          <thead><tr><th>层级</th><th>用途</th><th>y</th><th>blur</th><th>alpha</th></tr></thead>
+          <tbody id="elevationBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ motion -->
+    <section class="section" id="motion">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">11</span>Motion · Lab</div>
+        <h2>动效（可交互实验室）</h2>
+        <p class="section__lead">选一条曲线、拖一个时长，点播放看小球怎么走。低于 100ms 视为瞬时，高于 400ms 会觉得卡。</p>
+      </div>
+
+      <div class="lab">
+        <div class="lab__body">
+          <div class="split" style="align-items:start">
+            <div>
+              <div class="track" id="motionTrack"><div class="track__dot" id="motionDot"></div></div>
+              <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+                <button class="btn btn--primary" id="motionPlay" type="button">播放</button>
+                <div class="segmented" id="curvePicker" role="group" aria-label="缓动曲线">
+                  <button type="button" class="is-on" data-curve="0.22, 1, 0.36, 1">ease-out</button>
+                  <button type="button" data-curve="0.2, 0, 0, 1">standard</button>
+                  <button type="button" data-curve="0.05, 0.7, 0.1, 1">emphasized</button>
+                  <button type="button" data-curve="0.68, -0.55, 0.27, 1.55">back</button>
+                </div>
+              </div>
+              <label class="field" style="margin-top:14px">
+                <span class="field__label">时长 <code id="durVal">240ms</code></span>
+                <input type="range" id="durRange" min="80" max="800" step="10" value="240">
+              </label>
+              <p class="card__hint" id="curveCode" style="margin-top:10px">cubic-bezier(0.22, 1, 0.36, 1)</p>
+            </div>
+            <div>
+              <svg class="curve-svg" id="curveSvg" viewBox="0 0 220 180" aria-hidden="true">
+                <path class="grid" d="M20 160H210M20 160V20"></path>
+                <path class="grid" d="M20 90H210M115 160V20" opacity=".5"></path>
+                <path class="curve" id="curvePath" d=""></path>
+                <circle id="curveDot" r="4" cx="20" cy="160"></circle>
+              </svg>
+              <p class="card__hint">横轴时间、纵轴进度。曲线越「陡在中间」越有速度感。</p>
+            </div>
+          </div>
+        </div>
+        <div class="lab__controls">
+          <div class="lab__legend">
+            <span>悬停/按压 120–180ms</span><span>展开 200–250ms</span><span>页面切换 240–320ms</span><span>主题切换 180–250ms</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-3" style="margin-top:16px">
+        <div class="card">
+          <div class="card__title">交错（Stagger）</div>
+          <p class="card__hint">元素按序延迟 40–80ms 入场。</p>
+          <div class="stagger-grid" id="staggerGrid" style="margin-top:12px"></div>
+          <button class="btn btn--secondary btn--sm" id="staggerPlay" type="button" style="margin-top:12px">重播</button>
+        </div>
+        <div class="card">
+          <div class="card__title">涟漪（Ripple）</div>
+          <p class="card__hint">点击反馈，560ms 扩散消失。</p>
+          <button class="btn btn--primary ripple-host" id="rippleBtn" type="button" style="margin-top:12px">点我试试</button>
+        </div>
+        <div class="card">
+          <div class="card__title">骨架屏（Skeleton）</div>
+          <p class="card__hint">结构占位，1300ms 循环。</p>
+          <div class="stack" style="margin-top:12px;gap:8px">
+            <div class="skeleton" style="height:14px;width:72%"></div>
+            <div class="skeleton" style="height:14px;width:54%"></div>
+            <div class="skeleton" style="height:64px;width:100%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card__title">肯·伯恩斯（Ken Burns）· 视差（Parallax）</div>
+        <p class="card__hint">图片缓慢推拉；移动指针产生多层视差。</p>
+        <div class="stage" id="parallaxStage" style="min-height:220px;margin-top:12px">
+          <div class="stage__content" style="place-items:end start;padding:22px">
+            <div id="parallaxLayer" style="color:#fff;transition:transform 200ms ease-out">
+              <div style="font-size:20px;font-weight:700;letter-spacing:-.02em">晨雾山谷</div>
+              <div style="font-size:12px;opacity:.8">移动指针 → 图层位移 8–16px</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ul style="margin:16px 0 0;padding-left:18px;font-size:13px;color:var(--text-2);line-height:1.9" id="motionRules"></ul>
+    </section>
+
+    <!-- ============================================================ effects -->
+    <section class="section" id="lab-effects">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">12</span>Effects Lab</div>
+        <h2>效果实验室</h2>
+        <p class="section__lead">程序化效果的「看得见」版本：流场粒子、泛光、暗角、散景，以及壁纸里那套行进波驱动的鱼游模型。</p>
+      </div>
+
+      <div class="lab">
+        <div class="lab__body" style="padding:0">
+          <div class="canvas-wrap">
+            <canvas id="flowCanvas" height="320" aria-label="流场粒子动画"></canvas>
+          </div>
+        </div>
+        <div class="lab__controls">
+          <div class="segmented" id="fxPicker" role="group" aria-label="效果">
+            <button type="button" class="is-on" data-fx="flow">流场粒流</button>
+            <button type="button" data-fx="bokeh">散景 Bokeh</button>
+            <button type="button" data-fx="caustics">焦散 Caustics</button>
+          </div>
+          <label class="check"><input type="checkbox" id="fxBloom" checked>泛光 Bloom</label>
+          <label class="check"><input type="checkbox" id="fxVignette" checked>暗角 Vignette</label>
+          <label class="check"><input type="checkbox" id="fxDof">景深 DoF</label>
+        </div>
+      </div>
+
+      <div class="lab" style="margin-top:16px">
+        <div class="lab__body" style="padding:0">
+          <div class="canvas-wrap">
+            <canvas id="fishCanvas" height="260" aria-label="卡兰吉式游动行进波示意图"></canvas>
+          </div>
+        </div>
+        <div class="lab__controls">
+          <span style="font-size:12px;color:var(--text-2)">卡兰吉式游动（Carangiform）：摆幅包络「头 0 → 尾最大」，相位滞后形成 S 形。</span>
+          <label class="check"><input type="checkbox" id="fishEnvelope" checked>显示摆幅包络</label>
+          <label class="check"><input type="checkbox" id="fishPhase" checked>显示相位滞后</label>
+        </div>
+      </div>
+
+      <div class="grid cols-4" style="margin-top:16px" id="effectCardGrid"></div>
+    </section>
+
+    <!-- ============================================================ pages -->
+    <section class="section" id="pages">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">13</span>App Structure</div>
+        <h2>页面结构术语</h2>
+        <p class="section__lead">沟通时用这些页面名称，90% 的团队成员都能听懂。从启动到反馈，一个 App 的完整页面骨架。</p>
+      </div>
+      <div class="grid cols-3" id="pageGrid"></div>
+      <div class="note" style="margin-top:16px">
+        <div><b>层级判断：</b>能通过底部标签/侧栏直接到达的是「一级页面」；从一级页面进入、一次返回可回到一级页面的，是「二级页面」。</div>
+      </div>
+    </section>
+
+    <!-- ============================================================ glossary -->
+    <section class="section" id="glossary">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">14</span>Glossary</div>
+        <h2>术语表</h2>
+        <p class="section__lead">30 个设计基础术语 + 50 个特效专业术语，中英对照。输入关键词过滤。</p>
+      </div>
+      <div class="glossary-tools">
+        <div class="segmented" id="glossaryTabs" role="group" aria-label="术语分类">
+          <button type="button" class="is-on" data-tab="design">设计术语</button>
+          <button type="button" data-tab="effect">特效术语</button>
+        </div>
+        <input class="input" id="glossarySearch" type="search" placeholder="搜索：圆角 / glass / 粒子 / spring …" aria-label="搜索术语">
+        <span class="card__hint" id="glossaryCount"></span>
+      </div>
+      <div class="term-list" id="termList"></div>
+    </section>
+
+    <!-- ============================================================ tokens -->
+    <section class="section" id="tokens">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">15</span>Tokens</div>
+        <h2>设计令牌（本项目）</h2>
+        <p class="section__lead">唯一真源：<code>Views/Mac/MacTheme.cs</code>。改令牌，全站自动生效——不要在每个页面里写魔法数字。</p>
+      </div>
+      <div class="table-wrap">
+        <table class="token-table">
+          <thead><tr><th>Token</th><th>值</th><th>语义</th></tr></thead>
+          <tbody id="tokenBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ checklist -->
+    <section class="section" id="checklist">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">16</span>Checklist</div>
+        <h2>新页面 / 改版自检清单</h2>
+        <p class="section__lead">提交前逐条过。勾选状态存在本地，刷新不丢。</p>
+      </div>
+      <div class="card">
+        <div class="progress-head">
+          <span>完成度</span><span id="checkProgressText">0 / 0</span>
+        </div>
+        <div class="progress"><i id="checkProgressBar" style="width:0%"></i></div>
+        <div class="grid cols-2" id="checklistGrid" style="margin-top:18px"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ sources -->
+    <section class="section" id="sources">
+      <div class="section__head">
+        <div class="section__kicker"><span class="num">17</span>Sources</div>
+        <h2>官方来源</h2>
+        <p class="section__lead">数值以官方文档为准；标注 ⚠️ 的为项目经验值，不作硬性标准。</p>
+      </div>
+      <div class="card">
+        <div class="link-list" id="sourceList"></div>
+      </div>
+      <div class="footer">
+        <span>App Guidelines · v<span data-bind="version">1.0.0</span> · 更新于 <span data-bind="updated">2026-11-16</span></span>
+        <span>用 <a href="https://github.com/Gsaecy/app-guidelines">GitHub</a> 维护 · 与 <code>app-design-spec</code> skill 同源</span>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
