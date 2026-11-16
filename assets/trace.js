@@ -1350,6 +1350,56 @@
       counts: { crc: circles.length, line: lines.length } };
   }
 
+  // 法向定符号：沿每条标准形的法向两侧 D 距离采样掩膜，判断材料在 + 侧还是 − 侧
+  // + = 该边界内侧是材料（外轮廓 / 参与并集）；− = 该边界外侧是材料（孔 / 参与差集）
+  function assignRoles(pl, mask, w, h) {
+    const inn = function (x, y) {
+      const xi = Math.round(x), yi = Math.round(y);
+      if (xi < 0 || yi < 0 || xi >= w || yi >= h) return false;
+      return !!mask[yi * w + xi];
+    };
+    const D = 2.5;
+    pl.prims.forEach(function (pr) {
+      let pos = 0, neg = 0, tot = 0;
+      if (pr.kind === "circle") {
+        for (let k = 0; k < 16; k++) {
+          const t = k / 16 * Math.PI * 2, c = Math.cos(t), s = Math.sin(t);
+          const a = inn(pr.cx + (pr.r - D) * c, pr.cy + (pr.r - D) * s);
+          const b = inn(pr.cx + (pr.r + D) * c, pr.cy + (pr.r + D) * s);
+          tot++;
+          if (a && !b) pos++; else if (!a && b) neg++;
+        }
+      } else if (pr.kind === "line") {
+        const dx = pr.p1[0] - pr.p0[0], dy = pr.p1[1] - pr.p0[1];
+        const L = Math.hypot(dx, dy) || 1;
+        const nx = -dy / L, ny = dx / L;
+        for (let k = 0; k < 3; k++) {
+          const t = 0.3 + 0.2 * k;
+          const x = pr.p0[0] + dx * t, y = pr.p0[1] + dy * t;
+          const a = inn(x + nx * D, y + ny * D), b = inn(x - nx * D, y - ny * D);
+          tot++;
+          if (a && !b) pos++; else if (!a && b) neg++;
+        }
+      } else if (pr.kind === "rect") {
+        const x0 = pr.x0, y0 = pr.y0, x1 = pr.x1, y1 = pr.y1;
+        const edges = [[x0, y0, x1, y0, 0, -1], [x1, y0, x1, y1, 1, 0],
+                       [x1, y1, x0, y1, 0, 1], [x0, y1, x0, y0, -1, 0]];
+        edges.forEach(function (e) {
+          const mx = (e[0] + e[2]) / 2, my = (e[1] + e[3]) / 2;
+          const a = inn(mx + e[4] * D, my + e[5] * D), b = inn(mx - e[4] * D, my - e[5] * D);
+          tot++;
+          if (b && !a) pos++; else if (!b && a) neg++;
+        });
+      }
+      if (!tot) { pr.role = "+"; return; }
+      pr.role = (neg > pos) ? "-" : "+";
+    });
+    const plus = pl.prims.filter(function (p) { return p.role === "+"; }).length;
+    const minus = pl.prims.filter(function (p) { return p.role === "-"; }).length;
+    pl.roles = { plus: plus, minus: minus };
+    return pl;
+  }
+
   function boolCandidates(mask, w, h) {
     let x0 = w, y0 = h, x1 = -1, y1 = -1, area = 0, sx = 0, sy = 0;
     for (let y = 0; y < h; y++) {
@@ -2842,7 +2892,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260305b",
+      version: "20260306a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -2875,7 +2925,8 @@
       plan: function () {
         if (!state._bm) return null;
         const r = segFit(state._bm, state._bw, state._bh);
-        return consolidate(r.segments, state.boundaryPts);
+        const pl = consolidate(r.segments, state.boundaryPts);
+        return assignRoles(pl, state._bm, state._bw, state._bh);
       },
       segFit: function () {
         if (!state._bm) return { segments: [], note: "先处理一张图" };
