@@ -6,9 +6,10 @@
 <title>切割草稿生成器 — App Guidelines</title>
 <meta name="description" content="上传图片，浏览器内自动二值化、提取轮廓、简化节点，生成带几何构造线的 Logo 切割草稿，并导出 SVG / AI（PDF 兼容）/ PNG。">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/style.css?v=20260213g">
 </head>
 <body>
+<script>if(window.AGTrace&&window.AGTrace.version!=="20260214a"){location.replace(location.pathname+"?b="+Date.now())}</script>
 <a class="skip-link" href="#main">跳到正文</a>
 
 <header class="appbar">
@@ -54,7 +55,14 @@
           <div style="font-size:22px">⇪</div>
           <div style="font-size:13px;font-weight:600;margin-top:6px">点击选择或拖入图片</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:4px">PNG / JPG / WebP · 建议主体清晰、背景干净</div>
-          <input type="file" id="traceFile" accept="image/*" hidden>
+          <input type="file" id="traceFile" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/svg+xml,image/avif" hidden>
+        </div>
+
+        <div id="traceStatus" class="card__hint" role="status" aria-live="polite" style="margin-top:10px">还没有选择图片</div>
+        <button class="btn btn--primary" type="button" id="traceRun" disabled style="width:100%;margin-top:10px">开始处理</button>
+        <div id="traceProgressWrap" hidden style="margin-top:10px">
+          <div style="height:5px;border-radius:999px;background:var(--line);overflow:hidden"><i id="traceProgressFill" style="display:block;height:100%;width:0;background:var(--accent);transition:width .18s"></i></div>
+          <div id="traceProgressLabel" class="card__hint" style="margin-top:6px"></div>
         </div>
 
         <label class="field" style="margin-top:16px">
@@ -98,18 +106,7 @@
           </div>
         </div>
 
-        <div class="card">
-          <div class="card__title">处理流程</div>
-          <ol style="margin:10px 0 0;padding-left:20px;font-size:12.5px;color:var(--text-2);line-height:1.85">
-            <li><b>二值化</b>：转灰度按阈值切分前景（可反转）。</li>
-            <li><b>轮廓提取</b>：marching squares 沿像素边界追踪闭合环，自动保留镂空。</li>
-            <li><b>节点简化</b>：Ramer–Douglas–Peucker 减少锚点，得到可用路径。</li>
-            <li><b>叠加构造</b>：16 格网格 + 同心圆，作为切割/对齐参考。</li>
-            <li><b>导出</b>：SVG（可编辑）、AI/PDF（矢量）、PNG@4x（提案用）。</li>
-          </ol>
-          <div class="note" style="margin-top:12px">
-            <div><b>专业提醒：</b>自动描摹只适合作为草稿。定稿仍需按 <a href="logo.html#geometry">几何制图法</a> 把折线替换为相切圆弧（R 成族、切点共线），否则放大后会有折角。</div>
-          </div>
+        
         </div>
       </div>
     </div>
@@ -123,7 +120,7 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="assets/shell.js"></script>
-<script src="assets/trace.js"></script>
+<script src="assets/shell.js?v=20260213g"></script>
+<script src="assets/trace.js?v=20260214a"></script>
 </body>
 </html>
