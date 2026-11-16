@@ -979,6 +979,52 @@
     return pts;
   }
 
+  // 连通域标记（4 邻接）
+  function labelize(sel, w, h) {
+    const lab = new Int32Array(w * h).fill(-1), comps = [], st = [];
+    for (let i = 0; i < w * h; i++) {
+      if (!sel[i] || lab[i] >= 0) continue;
+      const id = comps.length;
+      let size = 0, touch = false;
+      lab[i] = id; st.push(i);
+      while (st.length) {
+        const p = st.pop(); size++;
+        const x = p % w, y = (p - x) / w;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) touch = true;
+        if (x > 0 && sel[p - 1] && lab[p - 1] < 0) { lab[p - 1] = id; st.push(p - 1); }
+        if (x < w - 1 && sel[p + 1] && lab[p + 1] < 0) { lab[p + 1] = id; st.push(p + 1); }
+        if (y > 0 && sel[p - w] && lab[p - w] < 0) { lab[p - w] = id; st.push(p - w); }
+        if (y < h - 1 && sel[p + w] && lab[p + w] < 0) { lab[p + w] = id; st.push(p + w); }
+      }
+      comps.push({ id: id, size: size, touch: touch });
+    }
+    return { lab: lab, comps: comps };
+  }
+
+  // 全部轮廓：前景连通域 = 外轮廓；未接触画板边界的背景连通域 = 孔（内轮廓）
+  function traceAll(mask, w, h) {
+    const out = [];
+    const fg = labelize(mask, w, h);
+    fg.comps.forEach(function (c) {
+      if (c.size < 40) return;
+      const sel = new Uint8Array(w * h);
+      for (let i = 0; i < w * h; i++) if (fg.lab[i] === c.id) sel[i] = 1;
+      const pts = traceBoundary(sel, w, h);
+      if (pts.length > 12) out.push({ pts: pts, hole: false });
+    });
+    const bgSel = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) bgSel[i] = mask[i] ? 0 : 1;
+    const bg = labelize(bgSel, w, h);
+    bg.comps.forEach(function (c) {
+      if (c.size < 40 || c.touch) return;
+      const sel = new Uint8Array(w * h);
+      for (let i = 0; i < w * h; i++) if (bg.lab[i] === c.id) sel[i] = 1;
+      const pts = traceBoundary(sel, w, h);
+      if (pts.length > 12) out.push({ pts: pts, hole: true });
+    });
+    return out;
+  }
+
   function resample(pts, step) {
     const out = [];
     let acc = 0;
@@ -1051,8 +1097,10 @@
     return Math.abs(Math.hypot(p[0] - m.cx, p[1] - m.cy) - m.r);
   }
 
-  function segFit(mask, w, h) {
-    const raw = traceBoundary(mask, w, h);
+  function segFit(mask, w, h, cIdx) {
+    let raw;
+    if (cIdx === undefined || cIdx === null) raw = traceBoundary(mask, w, h);
+    else { const cs = traceAll(mask, w, h); raw = (cs[cIdx] || cs[0] || { pts: [] }).pts; }
     if (raw.length < 16) return { segments: [], note: "边界点太少" };
     const pts = resample(raw, 2);
     const n = pts.length;
@@ -2892,7 +2940,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260306a",
+      version: "20260307a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -2924,9 +2972,24 @@
       boolFit: function () { return { iou: state.biou, steps: state.bsteps || [], label: bsetLabel(), n: (state.bset || []).length, small: state.bsmall && { w: state.bsmall.w, h: state.bsmall.h } }; },
       plan: function () {
         if (!state._bm) return null;
-        const r = segFit(state._bm, state._bw, state._bh);
-        const pl = consolidate(r.segments, state.boundaryPts);
-        return assignRoles(pl, state._bm, state._bw, state._bh);
+        const cs = traceAll(state._bm, state._bw, state._bh);
+        if (!cs.length) return null;
+        const prims = [], radii = [], parts = [];
+        let plus = 0, minus = 0;
+        cs.forEach(function (c, idx) {
+          const r = segFit(state._bm, state._bw, state._bh, idx);
+          const pl = consolidate(r.segments, state.boundaryPts);
+          assignRoles(pl, state._bm, state._bw, state._bh);
+          pl.prims.forEach(function (p) {
+            if (p.role === "-") minus++; else plus++;
+            prims.push(p);
+          });
+          pl.radii.forEach(function (g) { radii.push(g); });
+          parts.push({ shape: pl.shape, params: pl.params, hole: !!c.hole });
+        });
+        const shape = (parts.length === 1 && !parts[0].hole) ? parts[0].shape : "compound";
+        return { shape: shape, params: (parts.length === 1 ? parts[0].params : {}),
+          parts: parts, prims: prims, radii: radii, roles: { plus: plus, minus: minus } };
       },
       segFit: function () {
         if (!state._bm) return { segments: [], note: "先处理一张图" };
