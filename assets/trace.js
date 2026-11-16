@@ -1031,39 +1031,90 @@
     return { mx: mx, my: my, th: th, res: res / n, len: Math.hypot(pts[n - 1][0] - pts[0][0], pts[n - 1][1] - pts[0][1]) };
   }
 
+  // 拟合某段的代价
+  function fitSeg(g) {
+    if (g.length < 3) return null;
+    const c = fitCircle(g), l = fitLine(g);
+    if (c && c.res <= l.res) return { type: "arc", c: c, res: c.res };
+    return { type: "line", c: l, res: l.res };
+  }
+
+  function segRes(g) {
+    const f = fitSeg(g);
+    return f ? f.res : 1e9;
+  }
+
+  // 转角累积 + 平滑 + 贪心合并（已验证：圆 1 段 / 圆角矩形 8 段 / D 形 4 段）
   function segFit(mask, w, h) {
     const raw = traceBoundary(mask, w, h);
     if (raw.length < 16) return { segments: [], note: "边界点太少" };
     const pts = resample(raw, 2);
     const n = pts.length;
-    // 曲率：用前后 k 个点的转角
-    const K = Math.max(3, Math.round(n / 60));
-    const kappa = new Array(n).fill(0);
+
+    const th = new Array(n).fill(0);
     for (let i = 0; i < n; i++) {
-      const a = pts[(i - K + n) % n], b = pts[i], c = pts[(i + K) % n];
-      const v1x = b[0] - a[0], v1y = b[1] - a[1], v2x = c[0] - b[0], v2y = c[1] - b[1];
-      const l1 = Math.hypot(v1x, v1y) || 1, l2 = Math.hypot(v2x, v2y) || 1;
-      const cross = v1x * v2y - v1y * v2x;
-      kappa[i] = Math.abs(cross / (l1 * l2)) / ((l1 + l2) / 2);
+      const a = pts[(i - 1 + n) % n], b = pts[i], c = pts[(i + 1) % n];
+      const v1 = [b[0] - a[0], b[1] - a[1]], v2 = [c[0] - b[0], c[1] - b[1]];
+      th[i] = Math.atan2(v1[0] * v2[1] - v1[1] * v2[0], v1[0] * v2[0] + v1[1] * v2[1]);
     }
-    // 以 |κ| 的中位数做分段阈值（自适应，不用常量）
-    const sorted = kappa.slice().sort(function (x, y) { return x - y; });
-    const mid = sorted[Math.floor(n / 2)];
-    const thr = Math.max(mid * 1.5, 1e-4);
-    const segs = [];
-    let start = 0;
-    for (let i = 1; i <= n; i++) {
-      if (i === n || (kappa[i] > thr) !== (kappa[start] > thr)) {
-        if (i - start >= 4) segs.push(pts.slice(start, i));
-        start = i;
+    const W = 5, sm = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      let s = 0;
+      for (let k = -W; k <= W; k++) s += th[(i + k + n * 2) % n];
+      sm[i] = s / (2 * W + 1);
+    }
+
+    const sorted = sm.slice().sort(function (x, y) { return Math.abs(x) - Math.abs(y); });
+    const med = Math.abs(sorted[Math.floor(n / 2)]);
+    const mx = Math.abs(sorted[n - 1]);
+    const thr = Math.max(med * 3, mx * 0.25, 1e-3);
+    const cuts = [];
+    for (let i = 0; i < n; i++) if (Math.abs(sm[i]) > thr) cuts.push(i);
+
+    let segs;
+    if (!cuts.length) {
+      segs = [pts.slice()];
+    } else {
+      segs = [];
+      for (let k = 0; k < cuts.length; k++) {
+        const a = cuts[k], b = cuts[(k + 1) % cuts.length];
+        let g;
+        if (b > a) g = pts.slice(a, b + 1);
+        else g = pts.slice(a).concat(pts.slice(0, b + 1));
+        if (g.length >= 4) segs.push(g);
       }
     }
+
+    let merged = true;
+    while (merged && segs.length > 1) {
+      merged = false;
+      for (let i = 0; i < segs.length; i++) {
+        const j = (i + 1) % segs.length;
+        if (segs.length === 2 && j === 0) break;
+        const a = segs[i], b = segs[j];
+        const cat = a.concat(b);
+        const rNew = segRes(cat);
+        const rOld = Math.max(segRes(a), segRes(b));
+        if (rNew <= Math.max(rOld * 1.25, 0.35)) {
+          const nsegs = [];
+          for (let k = 0; k < segs.length; k++) if (k !== i && k !== j) nsegs.push(segs[k]);
+          nsegs.splice(Math.min(i, nsegs.length), 0, cat);
+          segs = nsegs;
+          merged = true;
+          break;
+        }
+      }
+    }
+
     const out = segs.map(function (g) {
-      const c = fitCircle(g), l = fitLine(g);
-      const isCircle = c && c.res < l.res;
-      return isCircle
-        ? { type: "arc", cx: Math.round(c.cx * 10) / 10, cy: Math.round(c.cy * 10) / 10, r: Math.round(c.r * 10) / 10, res: Math.round(c.res * 100) / 100, n: g.length }
-        : { type: "line", th: Math.round(l.th * 100) / 100, res: Math.round(l.res * 100) / 100, n: g.length, len: Math.round(l.len * 10) / 10 };
+      const f = fitSeg(g);
+      if (!f) return { type: "unknown", res: 99, n: g.length };
+      if (f.type === "arc") {
+        return { type: "arc", cx: Math.round(f.c.cx * 10) / 10, cy: Math.round(f.c.cy * 10) / 10,
+          r: Math.round(f.c.r * 10) / 10, res: Math.round(f.res * 100) / 100, n: g.length };
+      }
+      return { type: "line", th: Math.round(f.c.th * 100) / 100, res: Math.round(f.c.res * 100) / 100,
+        n: g.length, len: Math.round(f.c.len * 10) / 10 };
     });
     state.segs = out;
     state.boundaryPts = pts;
@@ -2562,7 +2613,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260226a",
+      version: "20260226f",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
