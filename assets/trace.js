@@ -1512,14 +1512,15 @@
       // 半径：尺寸线过圆心，单箭头指向圆弧
       const dirs = [-3 * Math.PI / 4, -Math.PI / 4, Math.PI / 4, 3 * Math.PI / 4];
       const rAnchors = [];
-      std.corners.forEach(function (c, i) {
-        const ang = dirs[i];
+      // 4 个圆角同半径 → 只标一处，前缀 4×（避免重复标注）
+      (function () {
+        const ang = dirs[0], c = std.corners[0];
         const cx = X(c.cx), cy = Y(c.cy), rr = r * scale;
         const px = cx + rr * Math.cos(ang), py = cy + rr * Math.sin(ang);
         s.push('<line x1="' + (cx - 4 * Math.cos(ang)) + '" y1="' + (cy - 4 * Math.sin(ang)) + '" x2="' + px + '" y2="' + py + '"/>');
         s.push(arrow(px, py, ang));
         rAnchors.push({ x: px + 13 * Math.cos(ang) - 4 * Math.sin(ang), y: py + 13 * Math.sin(ang) + 4 * Math.cos(ang) });
-      });
+      })();
       s.push("</g>");
       // 圆心标记：细点画线十字（中心线伸出轮廓）
       s.push('<g id="centres" stroke="' + HI + '" stroke-width="0.6">');
@@ -1539,15 +1540,13 @@
         s.push('<text x="' + ((X(bx0) + X(bx1)) / 2) + '" y="' + (wy - 4) + '">' + dw + "</text>");
         s.push('<text x="' + (hx - 3) + '" y="' + ((Y(by0) + Y(by1)) / 2) + '" dy="3" text-anchor="end">' + dh + "</text>");
         rAnchors.forEach(function (q) {
-          s.push('<text x="' + q.x + '" y="' + q.y + '" dy="3">' + ua + "</text>");
+          s.push('<text x="' + q.x + '" y="' + q.y + '" dy="3">4×' + ua + "</text>");
         });
         s.push("</g>");
         s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
           '" font-weight="500" fill="' + HI + '" text-anchor="middle">');
-        s.push('<text x="' + X((bx0 + bx1) / 2) + '" y="' + Y(by1) + '" dy="34">' +
-          "4 圆 ∪ 相切矩形 → 1 个圆角矩形</text>");
-        s.push('<text x="' + X(bx0) + '" y="' + Y(by1) + '" dy="48" text-anchor="start">' +
-          "单位：a（模数 = 短边 / " + n + "），未注尺寸均为 a 的整数倍</text>");
+        s.push('<text x="' + X(bx0) + '" y="' + Y(by1) + '" dy="40" text-anchor="start">' +
+          "单位：a（模数 = 短边 / " + n + "），4×R 表示四处圆角同半径</text>");
         s.push("</g>");
       }
       return s.join("");
@@ -2119,7 +2118,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222p",
+      version: "20260222q",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
