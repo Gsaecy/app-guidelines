@@ -14,7 +14,7 @@
     simplify: 2.2,
     invert: false,
     guides: true,
-    color: "#0071E3",
+    color: "#E4E7EC",
     loops: [],
     fits: [],
     fit: true,
@@ -1330,7 +1330,7 @@
     const Y = function (v) { return +(v * scale + oy).toFixed(2); };
     const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
     const gx = (bx1 - bx0) / 6, gy = (by1 - by0) / 6;
-    const s = ['<g id="grid" stroke="#D8D8D8" stroke-width="0.5">'];
+    const s = ['<g id="grid" stroke="#C6CAD1" stroke-width="0.5">'];
     for (let i = 0; i <= 6; i++) {
       s.push('<line x1="' + X(bx0 + i * gx) + '" y1="' + Y(by0) + '" x2="' + X(bx0 + i * gx) + '" y2="' + Y(by1) + '"/>');
       s.push('<line x1="' + X(bx0) + '" y1="' + Y(by0 + i * gy) + '" x2="' + X(bx1) + '" y2="' + Y(by0 + i * gy) + '"/>');
@@ -1373,64 +1373,89 @@
     if (std && std.kind === "rrect" && std.corners) {
       const r = std.r;
       const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
+      const R = (r * scale).toFixed(2);
       const ua = "r" + (r / a).toFixed(1) + "a";
-      const c0 = String(state.color || "#0071e3").replace("#", "");
+      const c0 = String(state.color || "#E4E7EC").replace("#", "");
       const cr = parseInt(c0.substr(0, 2), 16) || 0, cg = parseInt(c0.substr(2, 2), 16) || 0, cb = parseInt(c0.substr(4, 2), 16) || 0;
       const lum = (0.299 * cr + 0.587 * cg + 0.114 * cb) / 255;
-      const CL = lum > 0.55 ? "#0F2B63" : "#EAF1FF";   // 构造线对比色
-      const CT = lum > 0.55 ? "#1B4FD6" : "#FFFFFF";   // 标注文字
+      // 构造线用与成品色互补的高亮色，再加白色描边光晕，任何底色上都跳出来
+      const HI = lum > 0.6 ? "#1652CE" : "#FFD84D";
+      const HALO = lum > 0.6 ? "#FFFFFF" : "#12233F";
 
-      // ① 相切矩形：四条边同时切到对应的两个圆，切点即直线段的端点
-      s.push('<g id="prim-rect" fill="none" stroke="' + CL + '" stroke-width="0.9" opacity="0.9">');
-      s.push('<rect x="' + X(bx0) + '" y="' + Y(by0) + '" width="' + ((bx1 - bx0) * scale).toFixed(2) +
-        '" height="' + ((by1 - by0) * scale).toFixed(2) + '" stroke-dasharray="5 4"/>');
-      s.push("</g>");
+      // 同一条构造线画两遍：先粗光晕，再细高亮
+      function layer(stroke, w, dash, opac) {
+        const d = dash ? ' stroke-dasharray="' + dash + '"' : "";
+        const o = opac === undefined ? 1 : ' opacity="' + opac + '"';
+        const g = ['<g fill="none" stroke="' + stroke + '" stroke-width="' + w + '"' + d + o + ">"];
+        // ① 相切矩形：四条边分别切到对应的两个圆
+        g.push('<rect x="' + X(bx0) + '" y="' + Y(by0) + '" width="' + ((bx1 - bx0) * scale).toFixed(2) +
+          '" height="' + ((by1 - by0) * scale).toFixed(2) + '"/>');
+        // ② 四个构造圆（整圆）：只用到 1/4 弧
+        std.corners.forEach(function (c) {
+          g.push('<circle cx="' + X(c.cx) + '" cy="' + Y(c.cy) + '" r="' + R + '"/>');
+        });
+        // ③ 成品轮廓：矩形边上的 4 段直边 + 4 个 1/4 弧，首尾落在切点
+        g.push('<path stroke-dasharray="none" stroke-width="' + (w + 0.9) + '" d="M' + X(bx0 + r) + " " + Y(by0) +
+          "L" + X(bx1 - r) + " " + Y(by0) + "M" + X(bx1) + " " + Y(by0 + r) + "L" + X(bx1) + " " + Y(by1 - r) +
+          "M" + X(bx1 - r) + " " + Y(by1) + "L" + X(bx0 + r) + " " + Y(by1) +
+          "M" + X(bx0) + " " + Y(by1 - r) + "L" + X(bx0) + " " + Y(by0 + r) + '"/>');
+        std.corners.forEach(function (c, i) {
+          const a0 = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5][i];
+          const a1 = a0 + Math.PI / 2;
+          g.push('<path stroke-dasharray="none" stroke-width="' + (w + 0.9) + '" d="M' + X(c.cx + r * Math.cos(a0)) + " " + Y(c.cy + r * Math.sin(a0)) +
+            "A" + R + " " + R + " 0 0 1 " + X(c.cx + r * Math.cos(a1)) + " " + Y(c.cy + r * Math.sin(a1)) + '"/>');
+        });
+        g.push("</g>");
+        return g.join("");
+      }
 
-      // ② 四个构造圆（整圆虚线）；圆只贡献 1/4 弧
-      s.push('<g id="prim-circles" fill="none" stroke="' + CL + '" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.75">');
-      std.corners.forEach(function (c) {
-        s.push('<circle cx="' + X(c.cx) + '" cy="' + Y(c.cy) + '" r="' + (r * scale).toFixed(2) + '"/>');
-      });
-      s.push("</g>");
+      s.push('<g id="construct-halo">' + layer(HALO, 4.2, "6 4", 0.5) + "</g>");
+      s.push('<g id="construct" stroke-linecap="round">' + layer(HI, 1.6, "6 4") + "</g>");
 
-      // ③ 切点：每条边与两个圆相切，四个圆共 8 个切点
-      s.push('<g id="tangents" fill="' + CL + '" stroke="none">');
+      // ④ 8 个切点：弧端点 = 直边端点
+      s.push('<g id="tangents">');
       const seenT = {};
       std.corners.forEach(function (c) {
         [[c.cx, by0], [c.cx, by1], [bx0, c.cy], [bx1, c.cy]].forEach(function (q) {
           const k = q[0] + ":" + q[1];
           if (seenT[k]) return;
           seenT[k] = 1;
-          s.push('<circle cx="' + X(q[0]) + '" cy="' + Y(q[1]) + '" r="1.6"/>');
+          s.push('<circle cx="' + X(q[0]) + '" cy="' + Y(q[1]) + '" r="3.4" fill="' + HALO + '" opacity="0.55"/>');
+          s.push('<circle cx="' + X(q[0]) + '" cy="' + Y(q[1]) + '" r="2" fill="' + HI + '"/>');
         });
       });
       s.push("</g>");
 
-      // ④ 真实轮廓：矩形边上的 4 段直线 + 4 个圆的 1/4 弧，首尾在切点相接
-      const R = (r * scale).toFixed(2);
-      s.push('<g id="outline" fill="none" stroke="' + CL + '" stroke-width="2" stroke-linecap="round">');
-      s.push('<path d="M' + X(bx0 + r) + " " + Y(by0) + "L" + X(bx1 - r) + " " + Y(by0) + '"/>');
-      s.push('<path d="M' + X(bx1) + " " + Y(by0 + r) + "L" + X(bx1) + " " + Y(by1 - r) + '"/>');
-      s.push('<path d="M' + X(bx1 - r) + " " + Y(by1) + "L" + X(bx0 + r) + " " + Y(by1) + '"/>');
-      s.push('<path d="M' + X(bx0) + " " + Y(by1 - r) + "L" + X(bx0) + " " + Y(by0 + r) + '"/>');
-      std.corners.forEach(function (c, i) {
-        const a0 = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5][i];
-        const a1 = a0 + Math.PI / 2;
-        s.push('<path d="M' + X(c.cx + r * Math.cos(a0)) + " " + Y(c.cy + r * Math.sin(a0)) +
-          "A" + R + " " + R + " 0 0 1 " + X(c.cx + r * Math.cos(a1)) + " " + Y(c.cy + r * Math.sin(a1)) + '"/>');
-      });
+      // ⑤ 尺寸线：延长线 + 45° 刻度 + 数值（工程制图惯例）
+      const dOff = 15;
+      const wy = Y(by1) + dOff, hx = X(bx0) - dOff;
+      s.push('<g id="dims" fill="none" stroke="' + HI + '" stroke-width="0.8" opacity="0.95">');
+      s.push('<line x1="' + X(bx0) + '" y1="' + Y(by1) + '" x2="' + X(bx0) + '" y2="' + (wy + 5) + '"/>');
+      s.push('<line x1="' + X(bx1) + '" y1="' + Y(by1) + '" x2="' + X(bx1) + '" y2="' + (wy + 5) + '"/>');
+      s.push('<line x1="' + X(bx0) + '" y1="' + wy + '" x2="' + X(bx1) + '" y2="' + wy + '"/>');
+      s.push('<line x1="' + (X(bx0) - 3) + '" y1="' + (wy + 3) + '" x2="' + (X(bx0) + 3) + '" y2="' + (wy - 3) + '"/>');
+      s.push('<line x1="' + (X(bx1) - 3) + '" y1="' + (wy + 3) + '" x2="' + (X(bx1) + 3) + '" y2="' + (wy - 3) + '"/>');
+      s.push('<line x1="' + X(bx0) + '" y1="' + Y(by0) + '" x2="' + (hx - 5) + '" y2="' + Y(by0) + '"/>');
+      s.push('<line x1="' + X(bx0) + '" y1="' + Y(by1) + '" x2="' + (hx - 5) + '" y2="' + Y(by1) + '"/>');
+      s.push('<line x1="' + hx + '" y1="' + Y(by0) + '" x2="' + hx + '" y2="' + Y(by1) + '"/>');
+      s.push('<line x1="' + (hx - 3) + '" y1="' + (Y(by0) + 3) + '" x2="' + (hx + 3) + '" y2="' + (Y(by0) - 3) + '"/>');
+      s.push('<line x1="' + (hx - 3) + '" y1="' + (Y(by1) + 3) + '" x2="' + (hx + 3) + '" y2="' + (Y(by1) - 3) + '"/>');
       s.push("</g>");
 
       if (fontSize) {
-        s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
-          '" fill="' + CT + '" text-anchor="middle">');
+        const dw = ((bx1 - bx0) / a).toFixed(1) + "a", dh = ((by1 - by0) / a).toFixed(1) + "a";
+        s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + (fontSize + 1) +
+          '" font-weight="600" fill="' + HI + '" text-anchor="middle" style="paint-order:stroke" stroke="' + HALO + '" stroke-width="3">');
+        s.push('<text x="' + ((X(bx0) + X(bx1)) / 2) + '" y="' + (wy - 5) + '">' + dw + "</text>");
+        s.push('<text x="' + (hx - 7) + '" y="' + ((Y(by0) + Y(by1)) / 2) + '" dy="3" transform="rotate(-90 ' + (hx - 7) + " " + ((Y(by0) + Y(by1)) / 2) + ')">' + dh + "</text>");
+        s.push("</g>");
+        s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + (fontSize + 1) +
+          '" font-weight="600" fill="' + HI + '" text-anchor="middle">');
         std.corners.forEach(function (c) {
           s.push('<text x="' + X(c.cx) + '" y="' + Y(c.cy + 3) + '">' + ua + "</text>");
         });
-        s.push('<text x="' + X((bx0 + bx1) / 2) + '" y="' + Y(by0) + '" dy="-4" fill="' + CT + '">' +
-          ((bx1 - bx0) / a).toFixed(1) + "a × " + ((by1 - by0) / a).toFixed(1) + "a</text>");
-        s.push('<text x="' + X((bx0 + bx1) / 2) + '" y="' + Y(by1) + '" dy="12" fill="' + CT + '">' +
-          "结果 1 个图案 · 约束 4 圆 + 1 相切矩形</text>");
+        s.push('<text x="' + X((bx0 + bx1) / 2) + '" y="' + Y(by1) + '" dy="34">' +
+          "4 圆 ∪ 相切矩形 → 1 个圆角矩形</text>");
         s.push("</g>");
       }
       return s.join("");
@@ -1877,7 +1902,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260221g",
+      version: "20260221k",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
