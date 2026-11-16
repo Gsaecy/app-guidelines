@@ -1563,7 +1563,7 @@
         return '<path d="M' + x + " " + y + "L" + (bx + px) + " " + (by + py) + "L" + (bx - px) + " " + (by - py) + '" fill="' + HI + '" stroke="none"/>';
       };
       // 构造 = 最少的标准形本身（圆就一个圆、矩形就一个矩形），不多画任何派生线
-      const rr0 = Math.min(bx1 - bx0, by1 - by0) / 2, angR = -Math.PI / 4;
+      const rr0 = Math.min(bx1 - bx0, by1 - by0) / 2, angR = -3 * Math.PI / 4;
       s.push('<g id="construct" fill="none" stroke="' + HI + '" stroke-width="1" opacity="0.95">');
       if (std.kind === "circle") {
         s.push('<circle cx="' + X(cx) + '" cy="' + Y(cy) + '" r="' + (rr0 * scale).toFixed(2) + '" stroke-width="1.6"/>');
@@ -2119,7 +2119,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222o",
+      version: "20260222p",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
