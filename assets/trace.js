@@ -1438,34 +1438,39 @@
       const R = (r * scale).toFixed(2);
       const ua = "R" + (r / a).toFixed(1);      // 半径符号大写 R，数值不带单位
 
-      // 同一条构造线画两遍：先粗光晕，再细高亮
-      function layer(stroke, w, dash, opac) {
-        const d = dash ? ' stroke-dasharray="' + dash + '"' : "";
-        const o = opac === undefined ? 1 : ' opacity="' + opac + '"';
-        const g = ['<g fill="none" stroke="' + stroke + '" stroke-width="' + w + '"' + d + o + ">"];
-        // ① 相切矩形：四条边分别切到对应的两个圆
-        g.push('<rect x="' + X(bx0) + '" y="' + Y(by0) + '" width="' + ((bx1 - bx0) * scale).toFixed(2) +
-          '" height="' + ((by1 - by0) * scale).toFixed(2) + '"/>');
-        // ② 四个构造圆（整圆）：只用到 1/4 弧
-        std.corners.forEach(function (c) {
-          g.push('<circle cx="' + X(c.cx) + '" cy="' + Y(c.cy) + '" r="' + R + '"/>');
-        });
-        // ③ 成品轮廓：矩形边上的 4 段直边 + 4 个 1/4 弧，首尾落在切点
-        g.push('<path stroke-dasharray="none" stroke-width="' + (w + 0.6) + '" d="M' + X(bx0 + r) + " " + Y(by0) +
-          "L" + X(bx1 - r) + " " + Y(by0) + "M" + X(bx1) + " " + Y(by0 + r) + "L" + X(bx1) + " " + Y(by1 - r) +
-          "M" + X(bx1 - r) + " " + Y(by1) + "L" + X(bx0 + r) + " " + Y(by1) +
-          "M" + X(bx0) + " " + Y(by1 - r) + "L" + X(bx0) + " " + Y(by0 + r) + '"/>');
-        std.corners.forEach(function (c, i) {
-          const a0 = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5][i];
-          const a1 = a0 + Math.PI / 2;
-          g.push('<path stroke-dasharray="none" stroke-width="' + (w + 0.6) + '" d="M' + X(c.cx + r * Math.cos(a0)) + " " + Y(c.cy + r * Math.sin(a0)) +
-            "A" + R + " " + R + " 0 0 1 " + X(c.cx + r * Math.cos(a1)) + " " + Y(c.cy + r * Math.sin(a1)) + '"/>');
-        });
-        g.push("</g>");
-        return g.join("");
-      }
-
-      s.push('<g id="construct" stroke-linecap="round">' + layer(HI, 1, "5 4") + "</g>");
+      // 线型规则：构成边界的线段＝实线；同一标准形没被用到的部分＝虚线
+      // 圆角矩形：4 个圆各只有 1/4 弧是边界（实线），其余 3/4 虚线；矩形只有切点之间的直段是边界（实线），靠近角的 r 长残段虚线
+      const SOLID = "1.6", DASHED = "1";
+      s.push('<g id="construct" fill="none" stroke="' + HI + '" stroke-linecap="round">');
+      // 虚线：四个整圆（只有 1/4 用到）＋ 矩形四角 r 长的残段
+      s.push('<g stroke-width="' + DASHED + '" stroke-dasharray="5 4" opacity="0.9">');
+      std.corners.forEach(function (c) {
+        s.push('<circle cx="' + X(c.cx) + '" cy="' + Y(c.cy) + '" r="' + R + '"/>');
+      });
+      const stubs = [
+        [X(bx0), Y(by0), X(bx0 + r), Y(by0)], [X(bx1 - r), Y(by0), X(bx1), Y(by0)],
+        [X(bx1), Y(by0), X(bx1), Y(by0 + r)], [X(bx1), Y(by1 - r), X(bx1), Y(by1)],
+        [X(bx0), Y(by1), X(bx0 + r), Y(by1)], [X(bx1 - r), Y(by1), X(bx1), Y(by1)],
+        [X(bx0), Y(by0), X(bx0), Y(by0 + r)], [X(bx0), Y(by1 - r), X(bx0), Y(by1)],
+      ];
+      stubs.forEach(function (q) {
+        s.push('<line x1="' + q[0] + '" y1="' + q[1] + '" x2="' + q[2] + '" y2="' + q[3] + '"/>');
+      });
+      s.push("</g>");
+      // 实线：切点之间的 4 段直边 + 4 段 1/4 弧
+      s.push('<g stroke-width="' + SOLID + '">');
+      s.push('<path d="M' + X(bx0 + r) + " " + Y(by0) +
+        "L" + X(bx1 - r) + " " + Y(by0) + "M" + X(bx1) + " " + Y(by0 + r) + "L" + X(bx1) + " " + Y(by1 - r) +
+        "M" + X(bx1 - r) + " " + Y(by1) + "L" + X(bx0 + r) + " " + Y(by1) +
+        "M" + X(bx0) + " " + Y(by1 - r) + "L" + X(bx0) + " " + Y(by0 + r) + '"/>');
+      std.corners.forEach(function (c, i) {
+        const a0 = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5][i];
+        const a1 = a0 + Math.PI / 2;
+        s.push('<path d="M' + X(c.cx + r * Math.cos(a0)) + " " + Y(c.cy + r * Math.sin(a0)) +
+          "A" + R + " " + R + " 0 0 1 " + X(c.cx + r * Math.cos(a1)) + " " + Y(c.cy + r * Math.sin(a1)) + '"/>');
+      });
+      s.push("</g>");
+      s.push("</g>");
 
       // ④ 8 个切点：弧端点 = 直边端点
       s.push('<g id="tangents">');
@@ -1559,15 +1564,15 @@
       const rr0 = Math.min(bx1 - bx0, by1 - by0) / 2, angR = -Math.PI / 4;
       s.push('<g id="construct" fill="none" stroke="' + HI + '" stroke-width="1" opacity="0.95">');
       if (std.kind === "circle") {
-        s.push('<circle cx="' + X(cx) + '" cy="' + Y(cy) + '" r="' + (rr0 * scale).toFixed(2) + '" stroke-dasharray="6 4"/>');
+        s.push('<circle cx="' + X(cx) + '" cy="' + Y(cy) + '" r="' + (rr0 * scale).toFixed(2) + '" stroke-width="1.6"/>');
         // 半径：从圆心指向 45° 弧点（这条线就是 R 的尺寸线）
         s.push('<line x1="' + X(cx) + '" y1="' + Y(cy) + '" x2="' + X(cx + rr0 * Math.cos(angR)) + '" y2="' + Y(cy + rr0 * Math.sin(angR)) + '"/>');
       } else if (std.kind === "rect") {
         s.push('<rect x="' + X(bx0) + '" y="' + Y(by0) + '" width="' + ((bx1 - bx0) * scale).toFixed(2) +
-          '" height="' + ((by1 - by0) * scale).toFixed(2) + '" stroke-dasharray="6 4"/>');
+          '" height="' + ((by1 - by0) * scale).toFixed(2) + '" stroke-width="1.6"/>');
       } else {
         const ea = ((bx1 - bx0) / 2) * scale, eb = ((by1 - by0) / 2) * scale;
-        s.push('<ellipse cx="' + X(cx) + '" cy="' + Y(cy) + '" rx="' + ea.toFixed(2) + '" ry="' + eb.toFixed(2) + '" stroke-dasharray="6 4"/>');
+        s.push('<ellipse cx="' + X(cx) + '" cy="' + Y(cy) + '" rx="' + ea.toFixed(2) + '" ry="' + eb.toFixed(2) + '" stroke-width="1.6"/>');
       }
       s.push("</g>");
 
@@ -2092,7 +2097,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260222i",
+      version: "20260222j",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
