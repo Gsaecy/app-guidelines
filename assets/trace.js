@@ -1214,7 +1214,7 @@
   }
 
   // ── 标准形归约：分段 → 标准图元（圆/直线/矩形/圆角矩形），并把参数约束成精确值 ──
-  function consolidate(segs) {
+  function consolidate(segs, bpts) {
     const r1 = function (v) { return Math.round(v * 10) / 10; };
     const circles = [];
     segs.filter(function (s) { return s.type === "arc"; }).forEach(function (a) {
@@ -1241,6 +1241,27 @@
       return { th: s.th, off: nx * (s.p0[0] + s.p1[0]) / 2 + ny * (s.p0[1] + s.p1[1]) / 2, p0: s.p0, p1: s.p1, len: s.len, n: s.n,
         horiz: Math.abs(Math.cos(s.th)) > 0.97, vert: Math.abs(Math.sin(s.th)) > 0.97 };
     });
+
+    // 法向重估（ICP 一步）：用该段真实的轮廓支撑点求平均有符号距离，替代端点中点估计
+    if (bpts && bpts.length) {
+      lines.forEach(function (l) {
+        let nx = -Math.sin(l.th), ny = Math.cos(l.th);
+        if (Math.abs(ny) >= Math.abs(nx)) { if (ny < 0) { nx = -nx; ny = -ny; } }
+        else if (nx < 0) { nx = -nx; ny = -ny; }
+        const a0 = -ny * l.p0[0] + nx * l.p0[1], a1 = -ny * l.p1[0] + nx * l.p1[1];
+        const lo = Math.min(a0, a1) - 2, hi = Math.max(a0, a1) + 2;
+        let sum = 0, cnt = 0;
+        for (let i = 0; i < bpts.length; i++) {
+          const p = bpts[i];
+          const d = nx * p[0] + ny * p[1] - l.off;
+          if (Math.abs(d) > 3) continue;
+          const a = -ny * p[0] + nx * p[1];
+          if (a < lo || a > hi) continue;
+          sum += d; cnt++;
+        }
+        if (cnt >= 6) l.off += sum / cnt;
+      });
+    }
 
     const cluster = function (vals, tol) {
       const out = [];
@@ -2812,7 +2833,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260303b",
+      version: "20260304a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -2844,7 +2865,8 @@
       boolFit: function () { return { iou: state.biou, steps: state.bsteps || [], label: bsetLabel(), n: (state.bset || []).length, small: state.bsmall && { w: state.bsmall.w, h: state.bsmall.h } }; },
       plan: function () {
         if (!state._bm) return null;
-        return consolidate(segFit(state._bm, state._bw, state._bh).segments);
+        const r = segFit(state._bm, state._bw, state._bh);
+        return consolidate(r.segments, state.boundaryPts);
       },
       segFit: function () {
         if (!state._bm) return { segments: [], note: "先处理一张图" };
