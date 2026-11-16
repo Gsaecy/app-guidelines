@@ -367,6 +367,7 @@
     if (!state.img) return;
     const built = buildMask(state.img);
     if (state.construct) buildDisks(built.mask, built.w, built.h);
+    snapStandardShape(built.mask, built.w, built.h);
     let loops = contours(built.mask, built.w, built.h);
     const minArea = Math.max(4, built.w * built.h * 0.00002);
     loops = loops
@@ -833,6 +834,104 @@
   }
 
   // 最大内切圆族：贪心覆盖，追求"少数几个圆就能包出图形"
+  // ============================================================
+  // 标准图形识别：矩形 / 圆角矩形 / 圆 / 椭圆
+  // 面积解析式先给出参数，再用 IoU 验证；命中就直接用这个基本形，
+  // 而不是去描摹边界。圆角矩形的四角圆 = 构造圆（相切，天然正确）。
+  // ============================================================
+  function rasterIoU(w, h, inside) {
+    let inter = 0, uni = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const m = state._mask[y * w + x] ? 1 : 0;
+        const s = inside(x + 0.5, y + 0.5) ? 1 : 0;
+        if (m && s) inter++;
+        if (m || s) uni++;
+      }
+    }
+    return uni ? inter / uni : 0;
+  }
+
+  function snapStandardShape(mask, w, h) {
+    state._mask = mask;
+    let x0 = w, y0 = h, x1 = -1, y1 = -1, area = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (!mask[y * w + x]) continue;
+        area++;
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+    if (!area) return null;
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+    const cands = [];
+
+    // ① 矩形
+    cands.push({
+      kind: "rect", label: "矩形", w: bw, h: bh,
+      inside: function (x, y) { return x >= x0 && x <= x1 + 1 && y >= y0 && y <= y1 + 1; },
+    });
+
+    // ② 圆角矩形：A = w·h − (4−π)r²  →  直接解出 r
+    const rEst = Math.sqrt(Math.max(0, (bw * bh - area) / (4 - Math.PI)));
+    if (rEst > 1 && rEst < Math.min(bw, bh) / 2) {
+      const r = rEst;
+      cands.push({
+        kind: "rrect", label: "圆角矩形", w: bw, h: bh, r: r,
+        inside: function (x, y) {
+          if (x < x0 || x > x1 + 1 || y < y0 || y > y1 + 1) return false;
+          const dx = Math.max(x0 + r - x, 0, x - (x1 + 1 - r));
+          const dy = Math.max(y0 + r - y, 0, y - (y1 + 1 - r));
+          return dx * dx + dy * dy <= r * r;
+        },
+      });
+    }
+
+    // ③ 圆：A = πr²
+    const rc = Math.sqrt(area / Math.PI);
+    cands.push({
+      kind: "circle", label: "圆", r: rc, cx: (x0 + x1 + 1) / 2, cy: (y0 + y1 + 1) / 2,
+      inside: function (x, y) {
+        const dx = x - (x0 + x1 + 1) / 2, dy = y - (y0 + y1 + 1) / 2;
+        return dx * dx + dy * dy <= rc * rc;
+      },
+    });
+
+    // ④ 椭圆（以内接矩形为轴）
+    const ea = bw / 2, eb = bh / 2, ecx = (x0 + x1 + 1) / 2, ecy = (y0 + y1 + 1) / 2;
+    cands.push({
+      kind: "ellipse", label: "椭圆", a: ea, b: eb,
+      inside: function (x, y) {
+        const dx = (x - ecx) / ea, dy = (y - ecy) / eb;
+        return dx * dx + dy * dy <= 1;
+      },
+    });
+
+    let best = null;
+    cands.forEach(function (c) {
+      c.iou = rasterIoU(w, h, c.inside);
+      if (!best || c.iou > best.iou) best = c;
+    });
+    state._mask = null;
+    if (best) {
+      best.iou = Math.round(best.iou * 1000) / 10;
+      best.x0 = x0; best.y0 = y0; best.x1 = x1; best.y1 = y1;
+      // 圆角矩形的四角圆 —— 这是真正的构造圆（圆心 + 半径由基本形决定）
+      if (best.kind === "rrect") {
+        const r = best.r;
+        best.corners = [
+          { cx: x0 + r, cy: y0 + r }, { cx: x1 + 1 - r, cy: y0 + r },
+          { cx: x1 + 1 - r, cy: y1 + 1 - r }, { cx: x0 + r, cy: y1 + 1 - r },
+        ];
+      }
+    }
+    state.standard = best;
+    return best;
+  }
+
   function buildDisks(mask, w, h) {
     const dt = distanceTransform(mask, w, h);
     let total = 0;
@@ -1141,6 +1240,29 @@
     s.push("</g>");
 
     // ---- construction circles: dashed full circle clipped to artboard, used arc solid
+    const std = state.standard;
+    if (std && std.kind === "rrect" && std.corners) {
+      const r = std.r;
+      s.push('<g id="primitive" fill="none" stroke="#2F6BFF" stroke-width="0.8" opacity="0.9">');
+      s.push('<rect x="' + X(std.x0) + '" y="' + Y(std.y0) + '" width="' + ((std.x1 + 1 - std.x0) * scale).toFixed(2) +
+        '" height="' + ((std.y1 + 1 - std.y0) * scale).toFixed(2) + '" stroke-dasharray="5 4"/>');
+      std.corners.forEach(function (c) {
+        s.push('<circle cx="' + X(c.cx) + '" cy="' + Y(c.cy) + '" r="' + (r * scale).toFixed(2) + '"/>');
+      });
+      s.push("</g>");
+      if (fontSize) {
+        s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
+          '" fill="#1B4FD6" text-anchor="middle">');
+        std.corners.forEach(function (c) {
+          s.push('<text x="' + X(c.cx) + '" y="' + Y(c.cy + 3) + '">r' + (r / a).toFixed(1) + "a</text>");
+        });
+        s.push('<text x="' + X((std.x0 + std.x1) / 2) + '" y="' + Y(std.y0 - 4) + '">' +
+          ((std.x1 + 1 - std.x0) / a).toFixed(1) + "a × " + ((std.y1 + 1 - std.y0) / a).toFixed(1) + "a</text>");
+        s.push("</g>");
+      }
+      return s.join("");
+    }
+
     s.push('<g clip-path="url(#' + clipId + ')" fill="none">');
     (state.disks || []).forEach(function (d) {
       s.push('<circle cx="' + X(d.cx) + '" cy="' + Y(d.cy) + '" r="' + (d.r * scale).toFixed(2) +
@@ -1519,13 +1641,18 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260215b",
+      version: "20260215d",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
       fits: function () { return state.fits; },
       stats: function () { return fitStats(); },
       disks: function () { return { disks: state.disks || [], cover: state.cover }; },
+      standard: function () {
+        const s = state.standard;
+        if (!s) return null;
+        return { kind: s.kind, label: s.label, iou: s.iou, w: s.w, h: s.h, r: s.r && Math.round(s.r * 10) / 10, corners: s.corners };
+      },
       tangencyError: tangencyError,
       canonicalize: function () { return canonicalize(); },
       debugFit: function (i) { return fitLoop(state.loops[i], 1.1); },
