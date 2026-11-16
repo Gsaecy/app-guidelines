@@ -43,7 +43,35 @@
     if (kind === "err" && window.AG && AG.toast) AG.toast(msg);
   }
 
-  function fail(msg) { status(msg, "err"); }
+  function fail(msg) {
+    status(msg, "err");
+    const bar = $("#traceStatus");
+    if (bar) {
+      bar.className = "trace-status is-err";
+      bar.innerHTML = "<b>✕ 上传失败</b> " + msg;
+    }
+  }
+
+  // 上传成功的明确回执：缩略图 + 文件名 + 体积 + 像素尺寸
+  function uploadReceipt(file, img) {
+    const kb = file.size / 1024;
+    const size = kb >= 1024 ? (kb / 1024).toFixed(2) + " MB" : Math.round(kb) + " KB";
+    const bar = $("#traceStatus");
+    if (bar) {
+      bar.className = "trace-status is-ok";
+      bar.innerHTML = "<b>✓ 已上传</b> " + (file.name || "图片") + " · " + size + " · " +
+        img.width + "×" + img.height + " px";
+    }
+    const drop = $("#traceDrop");
+    if (drop) {
+      const url = img.src;
+      drop.innerHTML = '<img class="trace-thumb" alt="已上传的图片" src="' + url + '">' +
+        '<div style="font-size:12px;font-weight:600;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+        (file.name || "图片") + "</div>" +
+        '<div style="font-size:11px;color:var(--text-2);margin-top:2px">' + size + " · " + img.width + "×" + img.height +
+        ' px · 点击可重新选择</div>';
+    }
+  }
 
   /* ------------------------------------------------------------ image load */
 
@@ -52,7 +80,6 @@
     const img = new Image();
     img.decoding = "async";
     img.onload = function () {
-      URL.revokeObjectURL(url);
       cb(img);
     };
     img.onerror = function () {
@@ -75,9 +102,12 @@
       return;
     }
     status("正在解析 " + name + " …");
+    const bar0 = $("#traceStatus");
+    if (bar0) { bar0.className = "trace-status"; bar0.textContent = "正在解析 " + name + " …"; }
     decode(file, function (img) {
       state.img = img;
       state.name = name;
+      uploadReceipt(file, img);
       trace();
     }, function () {
       fail("这张图片无法解码（可能已损坏或浏览器不支持该编码），请另存为 PNG/JPG 后重试。");
@@ -977,7 +1007,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260211i",
+      version: "20260212a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },

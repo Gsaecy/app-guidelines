@@ -59,8 +59,9 @@
           <div style="font-size:22px">⇪</div>
           <div style="font-size:13px;font-weight:600;margin-top:6px">点击选择或拖入图片</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:4px">PNG / JPG / WebP · 建议主体清晰、背景干净</div>
-          <input type="file" id="traceFile" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/svg+xml,image/avif" style="margin-top:10px;font-size:11px;color:var(--text-2);max-width:100%">
         </div>
+        <input type="file" id="traceFile" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/svg+xml,image/avif" hidden>
+        <div id="traceStatus" class="trace-status" role="status" aria-live="polite">还没有选择图片</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
           <button class="btn btn--outline btn--sm" type="button" id="traceDemoLeaf">载入示例 · 叶片</button>
           <button class="btn btn--outline btn--sm" type="button" id="traceDemoRing">载入示例 · 圆环</button>
@@ -145,8 +146,8 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>if(window.AGTrace&&window.AGTrace.version!=="20260211i"){location.replace(location.pathname+"?b="+Date.now())}</script>
+<script>if(window.AGTrace&&window.AGTrace.version!=="20260212a"){location.replace(location.pathname+"?b="+Date.now())}</script>
 <script src="assets/shell.js?v=20260209b"></script>
-<script src="assets/trace.js?v=20260211i"></script>
+<script src="assets/trace.js?v=20260212a"></script>
 </body>
 </html>

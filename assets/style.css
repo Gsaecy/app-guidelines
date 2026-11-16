@@ -1220,3 +1220,10 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .rfam__lab { font: 600 11px/1.15 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text-2); }
 .rfam__lab b { display: block; font-weight: 400; color: var(--text-3); text-align: center; }
 [data-theme="dark"] .icon-cell img { filter: invert(1) opacity(.88); }
+
+/* ------------------------------------------------ trace: upload receipt */
+.trace-status { margin-top: 10px; font-size: 12px; line-height: 1.5; color: var(--text-2); padding: 8px 10px; border-radius: 8px; background: var(--line); }
+.trace-status b { font-weight: 600; }
+.trace-status.is-ok { background: rgba(14,159,110,.12); color: #0B7A55; }
+.trace-status.is-err { background: rgba(215,0,21,.10); color: #B00020; }
+.trace-thumb { display: block; max-width: 100%; max-height: 132px; margin: 0 auto; border-radius: 8px; border: 1px solid var(--line-strong); background: #fff; object-fit: contain; }
