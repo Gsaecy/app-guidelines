@@ -1208,3 +1208,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 
 .logo-responsive { max-width: 100%; overflow: hidden; }
 .logo-responsive__full { max-width: 100%; }
+
+.comp-code { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; }
+.comp-code summary { cursor: pointer; font-size: 12px; color: var(--accent); }
+.comp-code summary:hover { text-decoration: underline; }
+.comp-code .code-block { max-height: 200px; }

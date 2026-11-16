@@ -300,6 +300,10 @@
     "</div>";
   }
 
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
   function render() {
     if (!grid) return;
     const list = COMPS.filter(function (c) { return cat === "全部" || c.cat === cat; });
@@ -310,6 +314,12 @@
         '<div class="comp-stage">' + c.html + "</div>" +
         stateRow() +
         '<div class="comp-specs">' + c.specs + "</div>" +
+        '<details class="comp-code"><summary>查看可复刻代码</summary>' +
+          '<div style="display:flex;justify-content:flex-end;margin-top:8px">' +
+            '<button class="copy-chip" type="button" data-code="' + encodeURIComponent(c.html) + '">复制 HTML</button>' +
+          "</div>" +
+          "<pre class=\"code-block\" style=\"margin-top:6px\">" + esc(c.html) + "</pre>" +
+        "</details>" +
       "</div>";
     }).join("");
 
@@ -387,6 +397,13 @@
 
     const toggle = $("#showStateGrid");
     if (toggle) toggle.addEventListener("change", function () { showStates = toggle.checked; render(); });
+
+    grid.addEventListener("click", function (e) {
+      const b = e.target.closest("[data-code]");
+      if (!b) return;
+      const code = decodeURIComponent(b.getAttribute("data-code"));
+      if (window.AG) AG.copy(code);
+    });
 
     render();
   });
