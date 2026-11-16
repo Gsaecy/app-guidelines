@@ -155,7 +155,7 @@
     function applyResponsive() {
       if (!range || !stage) return;
       const w = Number(range.value);
-      if (stage) stage.style.maxWidth = w + "px";
+      if (stage) stage.style.maxWidth = "min(" + w + "px, 100%)";
       if (wVal) wVal.textContent = w + "px";
       if (logo) {
         const word = logo.querySelector(".resp-word");

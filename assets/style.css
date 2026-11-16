@@ -1199,3 +1199,12 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .logo-type span { font-size: 10.5px; color: var(--text-3); font-family: var(--mono); }
 .swatch-pair { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
 .swatch-pair > div { border-radius: 10px; padding: 18px; display: grid; place-items: center; border: 1px solid var(--line); }
+
+@media (max-width: 640px) {
+  .swatch-pair { grid-template-columns: minmax(0, 1fr); }
+  .logo-op-btns .segmented, #opSwitch { flex-wrap: wrap; }
+  .opt-demo { gap: 16px; }
+}
+
+.logo-responsive { max-width: 100%; overflow: hidden; }
+.logo-responsive__full { max-width: 100%; }
