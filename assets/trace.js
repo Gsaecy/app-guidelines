@@ -1030,7 +1030,7 @@
       best.iou = Math.round(best.iou * 1000) / 10;
       best.count = 1;
       best.expr = "1 × " + best.label +
-        (best.kind === "rrect" ? "（R = " + Math.round(best.r * 10) / 10 + "）" : "")
+        (best.kind === "rrect" ? "（r = " + Math.round(best.r * 10) / 10 + "，相切矩形 + 4×圆）" : "")
         + " = 最终图形";
       best.x0 = x0; best.y0 = y0; best.x1 = x1; best.y1 = y1;
       // 圆角矩形的四角圆 —— 这是真正的构造圆（圆心 + 半径由基本形决定）
@@ -1349,13 +1349,7 @@
     const s = [];
     s.push('<defs><clipPath id="' + clipId + '"><rect x="' + X(0) + '" y="' + Y(0) + '" width="' + bw.toFixed(2) + '" height="' + bh.toFixed(2) + '"/></clipPath></defs>');
 
-    // ---- module grid (a) + artboard
-    s.push('<g id="grid" stroke="#D8D8D8" stroke-width="0.5">');
-    if (state.guides) {
-      for (let x = 0; x <= state.w + 0.01; x += a) s.push('<line x1="' + X(x) + '" y1="' + Y(0) + '" x2="' + X(x) + '" y2="' + Y(state.h) + '"/>');
-      for (let y = 0; y <= state.h + 0.01; y += a) s.push('<line x1="' + X(0) + '" y1="' + Y(y) + '" x2="' + X(state.w) + '" y2="' + Y(y) + '"/>');
-    }
-    s.push("</g>");
+    // 背景网格由 rrectGridMarkup 统一画在图形下面，这里不再重复画
 
     const stdMode = state.standard && state.standard.kind === "rrect";
     // ---- centre axes of every construction circle (制图学：辅助线穿过圆心)
@@ -1375,34 +1369,68 @@
 
     // ---- construction circles: dashed full circle clipped to artboard, used arc solid
     const std = state.standard;
+    // 圆角矩形 = 4 个圆（各用 1/4 弧）+ 与四圆相切的矩形（每条边只用中间一段直线）
     if (std && std.kind === "rrect" && std.corners) {
       const r = std.r;
       const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
-      // 网格锁到图形外框：以 bbox 为原点，按 6 等分（6.0a）铺格
-      const gx = (bx1 - bx0) / 6, gy = (by1 - by0) / 6;
-      s.push('<g id="primitive" fill="none" stroke="#2F6BFF" stroke-width="0.8" opacity="0.9">');
+      const ua = "r" + (r / a).toFixed(1) + "a";
+      const c0 = String(state.color || "#0071e3").replace("#", "");
+      const cr = parseInt(c0.substr(0, 2), 16) || 0, cg = parseInt(c0.substr(2, 2), 16) || 0, cb = parseInt(c0.substr(4, 2), 16) || 0;
+      const lum = (0.299 * cr + 0.587 * cg + 0.114 * cb) / 255;
+      const CL = lum > 0.55 ? "#0F2B63" : "#EAF1FF";   // 构造线对比色
+      const CT = lum > 0.55 ? "#1B4FD6" : "#FFFFFF";   // 标注文字
+
+      // ① 相切矩形：四条边同时切到对应的两个圆，切点即直线段的端点
+      s.push('<g id="prim-rect" fill="none" stroke="' + CL + '" stroke-width="0.9" opacity="0.9">');
       s.push('<rect x="' + X(bx0) + '" y="' + Y(by0) + '" width="' + ((bx1 - bx0) * scale).toFixed(2) +
         '" height="' + ((by1 - by0) * scale).toFixed(2) + '" stroke-dasharray="5 4"/>');
-      std.corners.forEach(function (c, i) {
-        const ccx = c.cx, ccy = c.cy;
-        // 整圆虚线（构造），只把真正用到的 90° 弧画实线
+      s.push("</g>");
 
-        const a0 = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5][i];
-        const a1 = a0 + Math.PI / 2;
-        s.push('<path d="M' + X(ccx + r * Math.cos(a0)) + " " + Y(ccy + r * Math.sin(a0)) +
-          "A" + (r * scale).toFixed(2) + " " + (r * scale).toFixed(2) + " 0 0 1 " +
-          X(ccx + r * Math.cos(a1)) + " " + Y(ccy + r * Math.sin(a1)) +
-          '" stroke="#1B4FD6" stroke-width="1.5"/>');
+      // ② 四个构造圆（整圆虚线）；圆只贡献 1/4 弧
+      s.push('<g id="prim-circles" fill="none" stroke="' + CL + '" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.75">');
+      std.corners.forEach(function (c) {
+        s.push('<circle cx="' + X(c.cx) + '" cy="' + Y(c.cy) + '" r="' + (r * scale).toFixed(2) + '"/>');
       });
       s.push("</g>");
+
+      // ③ 切点：每条边与两个圆相切，四个圆共 8 个切点
+      s.push('<g id="tangents" fill="' + CL + '" stroke="none">');
+      const seenT = {};
+      std.corners.forEach(function (c) {
+        [[c.cx, by0], [c.cx, by1], [bx0, c.cy], [bx1, c.cy]].forEach(function (q) {
+          const k = q[0] + ":" + q[1];
+          if (seenT[k]) return;
+          seenT[k] = 1;
+          s.push('<circle cx="' + X(q[0]) + '" cy="' + Y(q[1]) + '" r="1.6"/>');
+        });
+      });
+      s.push("</g>");
+
+      // ④ 真实轮廓：矩形边上的 4 段直线 + 4 个圆的 1/4 弧，首尾在切点相接
+      const R = (r * scale).toFixed(2);
+      s.push('<g id="outline" fill="none" stroke="' + CL + '" stroke-width="2" stroke-linecap="round">');
+      s.push('<path d="M' + X(bx0 + r) + " " + Y(by0) + "L" + X(bx1 - r) + " " + Y(by0) + '"/>');
+      s.push('<path d="M' + X(bx1) + " " + Y(by0 + r) + "L" + X(bx1) + " " + Y(by1 - r) + '"/>');
+      s.push('<path d="M' + X(bx1 - r) + " " + Y(by1) + "L" + X(bx0 + r) + " " + Y(by1) + '"/>');
+      s.push('<path d="M' + X(bx0) + " " + Y(by1 - r) + "L" + X(bx0) + " " + Y(by0 + r) + '"/>');
+      std.corners.forEach(function (c, i) {
+        const a0 = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5][i];
+        const a1 = a0 + Math.PI / 2;
+        s.push('<path d="M' + X(c.cx + r * Math.cos(a0)) + " " + Y(c.cy + r * Math.sin(a0)) +
+          "A" + R + " " + R + " 0 0 1 " + X(c.cx + r * Math.cos(a1)) + " " + Y(c.cy + r * Math.sin(a1)) + '"/>');
+      });
+      s.push("</g>");
+
       if (fontSize) {
         s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize +
-          '" fill="#1B4FD6" text-anchor="middle">');
+          '" fill="' + CT + '" text-anchor="middle">');
         std.corners.forEach(function (c) {
-          s.push('<text x="' + X(c.cx) + '" y="' + Y(c.cy + 3) + '">r' + (r / a).toFixed(1) + "a</text>");
+          s.push('<text x="' + X(c.cx) + '" y="' + Y(c.cy + 3) + '">' + ua + "</text>");
         });
-        s.push('<text x="' + X((std.x0 + std.x1) / 2) + '" y="' + Y(std.y0 - 4) + '">' +
-          ((std.x1 + 1 - std.x0) / a).toFixed(1) + "a × " + ((std.y1 + 1 - std.y0) / a).toFixed(1) + "a</text>");
+        s.push('<text x="' + X((bx0 + bx1) / 2) + '" y="' + Y(by0) + '" dy="-4" fill="' + CT + '">' +
+          ((bx1 - bx0) / a).toFixed(1) + "a × " + ((by1 - by0) / a).toFixed(1) + "a</text>");
+        s.push('<text x="' + X((bx0 + bx1) / 2) + '" y="' + Y(by1) + '" dy="12" fill="' + CT + '">' +
+          "结果 1 个图案 · 约束 4 圆 + 1 相切矩形</text>");
         s.push("</g>");
       }
       return s.join("");
@@ -1849,7 +1877,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260221c",
+      version: "20260221g",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -1860,7 +1888,17 @@
         const parts = [];
         if (state.standard) {
           const s = state.standard;
-          parts.push("+ " + s.label + (s.kind === "rrect" ? "（R " + (Math.round(s.r * 10) / 10) + "）" : ""));
+          const w = Math.round((s.x1 + 1 - s.x0) * 10) / 10;
+          const h = Math.round((s.y1 + 1 - s.y0) * 10) / 10;
+          const rr = Math.round(s.r * 10) / 10;
+          // 结果层：能用一个标准形表达的就只留一个，多一个都是浪费
+          parts.push("+ " + s.label + "（" + w + " × " + h + "，r " + rr + "）");
+          if (s.kind === "rrect") {
+            // 约束层：4 圆各贡献 1/4 弧，相切矩形贡献 4 段直边；8 个切点把两者锁死
+            for (let i = 0; i < 4; i++) parts.push("· 约束 圆 r" + rr + "（第 " + (i + 1) + " 个角，只用 1/4 弧）");
+            parts.push("· 约束 矩形 " + w + " × " + h + "（四边分别与两圆相切）");
+            parts.push("· 约束 8 个切点（弧端点 = 直边端点）");
+          }
         }
         (state.holes || []).forEach(function (h) {
           parts.push("- " + h.label + (h.kind === "circle" ? "（r " + (Math.round(h.r * 10) / 10) + "）" : ""));
@@ -1868,6 +1906,7 @@
         return parts;
       },
       holes: function () { return state.holes || []; },
+      constraints: function () { return this.boolExpr().filter(function (k) { return k.charAt(0) === "·"; }); },
       standard: function () {
         const s = state.standard;
         if (!s) return null;
