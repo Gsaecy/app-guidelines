@@ -77,6 +77,11 @@
           <label class="check"><input type="checkbox" id="traceGuides" checked>叠加构造线</label>
           <label class="check"><input type="checkbox" id="traceFit" checked>几何拟合（直线 + 圆弧）</label>
           <label class="check"><input type="checkbox" id="traceConstruct" checked>构造圆（切线约束）</label>
+          <label class="check" style="gap:6px">模数网格
+            <select id="traceGrid" style="font-size:12px;padding:2px 6px;border-radius:6px;border:1px solid var(--line-strong);background:var(--card);color:inherit">
+              <option value="8">8a</option><option value="12" selected>12a</option><option value="16">16a</option><option value="24">24a</option>
+            </select>
+          </label>
         </div>
         <label class="field" style="margin-top:14px;max-width:200px">
           <span class="field__label">成品颜色</span>
@@ -104,7 +109,7 @@
             </div>
           </div>
           <div class="demo-panel__foot">
-            <span>绿色 = 切割线与构造圆（圆被限制在画板内，粗线是真正用到的弧段）；橙色 = 黄金分割辅助线；R 值以短边 = 100 为单位</span>
+            <span>灰色 = 图形 · 浅灰 = 模数网格 a · 蓝虚线 = 构造圆（裁剪在画板内，粗蓝弧是切割线真正用到的段）· 品红 = 过圆心的中心轴 · 半径标注 = 以模数 a 为单位 · 外部尺寸线 = 整体宽高</span>
           </div>
         </div>
 
@@ -137,6 +142,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/shell.js?v=20260209b"></script>
-<script src="assets/trace.js?v=20260210d"></script>
+<script src="assets/trace.js?v=20260211c"></script>
 </body>
 </html>

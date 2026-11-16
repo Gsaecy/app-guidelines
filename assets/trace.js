@@ -19,6 +19,8 @@
     fits: [],
     fit: true,
     construct: true,
+    gridN: 12,
+    unify: true,
     w: 0,
     h: 0,
     name: "",
@@ -514,6 +516,34 @@
 
   // Every fitting arc belongs to one R family; labels are expressed in artboard
   // units where the short side of the bounding box = 100 (comparable across images).
+  // Snap an arc to a target radius while keeping its two end points (the cut
+  // points on the outline). This is what makes the draft a *construction*: all
+  // arcs of one family really share one R instead of merely looking similar.
+  function resnapArc(p, r) {
+    const p0 = [p.cx + p.r * Math.cos(p.a0), p.cy + p.r * Math.sin(p.a0)];
+    const p1 = [p.x, p.y];
+    const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2;
+    const d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+    if (d < 1e-6) return;
+    const rr = d > 2 * r ? (d / 2) * 1.001 : r;
+    const h = Math.sqrt(Math.max(0, rr * rr - (d / 2) * (d / 2)));
+    const nx = -(p1[1] - p0[1]) / d, ny = (p1[0] - p0[0]) / d;
+    const c1 = [mx + nx * h, my + ny * h];
+    const c2 = [mx - nx * h, my - ny * h];
+    const c = Math.hypot(c1[0] - p.cx, c1[1] - p.cy) <= Math.hypot(c2[0] - p.cx, c2[1] - p.cy) ? c1 : c2;
+    const a0 = Math.atan2(p0[1] - c[1], p0[0] - c[0]);
+    const a1 = Math.atan2(p1[1] - c[1], p1[0] - c[0]);
+    const dPlus = norm2pi(a1 - a0);
+    const da = p.da > 0 ? dPlus : dPlus - Math.PI * 2;
+    p.cx = c[0];
+    p.cy = c[1];
+    p.r = rr;
+    p.a0 = a0;
+    p.da = da;
+    p.sweep = da > 0 ? 1 : 0;
+    p.large = Math.abs(da) > Math.PI ? 1 : 0;
+  }
+
   function radiusFamily() {
     const arcs = [];
     state.fits.forEach(function (lp) {
@@ -530,6 +560,11 @@
         groups.push({ mean: p.r, items: [p] });
       }
     });
+    if (state.unify) {
+      groups.forEach(function (g) {
+        g.items.forEach(function (p) { resnapArc(p, g.mean); });
+      });
+    }
     const base = Math.min(state.w, state.h) || 1;
     groups.forEach(function (g) {
       g.unit = Math.round((g.mean / base) * 100) * 1;
@@ -564,63 +599,89 @@
   function constructionMarkup(scale, ox, oy, fontSize) {
     const X = function (v) { return +(v * scale + ox).toFixed(2); };
     const Y = function (v) { return +(v * scale + oy).toFixed(2); };
+    const n = state.gridN || 12;
+    const a = Math.max(state.w, state.h) / n;          // one module = a
     const bw = state.w * scale, bh = state.h * scale;
     const clipId = "traceArtboard";
     const s = [];
     s.push('<defs><clipPath id="' + clipId + '"><rect x="' + X(0) + '" y="' + Y(0) + '" width="' + bw.toFixed(2) + '" height="' + bh.toFixed(2) + '"/></clipPath></defs>');
 
-    s.push('<g id="artboard" fill="none" stroke="#0E9F6E" stroke-width="0.7">');
+    // ---- module grid (a) + artboard
+    s.push('<g id="grid" stroke="#D8D8D8" stroke-width="0.5">');
     if (state.guides) {
-      for (let i = 1; i < 8; i++) {
-        s.push('<line x1="' + X(state.w * i / 8) + '" y1="' + Y(0) + '" x2="' + X(state.w * i / 8) + '" y2="' + Y(state.h) + '" opacity="0.16"/>');
-        s.push('<line x1="' + X(0) + '" y1="' + Y(state.h * i / 8) + '" x2="' + X(state.w) + '" y2="' + Y(state.h * i / 8) + '" opacity="0.16"/>');
-      }
+      for (let x = 0; x <= state.w + 0.01; x += a) s.push('<line x1="' + X(x) + '" y1="' + Y(0) + '" x2="' + X(x) + '" y2="' + Y(state.h) + '"/>');
+      for (let y = 0; y <= state.h + 0.01; y += a) s.push('<line x1="' + X(0) + '" y1="' + Y(y) + '" x2="' + X(state.w) + '" y2="' + Y(y) + '"/>');
     }
-    s.push('<rect x="' + X(0) + '" y="' + Y(0) + '" width="' + bw.toFixed(2) + '" height="' + bh.toFixed(2) + '" stroke-dasharray="6 4"/>');
-    s.push('<line x1="' + X(state.w / 2) + '" y1="' + Y(0) + '" x2="' + X(state.w / 2) + '" y2="' + Y(state.h) + '" opacity="0.55"/>');
-    s.push('<line x1="' + X(0) + '" y1="' + Y(state.h / 2) + '" x2="' + X(state.w) + '" y2="' + Y(state.h / 2) + '" opacity="0.55"/>');
-    [0.382, 0.618].forEach(function (f) {
-      s.push('<line x1="' + X(state.w * f) + '" y1="' + Y(0) + '" x2="' + X(state.w * f) + '" y2="' + Y(state.h) + '" stroke="#D9A03A" stroke-dasharray="3 4" opacity="0.8"/>');
-      s.push('<line x1="' + X(0) + '" y1="' + Y(state.h * f) + '" x2="' + X(state.w) + '" y2="' + Y(state.h * f) + '" stroke="#D9A03A" stroke-dasharray="3 4" opacity="0.8"/>');
+    s.push("</g>");
+
+    // ---- centre axes of every construction circle (制图学：辅助线穿过圆心)
+    s.push('<g id="axes" stroke="#C2185B" stroke-width="0.4" opacity="0.55">');
+    const seen = {};
+    (state.groups || []).forEach(function (g) {
+      const p = g.items[0];
+      const key = Math.round(p.cx) + ":" + Math.round(p.cy);
+      if (seen[key]) return;
+      seen[key] = 1;
+      s.push('<line x1="' + X(p.cx) + '" y1="' + Y(0) + '" x2="' + X(p.cx) + '" y2="' + Y(state.h) + '"/>');
+      s.push('<line x1="' + X(0) + '" y1="' + Y(p.cy) + '" x2="' + X(state.w) + '" y2="' + Y(p.cy) + '"/>');
     });
     s.push("</g>");
 
+    // ---- construction circles: dashed full circle clipped to artboard, used arc solid
     s.push('<g clip-path="url(#' + clipId + ')" fill="none">');
     (state.groups || []).forEach(function (g) {
       g.items.forEach(function (p) {
         const r = (p.r * scale).toFixed(2);
-        s.push('<circle cx="' + X(p.cx) + '" cy="' + Y(p.cy) + '" r="' + r + '" stroke="#0E9F6E" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.6"/>');
+        s.push('<circle cx="' + X(p.cx) + '" cy="' + Y(p.cy) + '" r="' + r + '" stroke="#2F6BFF" stroke-width="0.5" stroke-dasharray="2.5 3" opacity="0.75"/>');
         const a0 = p.a0, a1 = p.a0 + p.da;
         s.push('<path d="M' + X(p.cx + p.r * Math.cos(a0)) + " " + Y(p.cy + p.r * Math.sin(a0)) +
           "A" + r + " " + r + " 0 " + (Math.abs(p.da) > Math.PI ? 1 : 0) + " " + (p.da > 0 ? 1 : 0) + " " +
           X(p.cx + p.r * Math.cos(a1)) + " " + Y(p.cy + p.r * Math.sin(a1)) +
-          '" stroke="#0B7A55" stroke-width="1.5" opacity="0.95"/>');
+          '" stroke="#1B4FD6" stroke-width="1.4"/>');
       });
     });
     s.push("</g>");
 
     if (fontSize) {
-      s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize + '" text-anchor="middle" fill="#0B7A55">');
+      // ---- radius labels in modules (a) + tangency dots
+      s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + fontSize + '" fill="#1B4FD6" text-anchor="middle">');
       (state.groups || []).forEach(function (g) {
         g.items.forEach(function (p) {
           const am = p.a0 + p.da / 2;
-          s.push('<text x="' + X(p.cx + p.r * 0.6 * Math.cos(am)) + '" y="' + Y(p.cy + p.r * 0.6 * Math.sin(am)) + '">' + g.unit + "</text>");
+          s.push('<text x="' + X(p.cx + p.r * 0.65 * Math.cos(am)) + '" y="' + Y(p.cy + p.r * 0.65 * Math.sin(am)) + '">' + (p.r / a).toFixed(1) + "a</text>");
         });
       });
       s.push("</g>");
-      s.push('<g fill="#0E9F6E"><g id="cut-points">');
+      s.push('<g fill="#1B4FD6" id="cut-points">');
       state.fits.forEach(function (lp) {
         lp.parts.forEach(function (p) {
-          if (p.t === "A") {
-            s.push('<circle cx="' + X(p.x) + '" cy="' + Y(p.y) + '" r="' + (fontSize * 0.26).toFixed(2) + '"/>');
-          }
+          if (p.t === "A") s.push('<circle cx="' + X(p.x) + '" cy="' + Y(p.y) + '" r="' + (fontSize * 0.24).toFixed(2) + '"/>');
         });
       });
-      s.push("</g></g>");
+      s.push("</g>");
+
+      // ---- dimension lines: width / height in modules + px, with arrow ticks
+      const dim = "#333";
+      const tick = Math.max(3, fontSize * 0.45);
+      const yo = Y(0) - 10, xo = X(0) - 10;
+      s.push('<g id="dimensions" stroke="' + dim + '" stroke-width="0.5" fill="none">');
+      s.push('<line x1="' + X(0) + '" y1="' + yo + '" x2="' + X(state.w) + '" y2="' + yo + '"/>');
+      s.push('<line x1="' + X(0) + '" y1="' + (yo + tick) + '" x2="' + X(0) + '" y2="' + (yo - tick) + '"/>');
+      s.push('<line x1="' + X(state.w) + '" y1="' + (yo + tick) + '" x2="' + X(state.w) + '" y2="' + (yo - tick) + '"/>');
+      s.push('<line x1="' + xo + '" y1="' + Y(0) + '" x2="' + xo + '" y2="' + Y(state.h) + '"/>');
+      s.push('<line x1="' + (xo - tick) + '" y1="' + Y(0) + '" x2="' + (xo + tick) + '" y2="' + Y(0) + '"/>');
+      s.push('<line x1="' + (xo - tick) + '" y1="' + Y(state.h) + '" x2="' + (xo + tick) + '" y2="' + Y(state.h) + '"/>');
+      s.push("</g>");
+      s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + (fontSize * 0.95) + '" fill="' + dim + '" text-anchor="middle">');
+      s.push('<text x="' + X(state.w / 2) + '" y="' + (yo - 4) + '">' + (state.w / a).toFixed(1) + "a</text>");
+      s.push('<text x="' + (xo - 4) + '" y="' + Y(state.h / 2) + '" transform="rotate(-90 ' + (xo - 4) + " " + Y(state.h / 2) + ')">' + (state.h / a).toFixed(1) + "a</text>");
+      s.push("</g>");
+      s.push('<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="' + (fontSize * 0.8) + '" fill="#888" text-anchor="start">');
+      s.push('<text x="' + X(0) + '" y="' + (yo - 4 - fontSize) + '">art ' + state.w + "×" + state.h + " px</text>");
+      s.push("</g>");
     }
     return s.join("");
   }
-
   function familyPanel() {
     const host = $("#traceFamily");
     if (!host) return;
@@ -635,7 +696,7 @@
       const d = Math.round((g.mean / max) * 54) + 10;
       return '<div class="rfam__item"><svg width="' + d + '" height="' + d + '" viewBox="0 0 ' + d + " " + d + '" aria-hidden="true">' +
         '<circle cx="' + d / 2 + '" cy="' + d / 2 + '" r="' + (d / 2 - 0.8) + '" fill="none" stroke="#0E9F6E" stroke-width="1"/></svg>' +
-        '<span class="rfam__lab">R' + g.unit + '<b>×' + g.items.length + "</b></span></div>";
+        '<span class="rfam__lab">' + (g.mean / ((Math.max(state.w, state.h) || 1) / (state.gridN || 12))).toFixed(1) + 'a<b>×' + g.items.length + "</b></span></div>";
     }).join("") + "</div>" +
       '<p class="card__hint" style="margin-top:8px">' +
       (tang.length ? "相切校验：" + tang.join("；") : "相切校验：未检测到圆与圆相切，说明这张图的弧段更像自由曲线，建议手工用同心/相切圆重建。") +
@@ -655,7 +716,7 @@
     const oy = (H - state.h * scale) / 2;
     const s = [];
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="切割草稿预览">');
-    s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="' + state.color + '" fill-rule="evenodd" opacity="0.92"/>');
+    s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="' + (state.construct ? "#9AA0A6" : state.color) + '" fill-rule="evenodd" opacity="' + (state.construct ? "0.85" : "0.92") + '"/>');
     if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
     s.push('<rect x="6" y="6" width="' + (W - 12) + '" height="' + (H - 12) + '" fill="none" stroke="rgba(0,0,0,.16)" stroke-dasharray="3 4"/>');
     s.push("</svg>");
@@ -837,6 +898,11 @@
       render();
     });
 
+    const gridSel = $("#traceGrid");
+    if (gridSel) gridSel.addEventListener("change", function () {
+      state.gridN = Number(gridSel.value);
+      render();
+    });
     const fitBox = $("#traceFit");
     if (fitBox) fitBox.addEventListener("change", function () {
       state.fit = fitBox.checked;
