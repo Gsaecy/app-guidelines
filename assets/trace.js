@@ -1323,17 +1323,23 @@
   // Construction circles are clipped to the artboard, so no circle ever floats
   // outside the shape; the arc actually used by the cutting line is drawn solid.
   // 模数网格只作为背景定向线：画在图形下面，不切进图形内部
+  // 工作台网格：铺满画板，步长 a/2，作为底层基准
   function rrectGridMarkup(scale, ox, oy) {
-    const std = state.standard;
-    if (!std || std.kind !== "rrect") return "";
-    const X = function (v) { return +(v * scale + ox).toFixed(2); };
-    const Y = function (v) { return +(v * scale + oy).toFixed(2); };
-    const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
-    const gx = (bx1 - bx0) / 6, gy = (by1 - by0) / 6;
-    const s = ['<g id="grid" stroke="#C6CAD1" stroke-width="0.5">'];
-    for (let i = 0; i <= 6; i++) {
-      s.push('<line x1="' + X(bx0 + i * gx) + '" y1="' + Y(by0) + '" x2="' + X(bx0 + i * gx) + '" y2="' + Y(by1) + '"/>');
-      s.push('<line x1="' + X(bx0) + '" y1="' + Y(by0 + i * gy) + '" x2="' + X(bx1) + '" y2="' + Y(by0 + i * gy) + '"/>');
+    if (!state.standard) return "";
+    const step = Math.max(state.w, state.h) / 12 / 2;
+    const s = ['<g id="grid" stroke="#C6CAD1" stroke-width="0.6" opacity="0.9">'];
+    for (let x = 0; x <= state.w + 0.01; x += step) {
+      s.push('<line x1="' + (x * scale + ox).toFixed(2) + '" y1="' + oy.toFixed(2) + '" x2="' + (x * scale + ox).toFixed(2) + '" y2="' + (state.h * scale + oy).toFixed(2) + '"/>');
+    }
+    for (let y = 0; y <= state.h + 0.01; y += step) {
+      s.push('<line x1="' + ox.toFixed(2) + '" y1="' + (y * scale + oy).toFixed(2) + '" x2="' + (state.w * scale + ox).toFixed(2) + '" y2="' + (y * scale + oy).toFixed(2) + '"/>');
+    }
+    // 每 2 格（=1a）加深
+    for (let x = 0; x <= state.w + 0.01; x += step * 2) {
+      s.push('<line x1="' + (x * scale + ox).toFixed(2) + '" y1="' + oy.toFixed(2) + '" x2="' + (x * scale + ox).toFixed(2) + '" y2="' + (state.h * scale + oy).toFixed(2) + '" stroke="#A9AEB8"/>');
+    }
+    for (let y = 0; y <= state.h + 0.01; y += step * 2) {
+      s.push('<line x1="' + ox.toFixed(2) + '" y1="' + (y * scale + oy).toFixed(2) + '" x2="' + (state.w * scale + ox).toFixed(2) + '" y2="' + (y * scale + oy).toFixed(2) + '" stroke="#A9AEB8"/>');
     }
     s.push("</g>");
     return s.join("");
@@ -1379,8 +1385,19 @@
       const cr = parseInt(c0.substr(0, 2), 16) || 0, cg = parseInt(c0.substr(2, 2), 16) || 0, cb = parseInt(c0.substr(4, 2), 16) || 0;
       const lum = (0.299 * cr + 0.587 * cg + 0.114 * cb) / 255;
       // 构造线用与成品色互补的高亮色，再加白色描边光晕，任何底色上都跳出来
-      const HI = lum > 0.6 ? "#1652CE" : "#FFD84D";
-      const HALO = lum > 0.6 ? "#FFFFFF" : "#12233F";
+      const mx = Math.max(cr, cg, cb), mn = Math.min(cr, cg, cb);
+      const sat = mx === 0 ? 0 : (mx - mn) / mx;
+      let HI;
+      if (sat < 0.18) {
+        HI = "#1652CE";                       // 灰/白/黑底 → 纯蓝
+      } else if (cb >= cr && cb >= cg) {
+        HI = "#E8590C";                       // 蓝底 → 橙
+      } else if (cr >= cg) {
+        HI = "#0B7285";                       // 红/黄底 → 青
+      } else {
+        HI = "#C2255C";                       // 绿底 → 洋红
+      }
+      const HALO = lum > 0.55 ? "#FFFFFF" : "#101826";
 
       // 同一条构造线画两遍：先粗光晕，再细高亮
       function layer(stroke, w, dash, opac) {
@@ -1590,7 +1607,7 @@
     const s = [];
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="切割草稿预览">');
     if (state.construct) s.push(rrectGridMarkup(scale, ox, oy));
-    if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-rule="evenodd"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
+    if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-opacity="0.62" fill-rule="evenodd"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
     if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
     s.push('<rect x="6" y="6" width="' + (W - 12) + '" height="' + (H - 12) + '" fill="none" stroke="rgba(0,0,0,.16)" stroke-dasharray="3 4"/>');
     s.push("</svg>");
@@ -1902,7 +1919,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260221k",
+      version: "20260221l",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
