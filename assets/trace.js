@@ -953,6 +953,123 @@
   }
 
   // === 布尔重构 · 第1片：候选池 + 单个候选评估 ===
+  // === 第1步：边界追踪 → 曲率分段 → 圆弧/直线代数拟合（候选由边界本身产出）===
+  function traceBoundary(mask, w, h) {
+    let sx = -1, sy = -1;
+    for (let y = 0; y < h && sx < 0; y++) {
+      for (let x = 0; x < w; x++) { if (mask[y * w + x]) { sx = x; sy = y; break; } }
+    }
+    if (sx < 0) return [];
+    const dirs = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
+    const pts = [], seen = new Set();
+    let cx = sx, cy = sy, d = 6;
+    for (let step = 0; step < w * h * 2; step++) {
+      pts.push([cx, cy]);
+      seen.add(cx + "," + cy);
+      let found = false;
+      for (let k = 0; k < 8; k++) {
+        const nd = (d + 6 + k) % 8;
+        const nx = cx + dirs[nd][0], ny = cy + dirs[nd][1];
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        if (mask[ny * w + nx]) { cx = nx; cy = ny; d = nd; found = true; break; }
+      }
+      if (!found) break;
+      if (cx === sx && cy === sy && pts.length > 8) break;
+    }
+    return pts;
+  }
+
+  function resample(pts, step) {
+    const out = [];
+    let acc = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const ax = pts[i - 1][0], ay = pts[i - 1][1], bx = pts[i][0], by = pts[i][1];
+      const len = Math.hypot(bx - ax, by - ay);
+      if (len < 1e-9) continue;
+      let s = 0;
+      while (acc + (len - s) >= step) {
+        s += step - acc;
+        acc = 0;
+        out.push([ax + (bx - ax) * (s / len), ay + (by - ay) * (s / len)]);
+      }
+      acc += len - s;
+    }
+    return out;
+  }
+
+  // Kasa 代数圆拟合：min Σ(|p−c|² − r²)²
+  function fitCircle(pts) {
+    let n = pts.length, sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0, sxz = 0, syz = 0, sz = 0;
+    pts.forEach(function (p) {
+      const x = p[0], y = p[1], z = x * x + y * y;
+      sx += x; sy += y; sxx += x * x; syy += y * y; sxy += x * y; sxz += x * z; syz += y * z; sz += z;
+    });
+    const A = [[sxx - sx * sx / n, sxy - sx * sy / n], [sxy - sx * sy / n, syy - sy * sy / n]];
+    const B = [(sxz - sx * sz / n) / 2, (syz - sy * sz / n) / 2];
+    const det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+    if (Math.abs(det) < 1e-9) return null;
+    const cx = (B[0] * A[1][1] - A[0][1] * B[1]) / det;
+    const cy = (A[0][0] * B[1] - B[0] * A[1][0]) / det;
+    let r = 0;
+    pts.forEach(function (p) { r += Math.hypot(p[0] - cx, p[1] - cy); });
+    r /= n;
+    let res = 0;
+    pts.forEach(function (p) { res += Math.abs(Math.hypot(p[0] - cx, p[1] - cy) - r); });
+    return { cx: cx, cy: cy, r: r, res: res / n };
+  }
+
+  function fitLine(pts) {
+    const n = pts.length;
+    let mx = 0, my = 0;
+    pts.forEach(function (p) { mx += p[0]; my += p[1]; });
+    mx /= n; my /= n;
+    let sxx = 0, syy = 0, sxy = 0;
+    pts.forEach(function (p) { const dx = p[0] - mx, dy = p[1] - my; sxx += dx * dx; syy += dy * dy; sxy += dx * dy; });
+    const th = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+    let res = 0;
+    pts.forEach(function (p) { res += Math.abs(-(p[0] - mx) * Math.sin(th) + (p[1] - my) * Math.cos(th)); });
+    return { mx: mx, my: my, th: th, res: res / n, len: Math.hypot(pts[n - 1][0] - pts[0][0], pts[n - 1][1] - pts[0][1]) };
+  }
+
+  function segFit(mask, w, h) {
+    const raw = traceBoundary(mask, w, h);
+    if (raw.length < 16) return { segments: [], note: "边界点太少" };
+    const pts = resample(raw, 2);
+    const n = pts.length;
+    // 曲率：用前后 k 个点的转角
+    const K = Math.max(3, Math.round(n / 60));
+    const kappa = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      const a = pts[(i - K + n) % n], b = pts[i], c = pts[(i + K) % n];
+      const v1x = b[0] - a[0], v1y = b[1] - a[1], v2x = c[0] - b[0], v2y = c[1] - b[1];
+      const l1 = Math.hypot(v1x, v1y) || 1, l2 = Math.hypot(v2x, v2y) || 1;
+      const cross = v1x * v2y - v1y * v2x;
+      kappa[i] = Math.abs(cross / (l1 * l2)) / ((l1 + l2) / 2);
+    }
+    // 以 |κ| 的中位数做分段阈值（自适应，不用常量）
+    const sorted = kappa.slice().sort(function (x, y) { return x - y; });
+    const mid = sorted[Math.floor(n / 2)];
+    const thr = Math.max(mid * 1.5, 1e-4);
+    const segs = [];
+    let start = 0;
+    for (let i = 1; i <= n; i++) {
+      if (i === n || (kappa[i] > thr) !== (kappa[start] > thr)) {
+        if (i - start >= 4) segs.push(pts.slice(start, i));
+        start = i;
+      }
+    }
+    const out = segs.map(function (g) {
+      const c = fitCircle(g), l = fitLine(g);
+      const isCircle = c && c.res < l.res;
+      return isCircle
+        ? { type: "arc", cx: Math.round(c.cx * 10) / 10, cy: Math.round(c.cy * 10) / 10, r: Math.round(c.r * 10) / 10, res: Math.round(c.res * 100) / 100, n: g.length }
+        : { type: "line", th: Math.round(l.th * 100) / 100, res: Math.round(l.res * 100) / 100, n: g.length, len: Math.round(l.len * 10) / 10 };
+    });
+    state.segs = out;
+    state.boundaryPts = pts;
+    return { segments: out, points: n };
+  }
+
   function boolCandidates(mask, w, h) {
     let x0 = w, y0 = h, x1 = -1, y1 = -1, area = 0, sx = 0, sy = 0;
     for (let y = 0; y < h; y++) {
@@ -2445,7 +2562,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260225a",
+      version: "20260226a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -2475,6 +2592,10 @@
       },
       holes: function () { return state.holes || []; },
       boolFit: function () { return { iou: state.biou, steps: state.bsteps || [], label: bsetLabel(), n: (state.bset || []).length, small: state.bsmall && { w: state.bsmall.w, h: state.bsmall.h } }; },
+      segFit: function () {
+        if (!state._bm) return { segments: [], note: "先处理一张图" };
+        return segFit(state._bm, state._bw, state._bh);
+      },
       boolTest: function () { return { candidates: state._biou || [], w: state._bw, h: state._bh }; },
       constraints: function () { return this.boolExpr().filter(function (k) { return k.charAt(0) === "·"; }); },
       standard: function () {
