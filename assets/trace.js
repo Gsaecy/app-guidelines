@@ -18,9 +18,10 @@
     loops: [],
     fits: [],
     fit: true,
-    construct: true,
+    construct: false,
     gridN: 12,
     unify: true,
+    standard: true,
     w: 0,
     h: 0,
     name: "",
@@ -565,6 +566,14 @@
         g.items.forEach(function (p) { resnapArc(p, g.mean); });
       });
     }
+    // 标准图形：把半径族吸附到模数的 1/8 整数倍（0.5a / 0.75a / 1a / 3.75a …）
+    if (state.standard) {
+      const mod = Math.max(state.w, state.h) / (state.gridN || 12);
+      groups.forEach(function (g) {
+        const q = Math.max(4, Math.round((g.mean / mod) * 8)) / 8;
+        g.mean = q * mod;
+      });
+    }
     const base = Math.min(state.w, state.h) || 1;
     groups.forEach(function (g) {
       g.unit = Math.round((g.mean / base) * 100) * 1;
@@ -918,6 +927,13 @@
       download("logo-draft.svg", svgString(24, state.guides), "image/svg+xml");
     });
 
+    const oneClick = $("#dlAiQuick");
+    if (oneClick) oneClick.addEventListener("click", function () {
+      if (!state.fits.length) { fail("请先上传一张图片（或点「载入示例」）。"); return; }
+      download("logo-draft.ai", pdfString(24), "application/postscript");
+      if (window.AG) AG.toast("已导出 AI 矢量草稿");
+    });
+
     const aiBtn = $("#dlAi");
     if (aiBtn) aiBtn.addEventListener("click", function () {
       if (!state.loops.length) { fail("还没有可导出的轮廓，请先载入图片或点「载入示例」。"); return; }
@@ -950,6 +966,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
+      version: "20260211g",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },

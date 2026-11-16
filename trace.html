@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="zh-CN" data-theme="light">
 <head>
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>切割草稿生成器 — App Guidelines</title>
@@ -76,7 +79,7 @@
           <label class="check"><input type="checkbox" id="traceInvert">反转前景 / 背景</label>
           <label class="check"><input type="checkbox" id="traceGuides" checked>叠加构造线</label>
           <label class="check"><input type="checkbox" id="traceFit" checked>几何拟合（直线 + 圆弧）</label>
-          <label class="check"><input type="checkbox" id="traceConstruct" checked>构造圆（切线约束）</label>
+          <label class="check"><input type="checkbox" id="traceConstruct">构造圆（切线约束）</label>
           <label class="check" style="gap:6px">模数网格
             <select id="traceGrid" style="font-size:12px;padding:2px 6px;border-radius:6px;border:1px solid var(--line-strong);background:var(--card);color:inherit">
               <option value="8">8a</option><option value="12" selected>12a</option><option value="16">16a</option><option value="24">24a</option>
@@ -89,7 +92,8 @@
         </label>
 
         <div style="display:grid;gap:8px;margin-top:18px">
-          <button class="btn btn--primary" type="button" id="dlAi">下载 AI（PDF 兼容）</button>
+          <button class="btn btn--primary" type="button" id="dlAiQuick">一键导出 AI 矢量草稿</button>
+          <button class="btn btn--secondary" type="button" id="dlAi">下载 AI（PDF 兼容）</button>
           <button class="btn btn--secondary" type="button" id="dlSvg">下载 SVG</button>
           <button class="btn btn--secondary" type="button" id="dlPng">下载 PNG @4x</button>
         </div>
@@ -141,7 +145,8 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>if(window.AGTrace&&window.AGTrace.version!=="20260211g"){location.replace(location.pathname+"?b="+Date.now())}</script>
 <script src="assets/shell.js?v=20260209b"></script>
-<script src="assets/trace.js?v=20260211c"></script>
+<script src="assets/trace.js?v=20260211g"></script>
 </body>
 </html>
