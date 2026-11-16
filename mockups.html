@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI 示例 — App Guidelines</title>
+<meta name="description" content="按设备规格展示真实 UI 示例：悬停显示元素名称与规格，点击触发对应行为（跳转页面或播放效果）。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.devs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.dev{height:32px;padding:0 14px;border-radius:9px;border:1px solid var(--line-strong);background:var(--card);font:inherit;font-size:13px;cursor:pointer}
+.dev.is-on{background:var(--accent);border-color:var(--accent);color:#fff}
+.stage-wrap{display:grid;place-items:center;padding:24px;background:var(--card-2);border-radius:18px;min-height:640px}
+.phone{width:375px;height:640px;background:var(--card);border-radius:40px;border:8px solid #1c1c1e;box-shadow:0 24px 60px rgba(0,0,0,.3);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.tablet{width:560px;height:640px;border-radius:22px;border:8px solid #1c1c1e;background:var(--card);box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden;position:relative}
+.desktop{width:760px;height:520px;border-radius:12px;border:1px solid var(--line-strong);background:var(--card);box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden;position:relative}
+.status{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:11px;color:var(--text-2)}
+.appbar2{height:48px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--line)}
+.hot{position:relative;cursor:pointer;border:0;background:transparent;font:inherit;color:inherit;text-align:left;padding:0;display:block;border-radius:6px}
+.hot:hover{outline:1.5px dashed var(--accent);outline-offset:2px;background:var(--accent-soft)}
+.hot:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tip{position:fixed;z-index:99;pointer-events:none;background:rgba(28,28,30,.95);color:#fff;font-size:11px;line-height:1.5;padding:6px 9px;border-radius:8px;opacity:0;transition:opacity .12s;max-width:280px}
+.tip.on{opacity:1}
+.tip b{color:#8fd0ff;font-weight:600}
+.search{flex:1;height:32px;border-radius:999px;background:var(--card-2);display:flex;align-items:center;padding:0 12px;font-size:12px;color:var(--text-3)}
+.list{padding:12px;display:grid;gap:10px;overflow:auto;flex:1}
+.card2{display:flex;gap:12px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.thumb{width:76px;height:56px;border-radius:10px;background:linear-gradient(135deg,#7b5cff,#00c2a8);flex:none}
+.tabs{height:56px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);background:var(--card)}
+.tab{display:grid;place-items:center;gap:2px;font-size:10px;color:var(--text-3);border:0;background:transparent;cursor:pointer}
+.tab.is-on{color:var(--accent)}
+.tab i{font-size:17px;font-style:normal}
+.fab{position:absolute;right:16px;bottom:72px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;border:0;font-size:22px;box-shadow:0 8px 20px rgba(0,113,227,.45);cursor:pointer}
+.sheet{position:absolute;left:0;right:0;bottom:-100%;background:var(--card);border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);padding:18px;transition:bottom .24s cubic-bezier(.2,0,0,1);z-index:5}
+.sheet.on{bottom:0}
+.sheet h4{margin:0 0 6px;font-size:15px}
+.dlg{position:absolute;inset:0;display:none;place-items:center;background:rgba(0,0,0,.35);z-index:6}
+.dlg.on{display:grid}
+.dlg div{background:var(--card);border-radius:16px;padding:18px;width:78%;box-shadow:0 18px 40px rgba(0,0,0,.3)}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="appbar">
+  <div class="brand"><div class="brand__mark" aria-hidden="true">A</div><div class="brand__name">App Guidelines</div><div class="brand__tag">UI 示例</div></div>
+  <div class="appbar__spacer"></div>
+  <nav class="topnav" aria-label="站点导航">
+    <a href="index.html">规范速查</a><a href="principles.html">设计原理</a><a href="elements.html">元素总览</a>
+    <a href="components.html">组件画廊</a><a href="mockups.html">UI 示例</a><a href="blueprint.html">产品蓝图</a>
+    <a href="logo.html">Logo 规范</a><a href="icons.html">图标库</a><a href="trace.html">切割生成器</a><a href="testing.html">测试工具</a>
+  </nav>
+  <div class="appbar__actions"><button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色">◐</button></div>
+</header>
+
+<div class="wrap"><main class="main" id="main">
+  <div class="page-head">
+    <div class="hero__eyebrow">Mockups · 悬停看名称，点击看行为</div>
+    <h1>UI 示例</h1>
+    <p>按设备规格展示真实界面元素：<b>悬停</b>显示元素名称与关键规格，<b>点击</b>执行它应有的行为——跳转到规范页面，或就地演示 Toast / 底部面板 / 对话框等效果。</p>
+  </div>
+
+  <div class="devs" id="devs">
+    <button class="dev is-on" data-dev="phone">手机 375×812</button>
+    <button class="dev" data-dev="tablet">平板 560×640</button>
+    <button class="dev" data-dev="desktop">桌面 760×520</button>
+  </div>
+
+  <div class="stage-wrap" id="stageWrap">
+    <!-- phone -->
+    <div class="phone" id="mockPhone">
+      <div class="status"><span>9:41</span><span>▮▮▮ ⌁ 100%</span></div>
+      <div class="appbar2">
+        <button class="hot" data-name="返回按钮" data-spec="热区 ≥ 44×44 · 图标 20" data-go="elements.html#fam-window" aria-label="返回">←</button>
+        <button class="hot" data-name="页面标题" data-spec="17pt/22 · Semibold（iOS Headline）" data-go="index.html#type"><b>壁纸库</b></button>
+        <span style="flex:1"></span>
+        <button class="hot" data-name="搜索入口" data-spec="搜索框 32–36 高 · 点击进入搜索页" data-go="elements.html#fam-form" aria-label="搜索">⌕</button>
+      </div>
+      <div class="list">
+        <button class="hot" data-name="搜索框" data-spec="高 36 · 圆角 999 · 输入即结果" data-fx="toast" data-msg="搜索模式：输入即结果（防抖 250ms）"><div class="search">搜索壁纸、作者、标签</div></button>
+        <button class="hot" data-name="卡片 / 列表项" data-spec="圆角 14 · 内边距 10 · 缩略图 76×56" data-go="components.html">
+          <div class="card2"><div class="thumb"></div><div><div style="font-size:13px;font-weight:600">晨雾山谷</div><div style="font-size:11px;color:var(--text-2)">4K · 动态 · 128 MB</div></div></div>
+        </button>
+        <button class="hot" data-name="卡片 / 列表项" data-spec="同一列表内样式必须统一" data-go="components.html">
+          <div class="card2"><div class="thumb" style="background:linear-gradient(135deg,#ff9a3d,#ff5f8f)"></div><div><div style="font-size:13px;font-weight:600">液态金属</div><div style="font-size:11px;color:var(--text-2)">2K · 静态 · 64 MB</div></div></div>
+        </button>
+        <button class="hot" data-name="空状态" data-spec="图标 ≤96 · 说明 + 一个主操作" data-fx="toast" data-msg="空状态应给出下一步，而不是只写「暂无数据」">
+          <div style="text-align:center;padding:14px;border:1px dashed var(--line-strong);border-radius:14px">
+            <div style="font-size:22px;opacity:.5">🖼</div><div style="font-size:12px;font-weight:600;margin-top:4px">还没有收藏</div>
+          </div>
+        </button>
+      </div>
+      <button class="fab hot" data-name="悬浮按钮 FAB" data-spec="52×52 · 圆角 50% · 阴影层级 2" data-fx="sheet" aria-label="新建">＋</button>
+      <div class="tabs">
+        <button class="tab is-on hot" data-name="标签栏 · 当前项" data-spec="高 56 · 选中主色 + 图标" data-go="elements.html#fam-window"><i>◆</i>推荐</button>
+        <button class="tab hot" data-name="标签栏 · 未选中" data-spec="高 56 · 文字 10 / 三级色" data-fx="toast" data-msg="切换标签：保留各页滚动位置"><i>▤</i>分类</button>
+        <button class="tab hot" data-name="标签栏 · 未选中" data-spec="一级入口 ≤ 5 个" data-fx="toast" data-msg="一级入口控制在 3–5 个"><i>♡</i>收藏</button>
+        <button class="tab hot" data-name="标签栏 · 我的" data-spec="图标 20 · 文字 10" data-go="elements.html#fam-system"><i>☺</i>我的</button>
+      </div>
+      <div class="sheet" id="sheet"><h4>底部面板 Sheet</h4><p style="font-size:12px;color:var(--text-2);margin:0">240ms 上滑进入；点遮罩或 Esc 关闭。用于「新建 / 筛选」等次级动作。</p><button class="btn btn--primary btn--sm" style="margin-top:12px" onclick="this.closest('.sheet').classList.remove('on')">关闭</button></div>
+      <div class="dlg" id="dlg"><div><div style="font-weight:600;font-size:15px">对话框 Dialog</div><p style="font-size:12px;color:var(--text-2);margin:8px 0 0">用于必须打断的确认；主操作在右，Esc 关闭。</p><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn btn--secondary btn--sm" onclick="this.closest('.dlg').classList.remove('on')">取消</button><button class="btn btn--primary btn--sm" onclick="this.closest('.dlg').classList.remove('on')">删除</button></div></div></div>
+    </div>
+  </div>
+
+  <div class="footer"><span>App Guidelines · UI 示例</span><span><a href="elements.html">元素总览</a> · <a href="components.html">组件画廊</a></span></div>
+</main></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="tip" id="tip"></div>
+<script src="assets/shell.js"></script>
+<script>
+(function(){
+  var tip=document.getElementById('tip');
+  document.addEventListener('mouseover',function(e){
+    var h=e.target.closest('.hot'); if(!h||!tip) return;
+    tip.innerHTML='<b>'+h.getAttribute('data-name')+'</b><br>'+h.getAttribute('data-spec');
+    tip.classList.add('on');
+  });
+  document.addEventListener('mousemove',function(e){ if(!tip.classList.contains('on')) return; tip.style.left=Math.min(e.clientX+12, innerWidth-300)+'px'; tip.style.top=(e.clientY+16)+'px'; });
+  document.addEventListener('mouseout',function(e){ if(e.target.closest('.hot')) tip.classList.remove('on'); });
+  document.addEventListener('click',function(e){
+    var h=e.target.closest('.hot'); if(!h) return;
+    var go=h.getAttribute('data-go');
+    if(go){ location.href=go; return; }
+    var fx=h.getAttribute('data-fx');
+    if(fx==='toast'){ AG.toast(h.getAttribute('data-msg')||'效果演示'); }
+    else if(fx==='sheet'){ var s=document.getElementById('sheet'); if(s) s.classList.add('on'); }
+    else if(fx==='dialog'){ var d=document.getElementById('dlg'); if(d) d.classList.add('on'); }
+  });
+  document.getElementById('devs').addEventListener('click',function(e){
+    var b=e.target.closest('[data-dev]'); if(!b) return;
+    document.querySelectorAll('.dev').forEach(function(x){x.classList.toggle('is-on',x===b)});
+    var dev=b.getAttribute('data-dev'), phone=document.getElementById('mockPhone');
+    phone.className = dev==='phone' ? 'phone' : dev==='tablet' ? 'tablet' : 'desktop';
+    if(dev!=='phone'){ phone.style.width=dev==='tablet'?'560px':'760px'; phone.style.height=dev==='tablet'?'640px':'520px'; phone.style.borderRadius=dev==='tablet'?'22px':'12px'; }
+    else { phone.style.width='375px'; phone.style.height='640px'; phone.style.borderRadius='40px'; }
+    AG.toast(dev==='phone'?'手机：单列布局、底部标签':dev==='tablet'?'平板：双列、侧栏可收起':'桌面：侧栏常驻、内容最大宽 1120');
+  });
+})();
+</script>
+</body>
+</html>
