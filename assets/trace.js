@@ -14,7 +14,7 @@
     simplify: 2.2,
     invert: false,
     guides: true,
-    color: "#E4E7EC",
+    color: "#9AA0A6",
     loops: [],
     fits: [],
     fit: true,
@@ -1324,24 +1324,31 @@
   // outside the shape; the arc actually used by the cutting line is drawn solid.
   // 模数网格只作为背景定向线：画在图形下面，不切进图形内部
   // 工作台网格：铺满画板，步长 a/2，作为底层基准
+  // 工作台网格：以图形几何中心为原点 (0,0) 对称铺开，用于定位
   function rrectGridMarkup(scale, ox, oy) {
-    if (!state.standard) return "";
+    const std = state.standard;
+    if (!std) return "";
     const step = Math.max(state.w, state.h) / 12 / 2;
-    const s = ['<g id="grid" stroke="#C6CAD1" stroke-width="0.6" opacity="0.9">'];
-    for (let x = 0; x <= state.w + 0.01; x += step) {
-      s.push('<line x1="' + (x * scale + ox).toFixed(2) + '" y1="' + oy.toFixed(2) + '" x2="' + (x * scale + ox).toFixed(2) + '" y2="' + (state.h * scale + oy).toFixed(2) + '"/>');
-    }
-    for (let y = 0; y <= state.h + 0.01; y += step) {
-      s.push('<line x1="' + ox.toFixed(2) + '" y1="' + (y * scale + oy).toFixed(2) + '" x2="' + (state.w * scale + ox).toFixed(2) + '" y2="' + (y * scale + oy).toFixed(2) + '"/>');
-    }
-    // 每 2 格（=1a）加深
-    for (let x = 0; x <= state.w + 0.01; x += step * 2) {
-      s.push('<line x1="' + (x * scale + ox).toFixed(2) + '" y1="' + oy.toFixed(2) + '" x2="' + (x * scale + ox).toFixed(2) + '" y2="' + (state.h * scale + oy).toFixed(2) + '" stroke="#A9AEB8"/>');
-    }
-    for (let y = 0; y <= state.h + 0.01; y += step * 2) {
-      s.push('<line x1="' + ox.toFixed(2) + '" y1="' + (y * scale + oy).toFixed(2) + '" x2="' + (state.w * scale + ox).toFixed(2) + '" y2="' + (y * scale + oy).toFixed(2) + '" stroke="#A9AEB8"/>');
+    const ccx = (std.x0 + std.x1 + 1) / 2, ccy = (std.y0 + std.y1 + 1) / 2;
+    // 网格铺满预览画板（320 视口），以图形中心为原点对称
+    const reach = (320 / 2 - 6) / scale;
+    const n = Math.ceil(reach / step);
+    const P = function (v, o, s) { return (v * s + o).toFixed(2); };
+    const s = ['<g id="grid" stroke="#C6CAD1" stroke-width="0.6">'];
+    for (let i = -n; i <= n; i++) {
+      if (i === 0) continue;
+      const w = i % 2 === 0 ? ' stroke="#A9AEB8"' : "";
+      const x = ccx + i * step, y = ccy + i * step;
+      s.push('<line x1="' + P(x, ox, scale) + '" y1="' + P(ccy - n * step, oy, scale) + '" x2="' + P(x, ox, scale) + '" y2="' + P(ccy + n * step, oy, scale) + '"' + w + "/>");
+      s.push('<line x1="' + P(ccx - n * step, ox, scale) + '" y1="' + P(y, oy, scale) + '" x2="' + P(ccx + n * step, ox, scale) + '" y2="' + P(y, oy, scale) + '"' + w + "/>");
     }
     s.push("</g>");
+    // 中心轴线（0,0 定位）
+    s.push('<g id="axes" stroke="#8A9099" stroke-width="0.9" stroke-dasharray="7 3 1.5 3">');
+    s.push('<line x1="' + P(ccx - n * step, ox, scale) + '" y1="' + P(ccy, oy, scale) + '" x2="' + P(ccx + n * step, ox, scale) + '" y2="' + P(ccy, oy, scale) + '"/>');
+    s.push('<line x1="' + P(ccx, ox, scale) + '" y1="' + P(ccy - n * step, oy, scale) + '" x2="' + P(ccx, ox, scale) + '" y2="' + P(ccy + n * step, oy, scale) + '"/>');
+    s.push("</g>");
+    s.push('<circle id="origin" cx="' + P(ccx, ox, scale) + '" cy="' + P(ccy, oy, scale) + '" r="2.4" fill="#8A9099"/>');
     return s.join("");
   }
 
@@ -1381,7 +1388,7 @@
       const bx0 = std.x0, by0 = std.y0, bx1 = std.x1 + 1, by1 = std.y1 + 1;
       const R = (r * scale).toFixed(2);
       const ua = "r" + (r / a).toFixed(1) + "a";
-      const c0 = String(state.color || "#E4E7EC").replace("#", "");
+      const c0 = String(state.color || "#9AA0A6").replace("#", "");
       const cr = parseInt(c0.substr(0, 2), 16) || 0, cg = parseInt(c0.substr(2, 2), 16) || 0, cb = parseInt(c0.substr(4, 2), 16) || 0;
       const lum = (0.299 * cr + 0.587 * cg + 0.114 * cb) / 255;
       // 构造线用与成品色互补的高亮色，再加白色描边光晕，任何底色上都跳出来
@@ -1389,7 +1396,7 @@
       const sat = mx === 0 ? 0 : (mx - mn) / mx;
       let HI;
       if (sat < 0.18) {
-        HI = "#1652CE";                       // 灰/白/黑底 → 纯蓝
+        HI = "#E8590C";                       // 灰/白/黑底 → 高饱和橙（灰没有补色，取对比最强的暖色）
       } else if (cb >= cr && cb >= cg) {
         HI = "#E8590C";                       // 蓝底 → 橙
       } else if (cr >= cg) {
@@ -1479,11 +1486,12 @@
     }
 
     s.push('<g clip-path="url(#' + clipId + ')" fill="none">');
-    (state.disks || []).forEach(function (d) {
+    // 旧拟合期的内切圆盘/同心圆组一律不再绘制：没有布尔角色，只会把画面弄乱
+    if (false) (state.disks || []).forEach(function (d) {
       s.push('<circle cx="' + X(d.cx) + '" cy="' + Y(d.cy) + '" r="' + (d.r * scale).toFixed(2) +
         '" stroke="#2F6BFF" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.9"/>');
     });
-    (state.groups || []).forEach(function (g) {
+    if (false) (state.groups || []).forEach(function (g) {
       g.items.forEach(function (p) {
         const r = (p.r * scale).toFixed(2);
         s.push('<circle cx="' + X(p.cx) + '" cy="' + Y(p.cy) + '" r="' + r + '" stroke="#2F6BFF" stroke-width="0.5" stroke-dasharray="2.5 3" opacity="0.75"/>');
@@ -1607,7 +1615,7 @@
     const s = [];
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="切割草稿预览">');
     if (state.construct) s.push(rrectGridMarkup(scale, ox, oy));
-    if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-opacity="0.62" fill-rule="evenodd"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
+    if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-opacity="0.92" fill-rule="evenodd"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
     if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
     s.push('<rect x="6" y="6" width="' + (W - 12) + '" height="' + (H - 12) + '" fill="none" stroke="rgba(0,0,0,.16)" stroke-dasharray="3 4"/>');
     s.push("</svg>");
@@ -1919,7 +1927,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260221l",
+      version: "20260221p",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
