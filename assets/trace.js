@@ -1279,7 +1279,8 @@
       c.w = tot; c.n += 1;
     });
 
-    circles.forEach(function (c) { c.r += 0.5; });
+    // 像素中心 → 像素边缘：半径 +0.5，圆心同样 +0.5（轮廓沿像素中心描出）
+    circles.forEach(function (c) { c.r += 0.5; c.cx += 0.5; c.cy += 0.5; });
 
     const lines = segs.filter(function (s) { return s.type === "line"; }).map(function (s) {
       // 法向统一取「指向 +x / +y」，于是 off 就是该直线的坐标（竖线= x，横线= y）
@@ -1396,6 +1397,82 @@
     return { shape: shape, params: params, prims: prims, radii: radii,
       circles: circles.map(function (c) { return { cx: r1(c.cx), cy: r1(c.cy), r: r1(c.r), arcs: c.n }; }),
       counts: { crc: circles.length, line: lines.length } };
+  }
+
+  // 布尔重构：把每轮廓的标准形转成实体（直线链 → 轴对齐矩形），并 / 差 合成，再与掩膜比对
+  function reconstruct(pl, mask, w, h) {
+    const r1 = function (v) { return Math.round(v * 10) / 10; };
+    const plus = [], minus = [], labels = [];
+    pl.parts.forEach(function (part) {
+      const lines = part.prims.filter(function (p) { return p.kind === "line"; });
+      const rects = part.prims.filter(function (p) { return p.kind === "rect"; });
+      const circles = part.prims.filter(function (p) { return p.kind === "circle"; });
+      const bucket = part.hole ? minus : plus;
+      // 圆角矩形：实体 = 由 4 圆心 ± R 派生的圆角矩形（4 圆只是构造元素，不参与布尔）
+      if (part.shape === "rrect" && circles.length === 4) {
+        const R = circles.reduce(function (a, c) { return a + c.r; }, 0) / 4;
+        const xs = circles.map(function (c) { return c.cx; }), ys = circles.map(function (c) { return c.cy; });
+        const x0 = Math.min.apply(null, xs) - R, x1 = Math.max.apply(null, xs) + R;
+        const y0 = Math.min.apply(null, ys) - R, y1 = Math.max.apply(null, ys) + R;
+        bucket.push({ kind: "rrect", x0: x0, y0: y0, x1: x1, y1: y1, r: R });
+        labels.push((part.hole ? "-" : "+") + "圆角矩形 " + r1(x1 - x0) + "×" + r1(y1 - y0) + " R" + r1(R));
+        return;
+      }
+      const sign = part.hole ? "-" : "+";
+      rects.forEach(function (r) {
+        bucket.push({ kind: "rect", x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1 });
+        labels.push(sign + "矩形 " + r1(r.x1 - r.x0) + "×" + r1(r.y1 - r.y0));
+      });
+      circles.forEach(function (c) {
+        bucket.push({ kind: "circle", cx: c.cx, cy: c.cy, r: c.r });
+        labels.push(sign + "圆 R" + r1(c.r));
+      });
+      // 直线链没有闭合边时（例如贴着别的实体的那一段），用坐标极值补成轴对齐矩形
+      if (lines.length >= 2 && !rects.length) {
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        lines.forEach(function (l) {
+          [l.p0, l.p1].forEach(function (p) {
+            if (p[0] < x0) x0 = p[0];
+            if (p[0] > x1) x1 = p[0];
+            if (p[1] < y0) y0 = p[1];
+            if (p[1] > y1) y1 = p[1];
+          });
+        });
+        bucket.push({ kind: "rect", x0: x0, y0: y0, x1: x1, y1: y1 });
+        labels.push(sign + "矩形 " + r1(x1 - x0) + "×" + r1(y1 - y0) + "（" + lines.length + " 条直边闭合）");
+      }
+    });
+
+    const hit = function (s, x, y) {
+      if (s.kind === "rrect") {
+        const dx = Math.max(s.x0 + s.r - x, 0, x - (s.x1 - s.r));
+        const dy = Math.max(s.y0 + s.r - y, 0, y - (s.y1 - s.r));
+        return dx * dx + dy * dy <= s.r * s.r;
+      }
+      if (s.kind === "circle") return Math.hypot(x - s.cx, y - s.cy) <= s.r;
+      return x >= s.x0 && x <= s.x1 && y >= s.y0 && y <= s.y1;
+    };
+    let inter = 0, uni = 0, miss = 0, extra = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const px = x + 0.5, py = y + 0.5;
+        let v = false;
+        for (let i = 0; i < plus.length; i++) if (hit(plus[i], px, py)) { v = true; break; }
+        if (v) for (let i = 0; i < minus.length; i++) if (hit(minus[i], px, py)) { v = false; break; }
+        const m = !!mask[y * w + x];
+        if (v && m) inter++;
+        if (v || m) uni++;
+        if (m && !v) miss++;
+        if (v && !m) extra++;
+      }
+    }
+    return {
+      plus: plus, minus: minus,
+      expr: labels.join("  ∪  ").replace(/ ∪  \-/g, "  ∖  "),
+      iou: uni ? inter / uni : 0,
+      miss: miss, extra: extra,
+      overlap: inter
+    };
   }
 
   // 法向定符号：沿每条标准形的法向两侧 D 距离采样掩膜，判断材料在 + 侧还是 − 侧
@@ -2940,7 +3017,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260307a",
+      version: "20260307f",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
@@ -2970,6 +3047,11 @@
       },
       holes: function () { return state.holes || []; },
       boolFit: function () { return { iou: state.biou, steps: state.bsteps || [], label: bsetLabel(), n: (state.bset || []).length, small: state.bsmall && { w: state.bsmall.w, h: state.bsmall.h } }; },
+      recon: function () {
+        const p = this.plan();
+        if (!p) return null;
+        return reconstruct(p, state._bm, state._bw, state._bh);
+      },
       plan: function () {
         if (!state._bm) return null;
         const cs = traceAll(state._bm, state._bw, state._bh);
@@ -2985,7 +3067,7 @@
             prims.push(p);
           });
           pl.radii.forEach(function (g) { radii.push(g); });
-          parts.push({ shape: pl.shape, params: pl.params, hole: !!c.hole });
+          parts.push({ shape: pl.shape, params: pl.params, hole: !!c.hole, prims: pl.prims });
         });
         const shape = (parts.length === 1 && !parts[0].hole) ? parts[0].shape : "compound";
         return { shape: shape, params: (parts.length === 1 ? parts[0].params : {}),
