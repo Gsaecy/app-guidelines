@@ -122,12 +122,22 @@
 
     const mask = new Uint8Array(w * h);
     const t = state.threshold;
+    let onCount = 0;
     for (let i = 0, p = 0; i < data.length; i += 4, p++) {
       const a = data[i + 3] / 255;
       const lum = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) * a + 255 * (1 - a);
-      let on = lum < t ? 1 : 0;
-      if (state.invert) on = 1 - on;
+      const on = lum < t ? 1 : 0;
       mask[p] = on;
+      onCount += on;
+    }
+    // 自动判断前景/背景：深底截图、黑底 logo 会让“前景”占满画布
+    const coverage = onCount / (w * h);
+    const flip = state.invert ? coverage < 0.5 : coverage > 0.55;
+    if (flip) {
+      for (let i = 0; i < mask.length; i++) mask[i] = 1 - mask[i];
+      state.autoFlipped = coverage > 0.55;
+    } else {
+      state.autoFlipped = false;
     }
     return { mask, w, h };
   }
@@ -244,7 +254,7 @@
     if (!state.img) return;
     const built = buildMask(state.img);
     let loops = contours(built.mask, built.w, built.h);
-    const minArea = Math.max(6, built.w * built.h * 0.00025);
+    const minArea = Math.max(4, built.w * built.h * 0.00002);
     loops = loops
       .map(function (l) {
         const pts = l.slice();
@@ -266,11 +276,12 @@
     const st = fitStats();
     status(loops.length + " 条轮廓 · " + built.w + "×" + built.h + " px" +
       (state.name ? " · " + state.name : "") +
+      (state.autoFlipped ? " · 已自动反转前景" : "") +
       (loops.length
         ? " · 圆弧 " + st.arcs + " · 直线 " + st.lines +
           (st.polys ? " · 曲线 " + st.polys : "") +
           (st.radii.length ? " · R " + st.radii.join(" / ") : "")
-        : "（没有找到前景，试试把阈值调高或勾选「反转前景 / 背景」）"));
+        : "（检测不到前景：这张图可能白底/深底、或主体太细。换一张主体清晰的图，或拖动阈值、勾选「反转前景 / 背景」）"));
   }
 
   /* ------------------------------------------- geometry fitting: line / arc / cubic */
@@ -966,7 +977,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260211h",
+      version: "20260211i",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
