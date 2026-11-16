@@ -233,7 +233,25 @@
         state.autoFlipped = true;
       }
     }
-    return { mask, w, h };
+    // 3×3 多数表决去噪：去掉 1px 毛刺与孤立点，轮廓更贴合真实边缘
+    const clean = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let sum = 0, n = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          const yy = y + dy;
+          if (yy < 0 || yy >= h) continue;
+          for (let dx = -1; dx <= 1; dx++) {
+            const xx = x + dx;
+            if (xx < 0 || xx >= w) continue;
+            sum += mask[yy * w + xx];
+            n++;
+          }
+        }
+        clean[y * w + x] = sum * 2 > n ? 1 : 0;
+      }
+    }
+    return { mask: clean, w, h };
   }
 
   /* ------------------------------------------------------------ marching squares */
@@ -412,10 +430,33 @@
     }
     const sol = solve3([[Sxx, Sxy, Sx], [Sxy, Syy, Sy], [Sx, Sy, n]], [Sxz, Syz, Sz]);
     if (!sol) return null;
-    const cx = sol[0] / 2, cy = sol[1] / 2;
-    const r2 = sol[2] + cx * cx + cy * cy;
+    let cx = sol[0] / 2, cy = sol[1] / 2;
+    let r2 = sol[2] + cx * cx + cy * cy;
     if (!(r2 > 0)) return null;
-    const r = Math.sqrt(r2);
+    let r = Math.sqrt(r2);
+
+    // 径向最小二乘精修（Kåsa 对短弧有偏，精修后残差显著下降）
+    for (let it = 0; it < 8; it++) {
+      let a11 = 0, a12 = 0, a22 = 0, b1 = 0, b2 = 0;
+      for (let i = 0; i < n; i++) {
+        const dx = pts[i][0] - cx, dy = pts[i][1] - cy;
+        const d = Math.hypot(dx, dy) || 1e-6;
+        const ux = dx / d, uy = dy / d;
+        const res = d - r;
+        a11 += ux * ux; a12 += ux * uy; a22 += uy * uy;
+        b1 += ux * res; b2 += uy * res;
+      }
+      const det = a11 * a22 - a12 * a12;
+      if (!(Math.abs(det) > 1e-9)) break;
+      const ddx = (a22 * b1 - a12 * b2) / det;
+      const ddy = (a11 * b2 - a12 * b1) / det;
+      cx += ddx; cy += ddy;
+      r = 0;
+      for (let i = 0; i < n; i++) r += Math.hypot(pts[i][0] - cx, pts[i][1] - cy);
+      r /= n;
+      if (Math.abs(ddx) + Math.abs(ddy) < 1e-4) break;
+    }
+
     if (!isFinite(r) || r < 3 || r > 40000) return null;
     let maxErr = 0;
     for (let i = 0; i < n; i++) {
@@ -528,14 +569,29 @@
       return { start: pts[0], parts: parts };
     }
 
+    // 曲率分段：|κ| 显著高于整体中位数处才切，阈值随图形尺度自适应
+    const curv = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      const a = pts[(i - 1 + n) % n], b = pts[i], c = pts[(i + 1) % n];
+      const v1x = b[0] - a[0], v1y = b[1] - a[1];
+      const v2x = c[0] - b[0], v2y = c[1] - b[1];
+      const l1 = Math.hypot(v1x, v1y) || 1e-6, l2 = Math.hypot(v2x, v2y) || 1e-6;
+      const cross = v1x * v2y - v1y * v2x;
+      const dot = v1x * v2x + v1y * v2y;
+      curv[i] = Math.abs(Math.atan2(cross, dot)) / ((l1 + l2) / 2);
+    }
+    const sorted = curv.slice().sort(function (x, y) { return x - y; });
+    const median = sorted[Math.floor(n / 2)] || 0;
+    const avgEdge = pts.reduce(function (s, pt, i) {
+      const nx = pts[(i + 1) % n];
+      return s + Math.hypot(nx[0] - pt[0], nx[1] - pt[1]);
+    }, 0) / n || 1;
+    const cut = Math.max(median * 3.2, 0.55 / avgEdge);
+
     const corners = [];
     for (let i = 0; i < n; i++) {
-      const a = pts[(i - 1 + n) % n], b = pts[i], d = pts[(i + 1) % n];
-      const v1x = b[0] - a[0], v1y = b[1] - a[1], v2x = d[0] - b[0], v2y = d[1] - b[1];
-      const l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
-      if (l1 < 1e-6 || l2 < 1e-6) continue;
-      const ang = Math.acos(Math.max(-1, Math.min(1, (v1x * v2x + v1y * v2y) / (l1 * l2))));
-      if (ang > CORNER) corners.push(i);
+      const a = curv[(i - 1 + n) % n], b = curv[i], c = curv[(i + 1) % n];
+      if (b > cut && b >= a && b >= c) corners.push(i);
     }
 
     if (!corners.length) {
@@ -679,11 +735,13 @@
       const mod = Math.max(state.w, state.h) / (state.gridN || 12);
       groups.forEach(function (g) {
         const q = Math.max(4, Math.round((g.mean / mod) * 8)) / 8;
+        g.snapped = q * mod;
         g.mean = q * mod;
       });
     }
     const base = Math.min(state.w, state.h) || 1;
     groups.forEach(function (g) {
+      g.raw = g.mean;
       g.unit = Math.round((g.mean / base) * 100) * 1;
       g.items.forEach(function (p) { p.rUnit = g.unit; });
     });
@@ -700,7 +758,7 @@
       for (let j = i + 1; j < uniq.length; j++) {
         const a = uniq[i], b = uniq[j];
         const d = Math.hypot(a.cx - b.cx, a.cy - b.cy);
-        const tol = Math.max(1.2, Math.max(a.r, b.r) * 0.03);
+        const tol = 0.6;   // 只报真正贴合（<0.6px）的相切，避免碰巧相切
         if (Math.abs(d - (a.r + b.r)) <= tol) tangent.push("R" + a.unit + " 与 R" + b.unit + " 外切");
         else if (Math.abs(d - Math.abs(a.r - b.r)) <= tol) tangent.push("R" + a.unit + " 与 R" + b.unit + " 内切");
       }
@@ -813,7 +871,7 @@
       const d = Math.round((g.mean / max) * 54) + 10;
       return '<div class="rfam__item"><svg width="' + d + '" height="' + d + '" viewBox="0 0 ' + d + " " + d + '" aria-hidden="true">' +
         '<circle cx="' + d / 2 + '" cy="' + d / 2 + '" r="' + (d / 2 - 0.8) + '" fill="none" stroke="#0E9F6E" stroke-width="1"/></svg>' +
-        '<span class="rfam__lab">' + (g.mean / ((Math.max(state.w, state.h) || 1) / (state.gridN || 12))).toFixed(1) + 'a<b>×' + g.items.length + "</b></span></div>";
+        '<span class="rfam__lab">' + (g.mean / ((Math.max(state.w, state.h) || 1) / (state.gridN || 12))).toFixed(2) + 'a<b>真实 ' + ((g.raw || g.mean) / ((Math.max(state.w, state.h) || 1) / (state.gridN || 12))).toFixed(2) + 'a · ×' + g.items.length + "</b></span></div>";
     }).join("") + "</div>" +
       '<p class="card__hint" style="margin-top:8px">' +
       (tang.length ? "相切校验：" + tang.join("；") : "相切校验：未检测到圆与圆相切，说明这张图的弧段更像自由曲线，建议手工用同心/相切圆重建。") +
@@ -1113,7 +1171,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260212d",
+      version: "20260212e",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
