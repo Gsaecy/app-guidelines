@@ -383,6 +383,7 @@
     state.fits = buildFits();
     state.w = built.w;
     state.h = built.h;
+    if (state.fit) rebuildFromCircles();
     state.processed = true;
     radiusFamily();
     if (state.canonical) canonicalize();
@@ -669,6 +670,97 @@
     });
     lp.parts = out;
     return lp;
+  }
+
+  // ---- 圆驱动重建：① 同圆归并（画出来的圆必须就是弧所在的圆）
+  //                ② 弧端点移到「圆与相邻直线的交点」上（弧真正从一条边接到另一条边）
+  function dedupeCircles() {
+    const arcs = [];
+    state.fits.forEach(function (lp) {
+      lp.parts.forEach(function (q) { if (q.t === "A") arcs.push(q); });
+    });
+    const groups = [];
+    arcs.forEach(function (q) {
+      let g = null;
+      for (let i = 0; i < groups.length; i++) {
+        const c = groups[i];
+        if (Math.abs(c.cx - q.cx) < 2 && Math.abs(c.cy - q.cy) < 2 && Math.abs(c.r - q.r) < 2) { g = c; break; }
+      }
+      if (!g) { g = { cx: q.cx, cy: q.cy, r: q.r, items: [] }; groups.push(g); }
+      g.items.push(q);
+    });
+    groups.forEach(function (g) {
+      const n = g.items.length;
+      g.cx = g.items.reduce(function (s, q) { return s + q.cx; }, 0) / n;
+      g.cy = g.items.reduce(function (s, q) { return s + q.cy; }, 0) / n;
+      g.r = g.items.reduce(function (s, q) { return s + q.r; }, 0) / n;
+      g.items.forEach(function (q) { q.cx = g.cx; q.cy = g.cy; q.r = g.r; });
+    });
+    state.circleCount = groups.length;
+  }
+
+  function circleLineHits(cx, cy, r, A, B) {
+    const dx = B[0] - A[0], dy = B[1] - A[1];
+    const fx = A[0] - cx, fy = A[1] - cy;
+    const a = dx * dx + dy * dy;
+    if (a < 1e-9) return [];
+    const b = 2 * (fx * dx + fy * dy);
+    const c = fx * fx + fy * fy - r * r;
+    const disc = b * b - 4 * a * c;
+    if (disc < 0) return [];
+    const sq = Math.sqrt(disc);
+    const t1 = (-b - sq) / (2 * a), t2 = (-b + sq) / (2 * a);
+    return [[A[0] + t1 * dx, A[1] + t1 * dy], [A[0] + t2 * dx, A[1] + t2 * dy]];
+  }
+
+  function refineJoints(lp) {
+    const parts = lp.parts, m = parts.length;
+    if (m < 3) return 0;
+    const joints = [lp.start.slice()];
+    parts.forEach(function (q) { joints.push([q.x, q.y]); });
+    let moved = 0;
+    for (let i = 0; i < m; i++) {
+      const q = parts[i];
+      if (q.t !== "A") continue;
+      const prev = parts[(i - 1 + m) % m], next = parts[(i + 1) % m];
+      const near = function (hits, at) {
+        let best = null, bd = 1e9;
+        hits.forEach(function (h) {
+          const d = Math.hypot(h[0] - at[0], h[1] - at[1]);
+          if (d < bd) { bd = d; best = h; }
+        });
+        return bd < 40 ? best : null;
+      };
+      if (prev && prev.t === "L") {
+        const A = joints[i - 1] || lp.start, B = joints[i];
+        const hit = near(circleLineHits(q.cx, q.cy, q.r, A, B), joints[i]);
+        if (hit) { joints[i] = hit; prev.x = hit[0]; prev.y = hit[1]; moved++; }
+      }
+      if (next && next.t === "L") {
+        const A = joints[i + 1], B = joints[i + 2] || joints[(i + 2) % (m + 1)];
+        const hit = near(circleLineHits(q.cx, q.cy, q.r, A, B), joints[i + 1]);
+        if (hit) { joints[i + 1] = hit; q.x = hit[0]; q.y = hit[1]; moved++; }
+      }
+      const p0 = joints[i], p1 = joints[i + 1];
+      const a0 = Math.atan2(p0[1] - q.cy, p0[0] - q.cx);
+      const a1 = Math.atan2(p1[1] - q.cy, p1[0] - q.cx);
+      const dPlus = norm2pi(a1 - a0);
+      const da = q.da > 0 ? dPlus : dPlus - Math.PI * 2;
+      if (Math.abs(da) > 1e-4) {
+        q.a0 = a0; q.da = da;
+        q.sweep = da > 0 ? 1 : 0;
+        q.large = Math.abs(da) > Math.PI ? 1 : 0;
+      }
+    }
+    return moved;
+  }
+
+  function rebuildFromCircles() {
+    dedupeCircles();
+    let moved = 0;
+    for (let pass = 0; pass < 3; pass++) { state.fits.forEach(function (lp) { moved += refineJoints(lp); }); }
+    state.jointsFixed = moved;
+    return moved;
   }
 
   function buildFits() {
@@ -1298,7 +1390,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260214a",
+      version: "20260214c",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
