@@ -2759,14 +2759,26 @@
     const s = [];
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="切割草稿预览">');
     if (state.construct) s.push(rrectGridMarkup(scale, ox, oy));
-    if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-opacity="0.92" fill-rule="evenodd"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
-    if (state.bset && state.bset.length > 1 && state.construct) {
+    // 预览主体：标准形布尔重构（掩膜坐标 → 预览坐标用 g transform 映射）
+    let planBody = "";
+    if (state._bm && typeof AGTrace !== "undefined" && AGTrace.svgPlan) {
+      const sp = AGTrace.svgPlan();
+      if (sp) {
+        const inner = sp.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "")
+          .split('fill="#1a1a1a"').join('fill="' + state.color + '"');
+        planBody = '<g id="plan" transform="translate(' + ox + "," + oy + ") scale(" + scale + ')">' + inner + "</g>";
+      }
+    }
+    if (planBody) {
+      s.push(planBody);
+    } else if (state.construct) { s.push('<path d="' + shapeD(scale, ox, oy) + '" fill="' + state.color + '" fill-opacity="0.92" fill-rule="evenodd"/>'); } else { s.push('<path d="' + fitsD(state.fits, scale, ox, oy) + '" fill="none" stroke="' + state.color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" fill-rule="evenodd"/>'); }
+    if (!planBody && state.bset && state.bset.length > 1 && state.construct) {
       s.push('<g id="bprim" fill="none" stroke="#3C4957" stroke-width="0.9" stroke-dasharray="5 4" opacity="0.9">');
       state.bset.forEach(function (b) { s.push('<path d="' + bsetD(scale, ox, oy, [b]) + '"/>'); });
       s.push("</g>");
       s.push('<text x="10" y="16" font-family="ui-monospace, monospace" font-size="9" fill="#3C4957">' +
         bsetLabel() + "　拟合率 " + state.biou + "%</text>");
-    } else if (state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
+    } else if (!planBody && state.construct) s.push(constructionMarkup(scale, ox, oy, 8));
     s.push('<rect x="6" y="6" width="' + (W - 12) + '" height="' + (H - 12) + '" fill="none" stroke="rgba(0,0,0,.16)" stroke-dasharray="3 4"/>');
     s.push("</svg>");
     host.innerHTML = s.join("");
@@ -3077,7 +3089,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260311a",
+      version: "20260313a",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },
