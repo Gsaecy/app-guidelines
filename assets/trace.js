@@ -25,6 +25,8 @@
     w: 0,
     h: 0,
     name: "",
+    processed: false,
+    busy: false,
   };
 
   const MAX = 520;
@@ -33,6 +35,22 @@
   const MAX_BYTES = 24 * 1024 * 1024;
 
   /* ------------------------------------------------------------ status */
+
+  function progress(pct, label) {
+    const wrap = $("#traceProgressWrap");
+    const fill = $("#traceProgressFill");
+    const lab = $("#traceProgressLabel");
+    if (wrap) wrap.hidden = pct < 0;
+    if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + "%";
+    if (lab && label) lab.textContent = label;
+  }
+
+  function setExports(on) {
+    ["#dlAiQuick", "#dlAi", "#dlSvg", "#dlPng"].forEach(function (sel) {
+      const b = $(sel);
+      if (b) b.disabled = !on;
+    });
+  }
 
   function status(msg, kind) {
     const info = $("#traceInfo");
@@ -60,7 +78,7 @@
     if (bar) {
       bar.className = "trace-status is-ok";
       bar.innerHTML = "<b>✓ 已上传</b> " + (file.name || "图片") + " · " + size + " · " +
-        img.width + "×" + img.height + " px";
+        img.width + "×" + img.height + " px · 待处理";
     }
     const drop = $("#traceDrop");
     if (drop) {
@@ -108,7 +126,13 @@
       state.img = img;
       state.name = name;
       uploadReceipt(file, img);
-      trace();
+      state.processed = false;
+      setExports(false);
+      progress(0, "已读取图片，点「开始处理」生成切割草稿");
+      const run = $("#traceRun");
+      if (run) { run.disabled = false; run.textContent = "开始处理"; }
+      const host = $("#traceStage");
+      if (host) host.innerHTML = '<div style="font-size:12px;color:var(--text-3)">已就绪：点「开始处理」后再生成草稿</div>';
     }, function () {
       fail("这张图片无法解码（可能已损坏或浏览器不支持该编码），请另存为 PNG/JPG 后重试。");
     });
@@ -131,7 +155,14 @@
     img.onload = function () {
       state.img = img;
       state.name = kind === "ring" ? "示例 · 圆环" : "示例 · 叶片";
-      trace();
+      const bar = $("#traceStatus");
+      if (bar) {
+        bar.className = "trace-status is-ok";
+        bar.innerHTML = "<b>✓ 已载入示例</b> " + state.name + " · " + img.width + "×" + img.height + " px";
+      }
+      const run = $("#traceRun");
+      if (run) { run.disabled = false; run.textContent = "开始处理"; }
+      runProcess();
     };
     img.onerror = function () { fail("示例图加载失败，请刷新页面。"); };
     img.src = src;
@@ -300,9 +331,12 @@
     state.fits = buildFits();
     state.w = built.w;
     state.h = built.h;
+    state.processed = true;
     radiusFamily();
     render();
     familyPanel();
+    setExports(false);
+    setExports(true);
     const st = fitStats();
     status(loops.length + " 条轮廓 · " + built.w + "×" + built.h + " px" +
       (state.name ? " · " + state.name : "") +
@@ -874,6 +908,42 @@
     return pdf;
   }
 
+  function runProcess() {
+    if (!state.img) { fail("请先上传一张图片。"); return; }
+    if (state.busy) return;
+    state.busy = true;
+    state.processed = false;
+    const run = $("#traceRun");
+    if (run) { run.disabled = true; run.textContent = "处理中…"; }
+    setExports(false);
+    const stages = [
+      [12, "① 读取像素、按阈值二值化…"],
+      [38, "② 自动判断前景 / 背景…"],
+      [62, "③ 追踪轮廓（marching squares）…"],
+      [84, "④ 拟合直线 / 圆弧，半径归族…"],
+      [96, "⑤ 生成制图辅助线…"],
+    ];
+    let i = 0;
+    const tick = function () {
+      if (i < stages.length) {
+        progress(stages[i][0], stages[i][1]);
+        i++;
+        setTimeout(tick, 130);
+        return;
+      }
+      try {
+        trace();
+        progress(100, "✓ 完成：" + (state.loops.length || 0) + " 条轮廓，可导出矢量草稿");
+      } catch (e) {
+        progress(-1, "");
+        fail("处理失败：" + e.message);
+      }
+      state.busy = false;
+      if (run) { run.disabled = false; run.textContent = "重新处理"; }
+    };
+    setTimeout(tick, 60);
+  }
+
   /* ------------------------------------------------------------ wiring */
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -926,21 +996,24 @@
     if (th) th.addEventListener("input", function () {
       state.threshold = Number(th.value);
       $("#thVal").textContent = th.value;
-      trace();
+      if (state.processed) runProcess();
     });
 
     const sp = $("#traceSimplify");
     if (sp) sp.addEventListener("input", function () {
       state.simplify = Number(sp.value);
       $("#spVal").textContent = state.simplify.toFixed(1);
-      trace();
+      if (state.processed) runProcess();
     });
 
     const inv = $("#traceInvert");
-    if (inv) inv.addEventListener("change", function () { state.invert = inv.checked; trace(); });
+    if (inv) inv.addEventListener("change", function () { state.invert = inv.checked; if (state.processed) runProcess(); });
 
     const gd = $("#traceGuides");
     if (gd) gd.addEventListener("change", function () { state.guides = gd.checked; render(); });
+
+    const runBtn = $("#traceRun");
+    if (runBtn) runBtn.addEventListener("click", runProcess);
 
     const conBox = $("#traceConstruct");
     if (conBox) conBox.addEventListener("change", function () {
@@ -956,7 +1029,7 @@
     const fitBox = $("#traceFit");
     if (fitBox) fitBox.addEventListener("change", function () {
       state.fit = fitBox.checked;
-      trace();
+      if (state.processed) runProcess();
     });
 
     const col = $("#traceColor");
@@ -964,26 +1037,26 @@
 
     const svgBtn = $("#dlSvg");
     if (svgBtn) svgBtn.addEventListener("click", function () {
-      if (!state.loops.length) { fail("还没有可导出的轮廓，请先载入图片或点「载入示例」。"); return; }
+      if (!state.processed) { fail("请先点「开始处理」生成草稿，再导出。"); return; }
       download("logo-draft.svg", svgString(24, false), "image/svg+xml");
     });
 
     const oneClick = $("#dlAiQuick");
     if (oneClick) oneClick.addEventListener("click", function () {
-      if (!state.fits.length) { fail("请先上传一张图片（或点「载入示例」）。"); return; }
+      if (!state.processed) { fail("请先点「开始处理」生成草稿，再导出。"); return; }
       download("logo-draft.svg", svgString(24, true), "image/svg+xml");
       if (window.AG) AG.toast("已导出 SVG 矢量草稿（含制图构造层）");
     });
 
     const aiBtn = $("#dlAi");
     if (aiBtn) aiBtn.addEventListener("click", function () {
-      if (!state.loops.length) { fail("还没有可导出的轮廓，请先载入图片或点「载入示例」。"); return; }
+      if (!state.processed) { fail("请先点「开始处理」生成草稿，再导出。"); return; }
       download("logo-draft.pdf", pdfString(24), "application/pdf");
     });
 
     const pngBtn = $("#dlPng");
     if (pngBtn) pngBtn.addEventListener("click", function () {
-      if (!state.loops.length) { fail("还没有可导出的轮廓，请先载入图片或点「载入示例」。"); return; }
+      if (!state.processed) { fail("请先点「开始处理」生成草稿，再导出。"); return; }
       const scale = 4;
       const c = document.createElement("canvas");
       c.width = (state.w + 48) * scale;
@@ -1007,7 +1080,7 @@
 
     // Scriptable API (also used by the page's own export buttons)
     window.AGTrace = {
-      version: "20260212a",
+      version: "20260212b",
       svg: function () { return svgString(24, state.guides); },
       pdf: function () { return pdfString(24); },
       loops: function () { return state.loops.slice(); },

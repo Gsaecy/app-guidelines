@@ -1227,3 +1227,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .trace-status.is-ok { background: rgba(14,159,110,.12); color: #0B7A55; }
 .trace-status.is-err { background: rgba(215,0,21,.10); color: #B00020; }
 .trace-thumb { display: block; max-width: 100%; max-height: 132px; margin: 0 auto; border-radius: 8px; border: 1px solid var(--line-strong); background: #fff; object-fit: contain; }
+/* ------------------------------------------------ trace: process progress */
+.trace-progress { margin-top: 10px; }
+.trace-progress__bar { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.trace-progress__bar > i { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--accent); transition: width .18s ease; }
+.trace-progress__label { margin-top: 6px; font-size: 11.5px; color: var(--text-2); }

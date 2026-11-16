@@ -62,6 +62,11 @@
         </div>
         <input type="file" id="traceFile" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/svg+xml,image/avif" hidden>
         <div id="traceStatus" class="trace-status" role="status" aria-live="polite">还没有选择图片</div>
+        <button class="btn btn--primary" type="button" id="traceRun" disabled style="margin-top:10px;width:100%">开始处理</button>
+        <div id="traceProgressWrap" class="trace-progress" hidden>
+          <div class="trace-progress__bar"><i id="traceProgressFill"></i></div>
+          <div class="trace-progress__label" id="traceProgressLabel">准备中…</div>
+        </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
           <button class="btn btn--outline btn--sm" type="button" id="traceDemoLeaf">载入示例 · 叶片</button>
           <button class="btn btn--outline btn--sm" type="button" id="traceDemoRing">载入示例 · 圆环</button>
@@ -146,8 +151,8 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>if(window.AGTrace&&window.AGTrace.version!=="20260212a"){location.replace(location.pathname+"?b="+Date.now())}</script>
+<script>if(window.AGTrace&&window.AGTrace.version!=="20260212b"){location.replace(location.pathname+"?b="+Date.now())}</script>
 <script src="assets/shell.js?v=20260209b"></script>
-<script src="assets/trace.js?v=20260212a"></script>
+<script src="assets/trace.js?v=20260212b"></script>
 </body>
 </html>
