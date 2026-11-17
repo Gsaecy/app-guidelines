@@ -4,9 +4,9 @@
 
 > 在线浏览：<https://gsaecy.github.io/app-guidelines/>
 
-![pages](https://img.shields.io/badge/pages-7-0071e3) ![components](https://img.shields.io/badge/components-29-34c759) ![elements](https://img.shields.io/badge/elements-66-34c759) ![deps](https://img.shields.io/badge/dependencies-0-34c759) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+![pages](https://img.shields.io/badge/pages-9-0071e3) ![components](https://img.shields.io/badge/components-29-34c759) ![elements](https://img.shields.io/badge/elements-66-34c759) ![deps](https://img.shields.io/badge/dependencies-0-34c759) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
-## 七个页面
+## 九个页面
 
 | 页面 | 内容 |
 |---|---|
@@ -16,6 +16,8 @@
 | [组件画廊](https://gsaecy.github.io/app-guidelines/components.html) | 29 个组件实时样例，可切换密度（32/40/48）与圆角（4/8/10），含状态对比 |
 | [产品蓝图](https://gsaecy.github.io/app-guidelines/blueprint.html) | 12 个产品模块 × 9 个规范维度矩阵，Logo 构造/禁用示例、全平台图标尺寸、登录字段规范、48 项交付物清单 |
 | [Logo 规范](https://gsaecy.github.io/app-guidelines/logo.html) | 6 种类型、几何比例、布尔切割实验台、光学修正、安全区与最小尺寸、响应式三形态、SVG 交付 |
+| [图标库](https://gsaecy.github.io/app-guidelines/icons.html) | 480,000+ 个开源图标检索（Lucide / Tabler / Heroicons / Feather），可搜索、预览并一键复制 SVG |
+| [设备示例](https://gsaecy.github.io/app-guidelines/devices.html) | 真实设备尺寸与安全区示例：手机 / 平板 / 手表 / 桌面，附导航栏与断点对照 |
 | [测试工具](https://gsaecy.github.io/app-guidelines/testing.html) | 对比度检查、色盲模拟、热区检查、键盘可达性、响应式预览、可读性、12 题知识自测 |
 
 ## 包含什么
@@ -97,6 +99,8 @@ elements.html              元素总览（7 族 66 个元素的规范与效果�
 components.html            组件画廊（29 个组件，密度/圆角/状态切换）
 blueprint.html             产品蓝图（12 模块矩阵 + Logo/图标/登录规范 + 交付物）
 logo.html                  Logo 规范（类型/布尔切割实验台/光学修正/安全区/交付）
+icons.html                 图标库（480,000+ 图标检索、预览、复制 SVG）
+devices.html               设备示例（真实尺寸、安全区、导航栏与断点）
 testing.html               测试工具（7 个检查器 + 12 题自测）
 assets/style.css           设计令牌 + 全部样式（浅/深色 + 打印）
 assets/data.js             规范唯一数据源：所有数值、术语、清单、变更记录
