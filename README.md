@@ -110,6 +110,7 @@ assets/testing.js          对比度/色盲/热区/键盘/响应式/可读性/�
 skills/app-design-spec/    Agent Skill（SKILL.md + references/）
 .github/workflows/pages.yml GitHub Pages 自动部署
 sitemap.xml / robots.txt    站点索引
+assets/og.png              分享卡片图（og:image，1200×630）
 ```
 
 **改内容只动 `assets/data.js`**：新增一条术语、改一个圆角值，刷新即可，不用碰 HTML。
